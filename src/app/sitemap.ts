@@ -24,6 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry("/hilfe", 0.95, "weekly"),
     entry("/ratgeber", 0.95, "weekly"),
     entry("/patenschaften", 0.9),
+    entry("/paten", 0.75),
     entry("/waschbaeren", 0.9),
     entry("/unterstuetzen", 0.85),
     entry("/ueber-uns", 0.8),

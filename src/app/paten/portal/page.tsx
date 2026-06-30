@@ -1,12 +1,15 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PatenDashboard } from "@/components/paten/PatenDashboard";
+import { Section } from "@/components/ui/Section";
 import { getAuthenticatedPaten } from "@/lib/patenAuth";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = createMetadata({
   title: "Dein Paten-Bereich",
-  robots: { index: false, follow: false },
-};
+  description: "Persönliche Updates und Fotos von deinem Waschbär-Patentier.",
+  path: "/paten/portal",
+  noIndex: true,
+});
 
 export default async function PatenPortalPage() {
   const pate = await getAuthenticatedPaten();
@@ -15,10 +18,10 @@ export default async function PatenPortalPage() {
   }
 
   return (
-    <div className="py-8 sm:py-12 px-4 sm:px-6">
+    <Section soft className="py-8 sm:py-12 md:py-16">
       <div className="mx-auto max-w-3xl">
         <PatenDashboard />
       </div>
-    </div>
+    </Section>
   );
 }

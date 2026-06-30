@@ -1,14 +1,18 @@
-import type { Metadata } from "next";
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { PatenPortalLogin } from "@/components/paten/PatenPortalLogin";
+import { PatenUpdatesLanding } from "@/components/paten/PatenUpdatesLanding";
+import { pagePhotos } from "@/data/pagePhotos";
 import { getAuthenticatedPaten } from "@/lib/patenAuth";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Paten-Bereich",
-  description: "Persönlicher Zugang zu Updates deines Patentiers.",
-  robots: { index: false, follow: false },
-};
+export const metadata = createMetadata({
+  title: "Paten-Updates",
+  description:
+    "Exklusiver Zugang für Paten: Fotos und Neuigkeiten von deinem Waschbär. Noch kein Pate? Entdecke unsere Patenschaften bei Wilde Heimat.",
+  path: "/paten",
+  keywords: ["Paten-Updates", "Waschbär Patenschaft", "Paten-Bereich"],
+  ogImage: pagePhotos.intro.src,
+  ogImageAlt: "Paten-Bereich bei Wilde Heimat",
+});
 
 export default async function PatenLoginPage() {
   const pate = await getAuthenticatedPaten();
@@ -16,13 +20,5 @@ export default async function PatenLoginPage() {
     redirect("/paten/portal");
   }
 
-  return (
-    <div className="py-12 sm:py-16 px-4">
-      <div className="mx-auto max-w-2xl">
-        <Suspense fallback={<p className="text-center text-sm text-muted">Lade …</p>}>
-          <PatenPortalLogin />
-        </Suspense>
-      </div>
-    </div>
-  );
+  return <PatenUpdatesLanding />;
 }

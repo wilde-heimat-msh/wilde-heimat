@@ -6,7 +6,7 @@ import type { PatenschaftUpdate } from "@/types/patenschaftPortal";
 
 export function PatenschaftUpdateCard({ update }: { update: PatenschaftUpdate }) {
   return (
-    <article className="rounded-2xl border border-border bg-background/90 shadow-soft overflow-hidden">
+    <article className="overflow-hidden rounded-2xl border border-border bg-background/90 shadow-soft transition-shadow duration-300 hover:shadow-soft-hover">
       {update.imageUrls.length > 0 ? (
         <div className="grid gap-1 sm:grid-cols-2">
           {update.imageUrls.map((url, index) => (

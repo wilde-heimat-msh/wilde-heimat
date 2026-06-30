@@ -64,7 +64,13 @@ export function PatenDashboard() {
   }
 
   if (loading) {
-    return <p className="text-sm text-muted text-center py-12">Lade deinen Paten-Bereich …</p>;
+    return (
+      <div className="space-y-6 animate-pulse" aria-busy="true" aria-label="Paten-Bereich wird geladen">
+        <div className="h-8 w-48 rounded bg-muted-light/60" />
+        <div className="h-28 rounded-2xl bg-muted-light/40" />
+        <div className="h-64 rounded-2xl bg-muted-light/50" />
+      </div>
+    );
   }
 
   if (error || !feed) {
@@ -79,15 +85,21 @@ export function PatenDashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-sm text-muted">Willkommen zurück</p>
-          <h1 className="text-2xl font-medium text-forest">{feed.pate.name}</h1>
-          <p className="mt-1 text-sm text-muted">
-            Patenschaft · {feed.waschbaer?.name ?? "dein Patentier"}
-          </p>
+      <div className="relative overflow-hidden rounded-2xl border border-forest/15 bg-gradient-to-br from-sage/10 via-background to-cream/80 p-5 sm:p-6 shadow-soft">
+        <div
+          className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-sage/10 blur-2xl"
+          aria-hidden
+        />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-wide text-muted">Willkommen zurück</p>
+            <h1 className="mt-1 text-2xl font-medium text-forest sm:text-3xl">{feed.pate.name}</h1>
+            <p className="mt-2 text-sm text-muted">
+              Patenschaft · {feed.waschbaer?.name ?? "dein Patentier"} · Stufe {feed.pate.stufeName}
+            </p>
+          </div>
+          <PatenLogoutButton onLogout={handleLogout} />
         </div>
-        <PatenLogoutButton onLogout={handleLogout} />
       </div>
 
       <PatenPortalNav />
@@ -127,9 +139,22 @@ export function PatenDashboard() {
         </div>
 
         {feed.updates.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border p-8 text-center">
-            <p className="text-sm text-muted">
-              Noch keine Updates – schau bald wieder vorbei. Wir melden uns, sobald es Neues gibt.
+          <div className="rounded-2xl border border-dashed border-border bg-background/60 px-6 py-10 text-center">
+            <div
+              className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sage/15 text-forest"
+              aria-hidden
+            >
+              <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" stroke="currentColor" strokeWidth="1.5">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                />
+              </svg>
+            </div>
+            <p className="mt-4 text-base font-medium text-forest">Noch keine Updates</p>
+            <p className="mt-2 text-sm text-muted leading-relaxed">
+              Schau bald wieder vorbei – wir melden uns, sobald es Neues von deinem Patentier gibt.
             </p>
           </div>
         ) : (
