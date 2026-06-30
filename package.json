@@ -2,6 +2,7 @@
   "name": "wilde-heimat",
   "version": "0.1.0",
   "private": true,
+  "author": "Wilde Heimat <wilde.heimat.msh@gmail.com>",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
