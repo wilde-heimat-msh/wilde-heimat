@@ -24,7 +24,7 @@ export function Marquee({
   return (
     <div className={`overflow-hidden ${className}`} aria-hidden>
       <div
-        className={`flex w-max ${speedMap[speed]} ${reverse ? "[animation-direction:reverse]" : ""}`}
+        className={`flex w-max motion-marquee-track ${speedMap[speed]} ${reverse ? "[animation-direction:reverse]" : ""}`}
       >
         <div className="flex shrink-0 items-center gap-8 pr-8">{children}</div>
         <div className="flex shrink-0 items-center gap-8 pr-8" aria-hidden>

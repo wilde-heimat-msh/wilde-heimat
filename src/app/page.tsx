@@ -7,7 +7,6 @@ import { WaschbaerCard } from "@/components/WaschbaerCard";
 import { SocialFeed } from "@/components/SocialFeed";
 import { TassenShowcase } from "@/components/TassenShowcase";
 import { HeroSection } from "@/components/motion/HeroSection";
-import { AnimatedBackground } from "@/components/motion/AnimatedBackground";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/FadeIn";
 import { Marquee, MarqueeItem } from "@/components/motion/Marquee";
 import { ratgeberArtikel } from "@/data/ratgeber";
@@ -38,15 +37,12 @@ export default function HomePage() {
       <HeroSection />
 
       {/* Marquee */}
-      <div className="relative border-y border-sand/60 py-5 bg-sand-light/50 overflow-hidden">
-        <AnimatedBackground variant="soft" />
-        <div className="relative">
-          <Marquee speed="slow">
+      <div className="relative overflow-hidden border-y border-sand/60 bg-sand-light/50 py-5">
+        <Marquee speed="slow">
             {marqueeItems.map((item) => (
               <MarqueeItem key={item}>{item}</MarqueeItem>
             ))}
           </Marquee>
-        </div>
       </div>
 
       {/* Stats */}

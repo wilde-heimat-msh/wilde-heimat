@@ -25,7 +25,7 @@ export function PatenschaftTierCards({
       {patenschaftsStufen.map((stufe) => (
         <StaggerItem key={stufe.id}>
           <div
-            className={`relative overflow-hidden rounded-2xl border text-center h-full transition-all duration-300 hover:-translate-y-1 ${
+            className={`relative overflow-hidden rounded-2xl border text-center h-full hover-lift ${
               isDark
                 ? "border-background/25 bg-background/10 hover:bg-background/15 shadow-sm hover:shadow-md backdrop-blur-md"
                 : "border-border bg-background shadow-soft hover:shadow-soft-hover hover:border-sage/30"

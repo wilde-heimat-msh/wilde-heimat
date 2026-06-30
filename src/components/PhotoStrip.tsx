@@ -22,7 +22,7 @@ export function PhotoStrip({ count = 6 }: { count?: number }) {
               src={waschbaerProfilPlatzhalter}
               alt={`${w.name} – Foto folgt`}
               fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105 opacity-90"
+              className="group-hover-zoom object-cover opacity-90"
               sizes="180px"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />

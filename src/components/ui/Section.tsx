@@ -49,7 +49,7 @@ export function Section({
             src={backgroundPhoto.src}
             alt={backgroundPhoto.alt}
             fill
-            className="object-cover scale-105"
+            className="object-cover md:scale-105"
             style={{ objectPosition: backgroundPhoto.objectPosition ?? "center center" }}
             sizes="100vw"
           />
@@ -68,7 +68,6 @@ export function Section({
       )}
       {dark && (hasPhoto ? <AnimatedBackground variant="hero-photo" /> : <AnimatedBackground variant="page" />)}
       {soft && <AnimatedBackground variant="soft" />}
-      {isLight && <AnimatedBackground variant="ambient" />}
       {photoCredit && (
         <div className="absolute bottom-3 right-4 sm:right-6 lg:right-8 z-10">
           <PhotoCredit credit={photoCredit} variant="hero" />

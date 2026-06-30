@@ -6,18 +6,30 @@ export function ScrollHeader({ children }: { children: React.ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    let frame = 0;
+
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        setScrolled(window.scrollY > 20);
+      });
+    };
+
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b transition-all duration-300 ${
+      className={`sticky top-0 z-50 border-b transition-[background-color,box-shadow,border-color,backdrop-filter] duration-300 ${
         scrolled
-          ? "bg-background/90 backdrop-blur-md border-border shadow-soft"
-          : "bg-background/95 backdrop-blur-sm border-border/60"
+          ? "border-border bg-background/90 shadow-soft backdrop-blur-md"
+          : "border-border/60 bg-background/95 backdrop-blur-sm"
       }`}
     >
       {children}

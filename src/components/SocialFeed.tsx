@@ -5,12 +5,10 @@ import { waschbaeren } from "@/data/waschbaeren";
 import { SocialLinks } from "./SocialLinks";
 import { TikTokPreview } from "./TikTokPreview";
 import { FadeIn, Stagger, StaggerItem } from "./motion/FadeIn";
-import { AnimatedBackground } from "./motion/AnimatedBackground";
 
 export function SocialFeed() {
   return (
-    <section className="relative py-16 md:py-24 bg-sand-light/70 overflow-hidden">
-      <AnimatedBackground variant="soft" />
+    <section className="relative overflow-hidden bg-sand-light/70 py-16 md:py-24">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <FadeIn className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="text-3xl md:text-4xl font-light tracking-tight">
@@ -28,7 +26,7 @@ export function SocialFeed() {
               href={siteConfig.instagram}
               target="_blank"
               rel="noopener noreferrer"
-              className="group block rounded-2xl border border-border bg-background p-8 shadow-soft hover:shadow-soft-hover hover:border-foreground/20 hover:-translate-y-1 transition-all duration-300"
+              className="group hover-lift block rounded-2xl border border-border bg-background p-8 shadow-soft hover:border-foreground/20 hover:shadow-soft-hover"
             >
               <div className="flex items-center gap-4 mb-6">
                 <div className="h-12 w-12 rounded-xl bg-foreground text-background flex items-center justify-center shadow-sm">
@@ -61,7 +59,7 @@ export function SocialFeed() {
           </StaggerItem>
 
           <StaggerItem>
-            <div className="group rounded-2xl border border-border bg-background p-8 shadow-soft hover:shadow-soft-hover hover:border-foreground/20 hover:-translate-y-1 transition-all duration-300">
+            <div className="group hover-lift rounded-2xl border border-border bg-background p-8 shadow-soft hover:border-foreground/20 hover:shadow-soft-hover">
               <a
                 href={siteConfig.tiktok}
                 target="_blank"
