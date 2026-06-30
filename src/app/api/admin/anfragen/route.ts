@@ -4,6 +4,12 @@ import {
   deleteFormSubmission,
   listFormSubmissions,
 } from "@/lib/supabase/formSubmissions";
+import {
+  getFormMailFrom,
+  getFormMailTo,
+  isFormMailConfigured,
+  isFormMailDomainVerified,
+} from "@/lib/formMail";
 import { requireAdmin } from "@/lib/requireAdmin";
 
 export async function GET() {
@@ -19,7 +25,15 @@ export async function GET() {
 
   try {
     const submissions = await listFormSubmissions();
-    return NextResponse.json({ submissions });
+    return NextResponse.json({
+      submissions,
+      mail: {
+        configured: isFormMailConfigured(),
+        domainVerified: isFormMailDomainVerified(),
+        to: getFormMailTo(),
+        from: getFormMailFrom(),
+      },
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Anfragen konnten nicht geladen werden.";
     return NextResponse.json({ error: message }, { status: 500 });

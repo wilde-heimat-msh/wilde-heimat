@@ -288,8 +288,10 @@ export async function POST(request: Request) {
       const result = await sendFormNotification({
         subject: payload.subject,
         text: payload.text,
+        fields: payload.fields,
         replyTo: payload.replyTo,
-        attachments: payload.attachment && !attachmentUrl ? [payload.attachment] : [],
+        attachmentUrl,
+        attachments: payload.attachment ? [payload.attachment] : [],
       });
 
       if (!result.ok && !isSupabaseConfigured()) {

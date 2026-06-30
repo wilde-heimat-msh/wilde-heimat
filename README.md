@@ -85,5 +85,5 @@ Wenn `wilde-heimat-msh.de` registriert ist:
 
 Formulare, Paten-Daten und Fotos laufen über **Supabase** (PostgreSQL + Storage). Einrichtung: `supabase/README.md`.
 
-Optional: **Resend** für E-Mail-Benachrichtigungen bei neuen Formularen.
+Optional: **Resend** für E-Mail-Benachrichtigungen an `kontakt@wilde-heimat-msh.de` – Anleitung: [`docs/email-setup.md`](docs/email-setup.md).
 

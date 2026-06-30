@@ -1,12 +1,25 @@
 const rtf = new Intl.RelativeTimeFormat("de", { numeric: "always" });
 
+const BERLIN_TZ = "Europe/Berlin";
+
 const dateFormatter = new Intl.DateTimeFormat("de-DE", {
+  timeZone: BERLIN_TZ,
   day: "numeric",
   month: "long",
   year: "numeric",
 });
 
+const dateTimeFormatter = new Intl.DateTimeFormat("de-DE", {
+  timeZone: BERLIN_TZ,
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
 const monthFormatter = new Intl.DateTimeFormat("de-DE", {
+  timeZone: BERLIN_TZ,
   month: "long",
   year: "numeric",
 });
@@ -14,7 +27,14 @@ const monthFormatter = new Intl.DateTimeFormat("de-DE", {
 type DatePrecision = "day" | "month";
 
 function toDate(value: string): Date {
-  return new Date(value.includes("T") ? value : `${value}T12:00:00`);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return new Date(`${value}T12:00:00`);
+  }
+  return new Date(value);
+}
+
+function isValidDate(date: Date): boolean {
+  return !Number.isNaN(date.getTime());
 }
 
 /** Relative Zeit auf Deutsch, z. B. „vor 3 Monaten“ */
@@ -53,5 +73,22 @@ export function formatAbsoluteDateDe(
   precision: DatePrecision = "day"
 ): string {
   const date = toDate(dateInput);
+  if (!isValidDate(date)) return dateInput;
   return precision === "month" ? monthFormatter.format(date) : dateFormatter.format(date);
+}
+
+/** Datum + Uhrzeit für Deutschland (Europe/Berlin), z. B. „30.06.2026, 14:35 Uhr“ */
+export function formatDateTimeDe(dateInput: string): string {
+  const date = toDate(dateInput);
+  if (!isValidDate(date)) return dateInput;
+  return `${dateTimeFormatter.format(date)} Uhr`;
+}
+
+/** Formular-Datum (yyyy-mm-dd) → 30.06.2026 */
+export function formatFormDateDe(dateInput: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+    const [year, month, day] = dateInput.split("-");
+    return `${day}.${month}.${year}`;
+  }
+  return formatAbsoluteDateDe(dateInput);
 }

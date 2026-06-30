@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { siteConfig } from "@/data/site";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 export type FormAttachment = {
   filename: string;
@@ -11,33 +12,99 @@ export function isFormMailConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY?.trim());
 }
 
+export function isFormMailDomainVerified(): boolean {
+  return process.env.FORM_MAIL_DOMAIN_VERIFIED === "true";
+}
+
+export function getFormMailTo(): string {
+  return process.env.FORM_MAIL_TO?.trim() || siteConfig.email;
+}
+
+export function getFormMailFrom(): string {
+  const override = process.env.FORM_MAIL_FROM?.trim();
+  if (override) return override;
+
+  if (isFormMailDomainVerified()) {
+    return `Wilde Heimat <${siteConfig.email}>`;
+  }
+
+  return "Wilde Heimat <onboarding@resend.dev>";
+}
+
+export function getAdminAnfragenUrl(): string {
+  return `${getSiteUrl()}/admin/anfragen`;
+}
+
 function getResendClient(): Resend | null {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) return null;
   return new Resend(apiKey);
 }
 
-function getFromAddress(): string {
-  return (
-    process.env.FORM_MAIL_FROM?.trim() ||
-    "Wilde Heimat <onboarding@resend.dev>"
-  );
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
-function getToAddress(): string {
-  return process.env.FORM_MAIL_TO?.trim() || siteConfig.email;
+function buildHtmlBody({
+  fields,
+  attachmentUrl,
+  adminUrl,
+}: {
+  fields: Record<string, string | undefined>;
+  attachmentUrl?: string;
+  adminUrl: string;
+}): string {
+  const rows = Object.entries(fields)
+    .filter(([, value]) => value?.trim())
+    .map(
+      ([key, value]) =>
+        `<tr><td style="padding:6px 12px 6px 0;font-weight:600;vertical-align:top;color:#374151;">${escapeHtml(key)}</td><td style="padding:6px 0;color:#111827;white-space:pre-wrap;">${escapeHtml(value!.trim())}</td></tr>`
+    )
+    .join("");
+
+  const imageBlock = attachmentUrl
+    ? `<p style="margin:16px 0 8px;"><strong>Foto:</strong><br><a href="${escapeHtml(attachmentUrl)}">${escapeHtml(attachmentUrl)}</a></p>
+       <p><img src="${escapeHtml(attachmentUrl)}" alt="Fundmeldung Foto" style="max-width:100%;height:auto;border-radius:8px;border:1px solid #e5e7eb;" /></p>`
+    : "";
+
+  return `<!DOCTYPE html>
+<html lang="de">
+<body style="font-family:system-ui,-apple-system,sans-serif;line-height:1.5;color:#111827;max-width:640px;">
+  <p style="margin:0 0 16px;">Neue Anfrage über die Website <strong>Wilde Heimat</strong>:</p>
+  <table style="border-collapse:collapse;width:100%;">${rows}</table>
+  ${imageBlock}
+  <p style="margin:24px 0 0;padding-top:16px;border-top:1px solid #e5e7eb;">
+    <a href="${escapeHtml(adminUrl)}" style="color:#2d5016;font-weight:600;">Im Admin-Bereich ansehen</a>
+  </p>
+</body>
+</html>`;
+}
+
+export function formatFormFields(fields: Record<string, string | undefined>): string {
+  return Object.entries(fields)
+    .filter(([, value]) => value?.trim())
+    .map(([key, value]) => `${key}: ${value?.trim()}`)
+    .join("\n");
 }
 
 export async function sendFormNotification({
   subject,
   text,
+  fields,
   replyTo,
   attachments = [],
+  attachmentUrl,
 }: {
   subject: string;
   text: string;
+  fields?: Record<string, string | undefined>;
   replyTo?: string;
   attachments?: FormAttachment[];
+  attachmentUrl?: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const resend = getResendClient();
   if (!resend) {
@@ -48,12 +115,21 @@ export async function sendFormNotification({
     };
   }
 
+  const adminUrl = getAdminAnfragenUrl();
+  const textWithFooter = `${text}\n\n───\nIm Admin ansehen: ${adminUrl}`;
+  const html = buildHtmlBody({
+    fields: fields ?? {},
+    attachmentUrl,
+    adminUrl,
+  });
+
   const { error } = await resend.emails.send({
-    from: getFromAddress(),
-    to: [getToAddress()],
+    from: getFormMailFrom(),
+    to: [getFormMailTo()],
     replyTo: replyTo || undefined,
     subject,
-    text,
+    text: textWithFooter,
+    html,
     attachments: attachments.map((file) => ({
       filename: file.filename,
       content: file.content,
@@ -66,11 +142,4 @@ export async function sendFormNotification({
   }
 
   return { ok: true };
-}
-
-export function formatFormFields(fields: Record<string, string | undefined>): string {
-  return Object.entries(fields)
-    .filter(([, value]) => value?.trim())
-    .map(([key, value]) => `${key}: ${value?.trim()}`)
-    .join("\n");
 }
