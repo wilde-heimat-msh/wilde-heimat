@@ -6,7 +6,7 @@ import type { NavItem } from "@/data/navigation";
 
 type NavDropdownProps = {
   label: string;
-  children: { label: string; href: string }[];
+  children: { label: string; href: string; description?: string }[];
 };
 
 function NavDropdown({ label, children }: NavDropdownProps) {
@@ -44,15 +44,18 @@ function NavDropdown({ label, children }: NavDropdownProps) {
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-2 min-w-[11rem] bg-background border border-border shadow-soft-hover rounded-xl py-1.5 z-50 overflow-hidden">
+        <div className="absolute top-full right-0 mt-2 min-w-[14rem] bg-background border border-border shadow-soft-hover rounded-xl py-1.5 z-50 overflow-hidden">
           {children.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               onClick={() => setOpen(false)}
-              className="block px-4 py-2.5 text-sm text-muted hover:text-foreground hover:bg-muted-light/60 transition-colors rounded-lg mx-1"
+              className="block px-4 py-2.5 hover:bg-muted-light/60 transition-colors rounded-lg mx-1"
             >
-              {item.label}
+              <span className="block text-sm text-foreground">{item.label}</span>
+              {item.description ? (
+                <span className="block text-xs text-muted mt-0.5">{item.description}</span>
+              ) : null}
             </Link>
           ))}
         </div>

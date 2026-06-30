@@ -18,9 +18,11 @@ export default async function PatenLoginPage() {
 
   return (
     <div className="py-12 sm:py-16 px-4">
-      <Suspense fallback={<p className="text-center text-sm text-muted">Lade …</p>}>
-        <PatenPortalLogin />
-      </Suspense>
+      <div className="mx-auto max-w-2xl">
+        <Suspense fallback={<p className="text-center text-sm text-muted">Lade …</p>}>
+          <PatenPortalLogin />
+        </Suspense>
+      </div>
     </div>
   );
 }

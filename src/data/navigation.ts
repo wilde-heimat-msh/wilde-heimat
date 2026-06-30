@@ -1,6 +1,7 @@
 export type NavLink = {
   label: string;
   href: string;
+  description?: string;
 };
 
 export type NavItem =
@@ -19,6 +20,22 @@ export const desktopNavigation: NavItem[] = [
   { type: "link", label: "Ratgeber", href: "/ratgeber" },
   { type: "link", label: "Hilfe", href: "/hilfe" },
   { type: "link", label: "Kontakt", href: "/kontakt" },
+  {
+    type: "group",
+    label: "Mein Bereich",
+    children: [
+      {
+        label: "Paten-Updates",
+        href: "/paten",
+        description: "Neuigkeiten & Fotos deines Patentiers",
+      },
+      {
+        label: "Verwaltung",
+        href: "/admin",
+        description: "Paten, Updates & Urkunden (Team)",
+      },
+    ],
+  },
 ];
 
 export const mobileNavigationGroups = [
@@ -45,6 +62,13 @@ export const mobileNavigationGroups = [
       { label: "Hilfe & Vermittlung", href: "/hilfe" },
     ],
   },
+  {
+    title: "Paten & Team",
+    items: [
+      { label: "Paten-Updates", href: "/paten" },
+      { label: "Verwaltung", href: "/admin" },
+    ],
+  },
 ] as const;
 
 export const footerNavigation = {
@@ -64,3 +88,15 @@ export const footerNavigation = {
     { label: "Datenschutz", href: "/datenschutz" },
   ],
 };
+
+export const patenPortalNav = [
+  { href: "/paten/portal", label: "Meine Updates" },
+  { href: "/paten", label: "Zugangscode" },
+] as const;
+
+export const adminPortalNav = [
+  { href: "/admin", label: "Übersicht" },
+  { href: "/admin/paten", label: "Paten" },
+  { href: "/admin/updates", label: "Updates" },
+  { href: "/admin/urkunden", label: "Urkunden" },
+] as const;

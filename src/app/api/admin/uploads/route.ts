@@ -1,7 +1,8 @@
 import { randomUUID } from "crypto";
-import { writeFile, mkdir } from "fs/promises";
+import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { NextResponse } from "next/server";
+import { isSupabaseStorageEnabled, uploadImage } from "@/lib/supabase/storage";
 import { requireAdmin } from "@/lib/requireAdmin";
 
 const MAX_BYTES = 8 * 1024 * 1024;
@@ -27,6 +28,14 @@ export async function POST(request: Request) {
 
   if (file.size > MAX_BYTES) {
     return NextResponse.json({ error: "Datei ist zu groß (max. 8 MB)." }, { status: 400 });
+  }
+
+  if (isSupabaseStorageEnabled()) {
+    const result = await uploadImage("paten-updates", file);
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+    return NextResponse.json({ url: result.url });
   }
 
   const ext = file.type.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";

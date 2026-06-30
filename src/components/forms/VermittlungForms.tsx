@@ -3,16 +3,31 @@
 import { useState, type FormEvent } from "react";
 import {
   FormField,
+  FormHoneypot,
   FormNotice,
   SubmitButton,
   TextArea,
 } from "./FormFields";
+import { submitPublicForm } from "@/lib/submitPublicForm";
 
 export function PflegestelleForm() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const result = await submitPublicForm("pflegestelle", e.currentTarget);
+    setLoading(false);
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
     setSubmitted(true);
   }
 
@@ -28,7 +43,8 @@ export function PflegestelleForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="relative space-y-6">
+      <FormHoneypot />
       <FormField label="Name" name="name" required />
       <FormField label="Anschrift" name="anschrift" required />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -47,17 +63,35 @@ export function PflegestelleForm() {
         required
         hint="Wie viele Tiere kannst du aufnehmen? Welche Ausstattung ist vorhanden?"
       />
+      {error ? (
+        <p className="text-sm text-red-700" role="alert">
+          {error}
+        </p>
+      ) : null}
       <FormNotice />
-      <SubmitButton label="Als Pflegestelle melden" />
+      <SubmitButton label={loading ? "Wird gesendet …" : "Als Pflegestelle melden"} disabled={loading} />
     </form>
   );
 }
 
 export function WaschbaerGefundenForm() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const result = await submitPublicForm("fund", e.currentTarget);
+    setLoading(false);
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
     setSubmitted(true);
   }
 
@@ -75,7 +109,8 @@ export function WaschbaerGefundenForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="relative space-y-6">
+      <FormHoneypot />
       <FormField label="Fundort" name="fundort" required />
       <FormField label="Datum des Fundes" name="datum" type="date" required />
       <div>
@@ -89,6 +124,7 @@ export function WaschbaerGefundenForm() {
           accept="image/*"
           className="w-full min-w-0 text-sm text-muted file:mr-4 file:min-h-11 file:py-2 file:px-4 file:border file:border-border file:bg-muted-light file:text-foreground hover:file:bg-border overflow-hidden"
         />
+        <p className="mt-1 text-xs text-muted">Optional – JPG, PNG oder WebP, max. 8 MB</p>
       </div>
       <TextArea
         label="Beschreibung"
@@ -101,17 +137,35 @@ export function WaschbaerGefundenForm() {
         <FormField label="Telefon" name="telefon" type="tel" required />
       </div>
       <FormField label="E-Mail" name="email" type="email" required />
+      {error ? (
+        <p className="text-sm text-red-700" role="alert">
+          {error}
+        </p>
+      ) : null}
       <FormNotice />
-      <SubmitButton label="Fund melden" />
+      <SubmitButton label={loading ? "Wird gesendet …" : "Fund melden"} disabled={loading} />
     </form>
   );
 }
 
 export function VermittlungsForm() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const result = await submitPublicForm("vermittlung", e.currentTarget);
+    setLoading(false);
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
     setSubmitted(true);
   }
 
@@ -127,7 +181,8 @@ export function VermittlungsForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="relative space-y-6">
+      <FormHoneypot />
       <FormField label="Anliegen" name="anliegen" required />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <FormField label="Name" name="name" required />
@@ -135,8 +190,13 @@ export function VermittlungsForm() {
       </div>
       <FormField label="Telefon" name="telefon" type="tel" />
       <TextArea label="Beschreibung" name="beschreibung" required rows={6} />
+      {error ? (
+        <p className="text-sm text-red-700" role="alert">
+          {error}
+        </p>
+      ) : null}
       <FormNotice />
-      <SubmitButton label="Anfrage senden" />
+      <SubmitButton label={loading ? "Wird gesendet …" : "Anfrage senden"} disabled={loading} />
     </form>
   );
 }

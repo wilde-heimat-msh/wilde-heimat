@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { PatenschaftUpdateCard } from "@/components/paten/PatenschaftUpdateCard";
+import { PatenLogoutButton, PatenPortalNav } from "@/components/paten/PatenPortalNav";
 import { patenschaftUrkundeStufeStyles } from "@/data/patenschaften";
 import type { PatenschaftStufeId } from "@/data/patenschaften";
 import type { PatenschaftUpdate } from "@/types/patenschaftPortal";
@@ -86,14 +87,10 @@ export function PatenDashboard() {
             Patenschaft · {feed.waschbaer?.name ?? "dein Patentier"}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="min-h-11 shrink-0 px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted-light/60 transition-colors"
-        >
-          Abmelden
-        </button>
+        <PatenLogoutButton onLogout={handleLogout} />
       </div>
+
+      <PatenPortalNav />
 
       {feed.waschbaer ? (
         <section

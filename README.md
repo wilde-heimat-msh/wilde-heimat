@@ -65,7 +65,9 @@ git push origin main
 3. **Root Directory:** `wilde-heimat` (falls das Repo den Ordner enthält) oder Projektroot
 4. Framework: **Next.js** (wird automatisch erkannt)
 5. **Environment Variables** setzen:
-   - `ADMIN_URKUNDEN_PASSWORD` = sicheres Passwort (für `/admin/urkunden`)
+   - `ADMIN_URKUNDEN_PASSWORD` = sicheres Passwort
+   - `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (siehe `supabase/README.md`)
+   - Optional: `RESEND_API_KEY` für E-Mail bei neuen Formularen
 6. **Deploy**
 
 Nach dem Deploy ist die Seite unter `https://<projekt>.vercel.app` erreichbar.
@@ -79,7 +81,9 @@ Wenn `wilde-heimat-msh.de` registriert ist:
 3. In Vercel setzen: `NEXT_PUBLIC_SITE_URL=https://wilde-heimat-msh.de`
 4. Neu deployen
 
-### Hinweis Paten-Portal & Admin
+### Backend (Supabase)
 
-Auf Vercel sind Datei-Uploads und Patendaten **nicht dauerhaft** gespeichert (serverless). Öffentliche Seiten, Ratgeber, Patenschaften und Urkunden-Druck funktionieren. Paten-Verwaltung mit persistenten Daten braucht später einen VPS oder Vercel Blob/KV.
+Formulare, Paten-Daten und Fotos laufen über **Supabase** (PostgreSQL + Storage). Einrichtung: `supabase/README.md`.
+
+Optional: **Resend** für E-Mail-Benachrichtigungen bei neuen Formularen.
 

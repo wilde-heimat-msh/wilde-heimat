@@ -1,6 +1,9 @@
 import { randomUUID } from "crypto";
-import { mkdir, readFile, writeFile } from "fs/promises";
+import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { isSupabaseConfigured } from "@/lib/supabase/admin";
+import * as supabaseStore from "@/lib/supabase/patenschaftStore";
+import { loadPatenschaftStore, savePatenschaftStore } from "@/lib/patenschaftStorage";
 import type {
   PatenschaftPate,
   PatenschaftStore,
@@ -8,42 +11,29 @@ import type {
 } from "@/types/patenschaftPortal";
 import { normalizeAccessCode, stufeMeetsMinimum } from "@/lib/patenschaftTier";
 
-const DATA_DIR = path.join(process.cwd(), "data/patenschaft");
-const STORE_FILE = path.join(DATA_DIR, "store.json");
-
-const EMPTY_STORE: PatenschaftStore = { paten: [], updates: [] };
-
-async function ensureStore(): Promise<void> {
-  await mkdir(DATA_DIR, { recursive: true });
-  await mkdir(path.join(process.cwd(), "public/paten-updates"), { recursive: true });
-
-  try {
-    await readFile(STORE_FILE, "utf8");
-  } catch {
-    await writeFile(STORE_FILE, JSON.stringify(EMPTY_STORE, null, 2), "utf8");
-  }
-}
-
 async function readStore(): Promise<PatenschaftStore> {
-  await ensureStore();
-  const raw = await readFile(STORE_FILE, "utf8");
-  const parsed = JSON.parse(raw) as PatenschaftStore;
-  return {
-    paten: parsed.paten ?? [],
-    updates: parsed.updates ?? [],
-  };
+  return loadPatenschaftStore();
 }
 
 async function writeStore(store: PatenschaftStore): Promise<void> {
-  await ensureStore();
-  await writeFile(STORE_FILE, JSON.stringify(store, null, 2), "utf8");
+  await savePatenschaftStore(store);
 }
 
 export async function getPatenschaftStore(): Promise<PatenschaftStore> {
+  if (isSupabaseConfigured()) {
+    const [paten, updates] = await Promise.all([
+      supabaseStore.supabaseListPaten(),
+      supabaseStore.supabaseListUpdates(),
+    ]);
+    return { paten, updates };
+  }
   return readStore();
 }
 
 export async function getPatenByAccessCode(code: string): Promise<PatenschaftPate | null> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseGetPatenByAccessCode(code);
+  }
   const normalized = normalizeAccessCode(code);
   const store = await readStore();
   return (
@@ -54,16 +44,25 @@ export async function getPatenByAccessCode(code: string): Promise<PatenschaftPat
 }
 
 export async function getPatenById(id: string): Promise<PatenschaftPate | null> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseGetPatenById(id);
+  }
   const store = await readStore();
   return store.paten.find((p) => p.id === id) ?? null;
 }
 
 export async function listPaten(): Promise<PatenschaftPate[]> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseListPaten();
+  }
   const store = await readStore();
   return [...store.paten].sort((a, b) => a.name.localeCompare(b.name, "de"));
 }
 
 export async function listUpdates(): Promise<PatenschaftUpdate[]> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseListUpdates();
+  }
   const store = await readStore();
   return [...store.updates].sort(
     (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
@@ -71,6 +70,9 @@ export async function listUpdates(): Promise<PatenschaftUpdate[]> {
 }
 
 export async function isAccessCodeTaken(code: string, excludeId?: string): Promise<boolean> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseIsAccessCodeTaken(code, excludeId);
+  }
   const normalized = normalizeAccessCode(code);
   const store = await readStore();
   return store.paten.some(
@@ -82,6 +84,9 @@ export async function isAccessCodeTaken(code: string, excludeId?: string): Promi
 export async function createPaten(
   input: Omit<PatenschaftPate, "id" | "createdAt" | "updatedAt">
 ): Promise<PatenschaftPate> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseCreatePaten(input);
+  }
   const store = await readStore();
   const now = new Date().toISOString();
   const pate: PatenschaftPate = {
@@ -100,6 +105,9 @@ export async function updatePaten(
   id: string,
   input: Partial<Omit<PatenschaftPate, "id" | "createdAt">>
 ): Promise<PatenschaftPate | null> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseUpdatePaten(id, input);
+  }
   const store = await readStore();
   const index = store.paten.findIndex((p) => p.id === id);
   if (index === -1) return null;
@@ -119,6 +127,9 @@ export async function updatePaten(
 }
 
 export async function deletePaten(id: string): Promise<boolean> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseDeletePaten(id);
+  }
   const store = await readStore();
   const before = store.paten.length;
   store.paten = store.paten.filter((p) => p.id !== id);
@@ -130,6 +141,9 @@ export async function deletePaten(id: string): Promise<boolean> {
 export async function createUpdate(
   input: Omit<PatenschaftUpdate, "id" | "createdAt" | "updatedAt">
 ): Promise<PatenschaftUpdate> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseCreateUpdate(input);
+  }
   const store = await readStore();
   const now = new Date().toISOString();
   const update: PatenschaftUpdate = {
@@ -147,6 +161,9 @@ export async function updatePatenschaftUpdate(
   id: string,
   input: Partial<Omit<PatenschaftUpdate, "id" | "createdAt">>
 ): Promise<PatenschaftUpdate | null> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseUpdatePatenschaftUpdate(id, input);
+  }
   const store = await readStore();
   const index = store.updates.findIndex((u) => u.id === id);
   if (index === -1) return null;
@@ -163,6 +180,9 @@ export async function updatePatenschaftUpdate(
 }
 
 export async function deleteUpdate(id: string): Promise<boolean> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseDeleteUpdate(id);
+  }
   const store = await readStore();
   const before = store.updates.length;
   store.updates = store.updates.filter((u) => u.id !== id);

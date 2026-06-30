@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { PatenPortalNav } from "@/components/paten/PatenPortalNav";
 
 export function PatenPortalLogin() {
   const router = useRouter();
@@ -41,12 +42,15 @@ export function PatenPortalLogin() {
   }
 
   return (
-    <div className="mx-auto max-w-md">
+    <div className="mx-auto max-w-md space-y-6">
+      <PatenPortalNav />
+
       <div className="rounded-2xl border border-border bg-background/90 p-6 sm:p-8 shadow-soft">
-        <h1 className="text-xl font-medium text-forest">Paten-Bereich</h1>
+        <h1 className="text-xl font-medium text-forest">Paten-Updates</h1>
         <p className="mt-2 text-sm text-muted leading-relaxed">
           Hier siehst du Neuigkeiten und Fotos von deinem Patentier. Gib den persönlichen
-          Zugangscode ein, den du von uns erhalten hast.
+          Zugangscode ein, den du von uns erhalten hast – oder nutze oben im Menü{" "}
+          <strong className="text-foreground">Mein Bereich → Paten-Updates</strong>.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">

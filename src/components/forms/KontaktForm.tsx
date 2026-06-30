@@ -3,16 +3,31 @@
 import { useState, type FormEvent } from "react";
 import {
   FormField,
+  FormHoneypot,
   FormNotice,
   SubmitButton,
   TextArea,
 } from "./FormFields";
+import { submitPublicForm } from "@/lib/submitPublicForm";
 
 export function KontaktForm() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const result = await submitPublicForm("kontakt", e.currentTarget);
+    setLoading(false);
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
     setSubmitted(true);
   }
 
@@ -26,15 +41,21 @@ export function KontaktForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="relative space-y-6">
+      <FormHoneypot />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <FormField label="Name" name="name" required />
         <FormField label="E-Mail" name="email" type="email" required />
       </div>
       <FormField label="Betreff" name="betreff" />
       <TextArea label="Nachricht" name="nachricht" required rows={6} />
+      {error ? (
+        <p className="text-sm text-red-700" role="alert">
+          {error}
+        </p>
+      ) : null}
       <FormNotice />
-      <SubmitButton label="Nachricht senden" />
+      <SubmitButton label={loading ? "Wird gesendet …" : "Nachricht senden"} disabled={loading} />
     </form>
   );
 }

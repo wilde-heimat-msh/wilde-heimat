@@ -130,17 +130,33 @@ export function FormNotice() {
       <a href="/datenschutz#formulare" className="underline hover:no-underline">
         Datenschutzerklärung
       </a>{" "}
-      zu. Die Übertragung erfolgt verschlüsselt (SSL/TLS). Es werden keine Tracking-Cookies
-      eingesetzt.
+      zu. Die Übertragung erfolgt verschlüsselt (SSL/TLS) an Wilde Heimat.
     </p>
   );
 }
 
-export function SubmitButton({ label = "Absenden" }: { label?: string }) {
+/** Unsichtbares Spam-Feld – nicht ausfüllen */
+export function FormHoneypot() {
+  return (
+    <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden>
+      <label htmlFor="website">Website</label>
+      <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
+    </div>
+  );
+}
+
+export function SubmitButton({
+  label = "Absenden",
+  disabled = false,
+}: {
+  label?: string;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="submit"
-      className="w-full min-h-11 sm:w-auto px-8 py-3 bg-foreground text-background font-medium rounded-xl shadow-soft hover:shadow-soft-hover hover:bg-accent hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
+      disabled={disabled}
+      className="w-full min-h-11 sm:w-auto px-8 py-3 bg-foreground text-background font-medium rounded-xl shadow-soft hover:shadow-soft-hover hover:bg-accent hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 disabled:opacity-60 disabled:hover:translate-y-0"
     >
       {label}
     </button>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { footerNavigation } from "@/data/navigation";
-import { siteConfig, unterstuetzungHinweis, showInternalLinks } from "@/data/site";
+import { siteConfig, unterstuetzungHinweis } from "@/data/site";
 import { SocialLinks } from "@/components/SocialLinks";
 
 export function Footer() {
@@ -97,24 +97,6 @@ export function Footer() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-xs text-muted">
             © {new Date().getFullYear()} Wilde Heimat – Private Initiative
-            {showInternalLinks ? (
-              <>
-                {" · "}
-                <Link
-                  href="/paten"
-                  className="text-muted-light/80 hover:text-background transition-colors underline-offset-2 hover:underline"
-                >
-                  Paten-Bereich
-                </Link>
-                {" · "}
-                <Link
-                  href="/admin"
-                  className="text-muted-light/80 hover:text-background transition-colors underline-offset-2 hover:underline"
-                >
-                  Administration
-                </Link>
-              </>
-            ) : null}
           </p>
           <p className="text-xs text-muted">
             Waschbären eine Stimme geben.

@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { adminPortalNav } from "@/data/navigation";
 
 type AdminLoginProps = {
   title?: string;
@@ -113,27 +116,41 @@ export function AdminLogoutButton() {
 }
 
 export function AdminNav() {
-  const links = [
-    { href: "/admin", label: "Übersicht" },
-    { href: "/admin/paten", label: "Paten" },
-    { href: "/admin/updates", label: "Updates" },
-    { href: "/admin/urkunden", label: "Urkunden" },
-  ];
+  const pathname = usePathname();
+
+  function isActive(href: string): boolean {
+    if (href === "/admin") return pathname === "/admin";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
 
   return (
     <nav
       className="flex flex-wrap gap-2"
       aria-label="Admin-Navigation"
     >
-      {links.map((link) => (
-        <a
-          key={link.href}
-          href={link.href}
-          className="min-h-10 inline-flex items-center px-3 py-2 text-sm rounded-xl border border-border bg-background/80 hover:bg-muted-light/60 transition-colors"
-        >
-          {link.label}
-        </a>
-      ))}
+      {adminPortalNav.map((link) => {
+        const active = isActive(link.href);
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            aria-current={active ? "page" : undefined}
+            className={`min-h-10 inline-flex items-center px-3 py-2 text-sm rounded-xl border transition-colors ${
+              active
+                ? "border-forest/30 bg-sage/15 text-forest font-medium"
+                : "border-border bg-background/80 hover:bg-muted-light/60 text-muted hover:text-foreground"
+            }`}
+          >
+            {link.label}
+          </Link>
+        );
+      })}
+      <Link
+        href="/paten"
+        className="min-h-10 inline-flex items-center px-3 py-2 text-sm rounded-xl border border-border bg-background/80 hover:bg-muted-light/60 text-muted hover:text-foreground transition-colors"
+      >
+        Paten-Portal
+      </Link>
     </nav>
   );
 }

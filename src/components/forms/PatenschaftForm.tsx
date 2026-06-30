@@ -6,11 +6,13 @@ import { patenschaftsStufen } from "@/data/site";
 import {
   Checkbox,
   FormField,
+  FormHoneypot,
   FormNotice,
   Select,
   SubmitButton,
   TextArea,
 } from "./FormFields";
+import { submitPublicForm } from "@/lib/submitPublicForm";
 
 function resolveWaschbaer(slug?: string) {
   if (!slug) return undefined;
@@ -32,6 +34,8 @@ export function PatenschaftForm({
   preselectedStufe,
 }: PatenschaftFormProps) {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isGift, setIsGift] = useState(false);
 
   const waschbaerSlug = resolveWaschbaer(preselectedWaschbaer);
@@ -41,8 +45,19 @@ export function PatenschaftForm({
     ? patenschaftsStufen.find((s) => s.id === stufeId)
     : undefined;
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const result = await submitPublicForm("patenschaft", e.currentTarget);
+    setLoading(false);
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
     setSubmitted(true);
   }
 
@@ -60,7 +75,8 @@ export function PatenschaftForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="relative space-y-6">
+      <FormHoneypot />
       {(selectedWaschbaer || selectedStufe) && (
         <div className="rounded-xl border border-sage/25 bg-sage/5 px-4 py-3 text-sm">
           <p className="font-medium text-forest">Deine Auswahl</p>
@@ -150,8 +166,22 @@ export function PatenschaftForm({
         )}
       </div>
 
+      {error ? (
+        <p className="text-sm text-red-700" role="alert">
+          {error}
+        </p>
+      ) : null}
       <FormNotice />
-      <SubmitButton label={isGift ? "Geschenk-Patenschaft anfragen" : "Patenschaft anfragen"} />
+      <SubmitButton
+        label={
+          loading
+            ? "Wird gesendet …"
+            : isGift
+              ? "Geschenk-Patenschaft anfragen"
+              : "Patenschaft anfragen"
+        }
+        disabled={loading}
+      />
     </form>
   );
 }
