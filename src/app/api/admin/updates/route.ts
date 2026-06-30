@@ -7,14 +7,19 @@ import {
   updatePatenschaftUpdate,
 } from "@/lib/patenschaftStore";
 import { requireAdmin } from "@/lib/requireAdmin";
+import { apiErrorResponse } from "@/lib/apiError";
 import type { PatenschaftStufeId } from "@/data/patenschaften";
 
 export async function GET() {
   const authError = await requireAdmin();
   if (authError) return authError;
 
-  const [updates, paten] = await Promise.all([listUpdates(), listPaten()]);
-  return NextResponse.json({ updates, paten });
+  try {
+    const [updates, paten] = await Promise.all([listUpdates(), listPaten()]);
+    return NextResponse.json({ updates, paten });
+  } catch (error) {
+    return apiErrorResponse(error, "Updates konnten nicht geladen werden.");
+  }
 }
 
 export async function POST(request: Request) {
@@ -35,17 +40,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Pflichtfelder fehlen." }, { status: 400 });
   }
 
-  const update = await createUpdate({
-    waschbaerSlug: body.waschbaerSlug,
-    minStufe: body.minStufe,
-    patronId: body.patronId || undefined,
-    title: body.title.trim(),
-    body: body.body.trim(),
-    imageUrls: body.imageUrls ?? [],
-    publishedAt: body.publishedAt ?? new Date().toISOString(),
-  });
+  try {
+    const update = await createUpdate({
+      waschbaerSlug: body.waschbaerSlug,
+      minStufe: body.minStufe,
+      patronId: body.patronId || undefined,
+      title: body.title.trim(),
+      body: body.body.trim(),
+      imageUrls: body.imageUrls ?? [],
+      publishedAt: body.publishedAt ?? new Date().toISOString(),
+    });
 
-  return NextResponse.json({ update }, { status: 201 });
+    return NextResponse.json({ update }, { status: 201 });
+  } catch (error) {
+    return apiErrorResponse(error, "Update konnte nicht erstellt werden.");
+  }
 }
 
 export async function PUT(request: Request) {
@@ -67,21 +76,25 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "ID fehlt." }, { status: 400 });
   }
 
-  const update = await updatePatenschaftUpdate(body.id, {
-    waschbaerSlug: body.waschbaerSlug,
-    minStufe: body.minStufe,
-    patronId: body.patronId === null ? undefined : body.patronId,
-    title: body.title?.trim(),
-    body: body.body?.trim(),
-    imageUrls: body.imageUrls,
-    publishedAt: body.publishedAt,
-  });
+  try {
+    const update = await updatePatenschaftUpdate(body.id, {
+      waschbaerSlug: body.waschbaerSlug,
+      minStufe: body.minStufe,
+      patronId: body.patronId === null ? undefined : body.patronId,
+      title: body.title?.trim(),
+      body: body.body?.trim(),
+      imageUrls: body.imageUrls,
+      publishedAt: body.publishedAt,
+    });
 
-  if (!update) {
-    return NextResponse.json({ error: "Update nicht gefunden." }, { status: 404 });
+    if (!update) {
+      return NextResponse.json({ error: "Update nicht gefunden." }, { status: 404 });
+    }
+
+    return NextResponse.json({ update });
+  } catch (error) {
+    return apiErrorResponse(error, "Update konnte nicht aktualisiert werden.");
   }
-
-  return NextResponse.json({ update });
 }
 
 export async function DELETE(request: Request) {
@@ -94,10 +107,14 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "ID fehlt." }, { status: 400 });
   }
 
-  const ok = await deleteUpdate(id);
-  if (!ok) {
-    return NextResponse.json({ error: "Update nicht gefunden." }, { status: 404 });
-  }
+  try {
+    const ok = await deleteUpdate(id);
+    if (!ok) {
+      return NextResponse.json({ error: "Update nicht gefunden." }, { status: 404 });
+    }
 
-  return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return apiErrorResponse(error, "Update konnte nicht gelöscht werden.");
+  }
 }

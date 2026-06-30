@@ -50,7 +50,7 @@ export function PatenPortalLogin() {
         <p className="mt-2 text-sm text-muted leading-relaxed">
           Hier siehst du Neuigkeiten und Fotos von deinem Patentier. Gib den persönlichen
           Zugangscode ein, den du von uns erhalten hast – oder nutze oben im Menü{" "}
-          <strong className="text-foreground">Mein Bereich → Paten-Updates</strong>.
+          <strong className="text-foreground">Paten-Updates</strong>.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">

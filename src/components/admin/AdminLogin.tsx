@@ -100,7 +100,7 @@ export function AdminNotConfigured() {
 
 export function AdminLogoutButton() {
   async function logout() {
-    await fetch("/api/admin/urkunden/logout", { method: "POST" });
+    await fetch("/api/admin/logout", { method: "POST" });
     window.location.href = "/admin";
   }
 

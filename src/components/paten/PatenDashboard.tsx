@@ -33,7 +33,7 @@ export function PatenDashboard() {
   const loadFeed = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/paten/feed");
+      const res = await fetch("/api/paten/feed", { credentials: "same-origin" });
       if (res.status === 401) {
         router.replace("/paten");
         return;
@@ -58,7 +58,7 @@ export function PatenDashboard() {
   }, [loadFeed]);
 
   async function handleLogout() {
-    await fetch("/api/paten/logout", { method: "POST" });
+    await fetch("/api/paten/logout", { method: "POST", credentials: "same-origin" });
     router.replace("/paten");
     router.refresh();
   }

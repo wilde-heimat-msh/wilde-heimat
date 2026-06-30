@@ -7,14 +7,19 @@ import {
   updatePaten,
 } from "@/lib/patenschaftStore";
 import { requireAdmin } from "@/lib/requireAdmin";
+import { apiErrorResponse } from "@/lib/apiError";
 import type { PatenschaftStufeId } from "@/data/patenschaften";
 
 export async function GET() {
   const authError = await requireAdmin();
   if (authError) return authError;
 
-  const paten = await listPaten();
-  return NextResponse.json({ paten });
+  try {
+    const paten = await listPaten();
+    return NextResponse.json({ paten });
+  } catch (error) {
+    return apiErrorResponse(error, "Paten konnten nicht geladen werden.");
+  }
 }
 
 export async function POST(request: Request) {
@@ -39,17 +44,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Dieser Zugangscode ist bereits vergeben." }, { status: 409 });
   }
 
-  const pate = await createPaten({
-    name: body.name.trim(),
-    accessCode: body.accessCode.trim(),
-    waschbaerSlug: body.waschbaerSlug,
-    stufeId: body.stufeId,
-    email: body.email?.trim() || undefined,
-    notiz: body.notiz?.trim() || undefined,
-    active: body.active ?? true,
-  });
+  try {
+    const pate = await createPaten({
+      name: body.name.trim(),
+      accessCode: body.accessCode.trim(),
+      waschbaerSlug: body.waschbaerSlug,
+      stufeId: body.stufeId,
+      email: body.email?.trim() || undefined,
+      notiz: body.notiz?.trim() || undefined,
+      active: body.active ?? true,
+    });
 
-  return NextResponse.json({ pate }, { status: 201 });
+    return NextResponse.json({ pate }, { status: 201 });
+  } catch (error) {
+    return apiErrorResponse(error, "Pate konnte nicht angelegt werden.");
+  }
 }
 
 export async function PUT(request: Request) {
@@ -75,21 +84,25 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Dieser Zugangscode ist bereits vergeben." }, { status: 409 });
   }
 
-  const pate = await updatePaten(body.id, {
-    name: body.name?.trim(),
-    accessCode: body.accessCode?.trim(),
-    waschbaerSlug: body.waschbaerSlug,
-    stufeId: body.stufeId,
-    email: body.email?.trim(),
-    notiz: body.notiz?.trim(),
-    active: body.active,
-  });
+  try {
+    const pate = await updatePaten(body.id, {
+      name: body.name?.trim(),
+      accessCode: body.accessCode?.trim(),
+      waschbaerSlug: body.waschbaerSlug,
+      stufeId: body.stufeId,
+      email: body.email?.trim(),
+      notiz: body.notiz?.trim(),
+      active: body.active,
+    });
 
-  if (!pate) {
-    return NextResponse.json({ error: "Pate nicht gefunden." }, { status: 404 });
+    if (!pate) {
+      return NextResponse.json({ error: "Pate nicht gefunden." }, { status: 404 });
+    }
+
+    return NextResponse.json({ pate });
+  } catch (error) {
+    return apiErrorResponse(error, "Pate konnte nicht aktualisiert werden.");
   }
-
-  return NextResponse.json({ pate });
 }
 
 export async function DELETE(request: Request) {
@@ -102,10 +115,14 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "ID fehlt." }, { status: 400 });
   }
 
-  const ok = await deletePaten(id);
-  if (!ok) {
-    return NextResponse.json({ error: "Pate nicht gefunden." }, { status: 404 });
-  }
+  try {
+    const ok = await deletePaten(id);
+    if (!ok) {
+      return NextResponse.json({ error: "Pate nicht gefunden." }, { status: 404 });
+    }
 
-  return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return apiErrorResponse(error, "Pate konnte nicht gelöscht werden.");
+  }
 }

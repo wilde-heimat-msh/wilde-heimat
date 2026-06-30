@@ -29,7 +29,7 @@ export function AdminPatenManager() {
   const loadPaten = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/paten");
+      const res = await fetch("/api/admin/paten", { credentials: "same-origin" });
       const data = (await res.json()) as { paten?: PatenschaftPate[] };
       setPaten(data.paten ?? []);
     } finally {
@@ -75,6 +75,7 @@ export function AdminPatenManager() {
     const res = await fetch("/api/admin/paten", {
       method: editingId ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify(editingId ? { id: editingId, ...payload } : payload),
     });
 
@@ -97,6 +98,7 @@ export function AdminPatenManager() {
 
     const res = await fetch(`/api/admin/paten?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
+      credentials: "same-origin",
     });
 
     if (!res.ok) {

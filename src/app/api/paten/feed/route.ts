@@ -4,6 +4,7 @@ import { getUpdatesForPaten, listUpdates } from "@/lib/patenschaftStore";
 import { getWaschbaerBySlug } from "@/data/waschbaeren";
 import { getPatenschaftStufe } from "@/data/patenschaften";
 import { getWaschbaerProfilfoto } from "@/data/photos";
+import { apiErrorResponse } from "@/lib/apiError";
 
 export async function GET() {
   const pate = await getAuthenticatedPaten();
@@ -11,10 +12,11 @@ export async function GET() {
     return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
   }
 
-  const waschbaer = getWaschbaerBySlug(pate.waschbaerSlug);
-  const updates = getUpdatesForPaten(await listUpdates(), pate);
+  try {
+    const waschbaer = getWaschbaerBySlug(pate.waschbaerSlug);
+    const updates = getUpdatesForPaten(await listUpdates(), pate);
 
-  return NextResponse.json({
+    return NextResponse.json({
     pate: {
       id: pate.id,
       name: pate.name,
@@ -32,4 +34,7 @@ export async function GET() {
       : null,
     updates,
   });
+  } catch (error) {
+    return apiErrorResponse(error, "Feed konnte nicht geladen werden.");
+  }
 }

@@ -33,7 +33,7 @@ export function AdminUpdatesManager() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/updates");
+      const res = await fetch("/api/admin/updates", { credentials: "same-origin" });
       const data = (await res.json()) as {
         updates?: PatenschaftUpdate[];
         paten?: PatenschaftPate[];
@@ -80,7 +80,11 @@ export function AdminUpdatesManager() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch("/api/admin/uploads", { method: "POST", body: formData });
+      const res = await fetch("/api/admin/uploads", {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin",
+      });
       const data = (await res.json()) as { url?: string; error?: string };
 
       if (!res.ok || !data.url) {
@@ -118,6 +122,7 @@ export function AdminUpdatesManager() {
     const res = await fetch("/api/admin/updates", {
       method: editingId ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify(editingId ? { id: editingId, ...payload } : payload),
     });
 
@@ -138,6 +143,7 @@ export function AdminUpdatesManager() {
 
     const res = await fetch(`/api/admin/updates?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
+      credentials: "same-origin",
     });
 
     if (!res.ok) {

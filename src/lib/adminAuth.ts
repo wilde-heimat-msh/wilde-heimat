@@ -54,7 +54,7 @@ export function getAdminSessionCookieOptions() {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     maxAge: SESSION_MAX_AGE_SECONDS,
-    path: "/admin",
+    path: "/",
   };
 }
 

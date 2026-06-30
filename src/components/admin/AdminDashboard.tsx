@@ -4,6 +4,12 @@ import { AdminLogoutButton, AdminNav } from "@/components/admin/AdminLogin";
 export function AdminDashboard() {
   const cards = [
     {
+      href: "/admin/anfragen",
+      title: "Formular-Anfragen",
+      description:
+        "Kontakt-, Fund- und Patenschaftsanfragen aus der Website einsehen und beantworten.",
+    },
+    {
       href: "/admin/paten",
       title: "Paten verwalten",
       description:

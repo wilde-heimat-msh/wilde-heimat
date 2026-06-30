@@ -21,20 +21,9 @@ export const desktopNavigation: NavItem[] = [
   { type: "link", label: "Hilfe", href: "/hilfe" },
   { type: "link", label: "Kontakt", href: "/kontakt" },
   {
-    type: "group",
-    label: "Mein Bereich",
-    children: [
-      {
-        label: "Paten-Updates",
-        href: "/paten",
-        description: "Neuigkeiten & Fotos deines Patentiers",
-      },
-      {
-        label: "Verwaltung",
-        href: "/admin",
-        description: "Paten, Updates & Urkunden (Team)",
-      },
-    ],
+    type: "link",
+    label: "Paten-Updates",
+    href: "/paten",
   },
 ];
 
@@ -53,6 +42,7 @@ export const mobileNavigationGroups = [
     items: [
       { label: "Unterstützen", href: "/unterstuetzen" },
       { label: "Patenschaften", href: "/patenschaften" },
+      { label: "Paten-Updates", href: "/paten" },
     ],
   },
   {
@@ -60,13 +50,6 @@ export const mobileNavigationGroups = [
     items: [
       { label: "Waschbär-Ratgeber", href: "/ratgeber" },
       { label: "Hilfe & Vermittlung", href: "/hilfe" },
-    ],
-  },
-  {
-    title: "Paten & Team",
-    items: [
-      { label: "Paten-Updates", href: "/paten" },
-      { label: "Verwaltung", href: "/admin" },
     ],
   },
 ] as const;
@@ -86,6 +69,7 @@ export const footerNavigation = {
   rechtliches: [
     { label: "Impressum", href: "/impressum" },
     { label: "Datenschutz", href: "/datenschutz" },
+    { label: "Administration", href: "/admin" },
   ],
 };
 
@@ -96,6 +80,7 @@ export const patenPortalNav = [
 
 export const adminPortalNav = [
   { href: "/admin", label: "Übersicht" },
+  { href: "/admin/anfragen", label: "Anfragen" },
   { href: "/admin/paten", label: "Paten" },
   { href: "/admin/updates", label: "Updates" },
   { href: "/admin/urkunden", label: "Urkunden" },
