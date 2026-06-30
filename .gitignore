@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Patenschaft-Portal (Patendaten & Updates – lokal/Server)
+/data/patenschaft/store.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

@@ -1,26 +1,325 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Warme Natur-Palette – Wilde Heimat */
+  --cream: #fdf8f0;
+  --sand-light: #f5ede0;
+  --sand: #e8dcc8;
+  --forest: #2a3326;
+  --forest-mid: #3d4a35;
+  --forest-light: #4f5f46;
+  --sage: #6b8f5e;
+  --sage-light: #a8c49a;
+  --honey: #d4a853;
+  --honey-light: #e8c878;
+  --warm-stone: #6d685e;
+  --warm-border: #ddd2c0;
+
+  --background: var(--cream);
+  --foreground: var(--forest);
+  --muted: var(--warm-stone);
+  --muted-light: var(--sand-light);
+  --border: var(--warm-border);
+  --accent: #4d6b44;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --shadow-soft: 0 4px 20px -6px rgba(42, 51, 38, 0.09);
+  --shadow-soft-hover: 0 14px 36px -10px rgba(42, 51, 38, 0.14);
+  --shadow-dark: 0 10px 32px -8px rgba(0, 0, 0, 0.45), 0 2px 8px -2px rgba(0, 0, 0, 0.25);
+  --shadow-dark-hover: 0 20px 48px -12px rgba(0, 0, 0, 0.55), 0 8px 20px -6px rgba(0, 0, 0, 0.35);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-light: var(--muted-light);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-cream: var(--cream);
+  --color-sand: var(--sand);
+  --color-sand-light: var(--sand-light);
+  --color-forest: var(--forest);
+  --color-forest-mid: var(--forest-mid);
+  --color-forest-light: var(--forest-light);
+  --color-sage: var(--sage);
+  --color-sage-light: var(--sage-light);
+  --color-honey: var(--honey);
+  --color-honey-light: var(--honey-light);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --shadow-soft: var(--shadow-soft);
+  --shadow-soft-hover: var(--shadow-soft-hover);
+  --shadow-dark: var(--shadow-dark);
+  --shadow-dark-hover: var(--shadow-dark-hover);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
-  background: var(--background);
+  background: linear-gradient(
+    165deg,
+    var(--cream) 0%,
+    var(--sand-light) 45%,
+    #f0e6d6 100%
+  );
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  body {
+    background-attachment: scroll;
+  }
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+::selection {
+  background: var(--sage);
+  color: var(--cream);
+}
+
+:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 3px;
+  border-radius: 0.375rem;
+}
+
+/* Animated gradients */
+.hero-gradient {
+  background: linear-gradient(
+    135deg,
+    rgba(212, 168, 83, 0.12) 0%,
+    transparent 30%,
+    rgba(168, 196, 154, 0.15) 55%,
+    transparent 75%,
+    rgba(232, 200, 120, 0.1) 100%
+  );
+  background-size: 400% 400%;
+  animation: gradient-shift 18s ease infinite;
+}
+
+.mesh-dark {
+  background: linear-gradient(
+    -45deg,
+    rgba(212, 168, 83, 0.06) 0%,
+    transparent 25%,
+    rgba(168, 196, 154, 0.08) 55%,
+    transparent 80%,
+    rgba(232, 200, 120, 0.05) 100%
+  );
+  background-size: 300% 300%;
+  animation: gradient-shift 24s ease infinite;
+}
+
+.mesh-soft {
+  background: linear-gradient(
+    135deg,
+    rgba(232, 200, 120, 0.22) 0%,
+    rgba(245, 237, 224, 0.85) 30%,
+    rgba(168, 196, 154, 0.18) 60%,
+    rgba(232, 220, 200, 0.5) 100%
+  );
+  background-size: 300% 300%;
+  animation: gradient-shift 22s ease infinite;
+}
+
+.mesh-ambient {
+  background: radial-gradient(
+      ellipse 80% 60% at 10% 20%,
+      rgba(168, 196, 154, 0.12) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 90% 80%,
+      rgba(232, 200, 120, 0.14) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 50% 50%,
+      rgba(245, 237, 224, 0.6) 0%,
+      transparent 70%
+    );
+  background-size: 200% 200%;
+  animation: gradient-shift 28s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Marquee */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+
+.animate-marquee-slow {
+  animation: marquee 60s linear infinite;
+}
+
+.animate-marquee-fast {
+  animation: marquee 25s linear infinite;
+}
+
+/* Floating */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+/* Image reveal */
+@keyframes reveal-up {
+  from { clip-path: inset(100% 0 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+.animate-reveal {
+  animation: reveal-up 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Gentle pulse for decorative elements */
+@keyframes soft-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+.animate-soft-pulse {
+  animation: soft-pulse 5s ease-in-out infinite;
+}
+
+/* Schatten auf dunklen Hintergründen */
+.shadow-dark {
+  box-shadow: var(--shadow-dark);
+}
+
+.shadow-dark-hover {
+  box-shadow: var(--shadow-dark-hover);
+}
+
+.card-elevated-dark {
+  box-shadow: var(--shadow-dark);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card-elevated-dark:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-dark-hover);
+}
+
+/* Form & input base */
+.input-base {
+  border-radius: var(--radius-md);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.input-base:focus {
+  box-shadow: 0 0 0 3px rgba(107, 143, 94, 0.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-gradient,
+  .mesh-dark,
+  .mesh-soft,
+  .mesh-ambient,
+  .animate-marquee,
+  .animate-marquee-slow,
+  .animate-marquee-fast,
+  .animate-float,
+  .animate-float-slow,
+  .animate-reveal,
+  .animate-soft-pulse {
+    animation: none;
+  }
+
+  .card-elevated-dark:hover {
+    transform: none;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  body {
+    background: var(--cream);
+  }
+}
+
+/* Admin: Urkunden drucken / PDF */
+.admin-urkunden-print-source {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  pointer-events: none;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .admin-urkunden-print-source,
+  .admin-urkunden-print-source * {
+    visibility: visible !important;
+  }
+
+  .admin-urkunden-print-source {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    pointer-events: none;
+  }
+
+  .admin-urkunden-print-source article {
+    box-shadow: none !important;
+  }
 }

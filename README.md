@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Wilde Heimat – Website (Private Initiative)
 
-## Getting Started
+Website für **Wilde Heimat** – ein privates Herzensprojekt von Juja für Waschbärhilfe, Aufklärung und Vermittlung in Sachsen-Anhalt.
 
-First, run the development server:
+> **Hinweis:** Dies ist aktuell **kein Verein** und **keine gemeinnützige Organisation**. Vereinsunterlagen für eine spätere Gründung liegen separat in `verein-vorbereitung/` und gehören **nicht** zur öffentlichen Website.
+
+## Technologie
+
+- **Next.js 16** (App Router, TypeScript)
+- **Tailwind CSS 4** + Framer Motion
+- Mobile First, SEO-optimiert, DSGVO-vorbereitet
+
+## Entwicklung
 
 ```bash
+cd wilde-heimat
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Seiten
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Route | Inhalt |
+|-------|--------|
+| `/` | Startseite |
+| `/ueber-uns` | Geschichte, Juja, Werte |
+| `/waschbaeren` | 12 Waschbär-Profile |
+| `/patenschaften` | Patenschaftsstufen + Formular |
+| `/unterstuetzen` | Freiwillige Unterstützung |
+| `/ratgeber` | 9 Aufklärungsartikel |
+| `/hilfe` | Fund melden, Pflegestelle, Vermittlung |
+| `/kontakt` | Kontaktformular |
+| `/impressum` | Impressum (private Initiative) |
+| `/datenschutz` | Datenschutzerklärung |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Alte URLs leiten weiter: `/spenden` → `/unterstuetzen`, `/vermittlung` → `/hilfe`
 
-## Learn More
+## Organisationsmodus
 
-To learn more about Next.js, take a look at the following resources:
+Siehe `src/data/organization.ts` – aktuell `mode: "private"`. Bei Vereinsgründung umstellen und `verein-vorbereitung/` nutzen.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Build
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run build
+npm start
+```
 
-## Deploy on Vercel
+## Deployment auf Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Die Website ist für Vercel vorbereitet. Zuerst mit der Vercel-URL online stellen, die eigene Domain später verbinden.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Schritt 1: Projekt auf GitHub pushen
+
+```bash
+git add .
+git commit -m "Website für Vercel-Deployment vorbereiten"
+git push origin main
+```
+
+### Schritt 2: Vercel verbinden
+
+1. [vercel.com](https://vercel.com) → **Add New Project**
+2. GitHub-Repository auswählen
+3. **Root Directory:** `wilde-heimat` (falls das Repo den Ordner enthält) oder Projektroot
+4. Framework: **Next.js** (wird automatisch erkannt)
+5. **Environment Variables** setzen:
+   - `ADMIN_URKUNDEN_PASSWORD` = sicheres Passwort (für `/admin/urkunden`)
+6. **Deploy**
+
+Nach dem Deploy ist die Seite unter `https://<projekt>.vercel.app` erreichbar.
+
+### Schritt 3: Eigene Domain (später)
+
+Wenn `wilde-heimat-msh.de` registriert ist:
+
+1. Vercel → **Project Settings → Domains** → Domain hinzufügen
+2. DNS beim Domain-Anbieter wie von Vercel angegeben eintragen
+3. In Vercel setzen: `NEXT_PUBLIC_SITE_URL=https://wilde-heimat-msh.de`
+4. Neu deployen
+
+### Hinweis Paten-Portal & Admin
+
+Auf Vercel sind Datei-Uploads und Patendaten **nicht dauerhaft** gespeichert (serverless). Öffentliche Seiten, Ratgeber, Patenschaften und Urkunden-Druck funktionieren. Paten-Verwaltung mit persistenten Daten braucht später einen VPS oder Vercel Blob/KV.
+
