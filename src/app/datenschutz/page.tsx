@@ -83,52 +83,120 @@ export default function DatenschutzPage() {
                 </p>
               </SectionBlock>
 
-              <SectionBlock title="3. Server-Logfiles und Hosting">
+              <SectionBlock title="3. Hosting und Server-Logfiles">
                 <p>
-                  Beim Aufruf dieser Website werden durch den Hosting-Anbieter automatisch
-                  technische Daten erfasst (Server-Logfiles), z. B. Browsertyp, Betriebssystem,
-                  Referrer-URL, Hostname, Zeitpunkt der Anfrage und IP-Adresse. Diese Daten
-                  dienen der technischen Bereitstellung und Sicherheit der Website.
+                  Diese Website wird bei <strong className="text-foreground">Vercel Inc.</strong>{" "}
+                  gehostet. Beim Aufruf werden durch den Hosting-Anbieter automatisch technische
+                  Daten erfasst (Server-Logfiles), z. B. Browsertyp, Betriebssystem, Referrer-URL,
+                  Hostname, Zeitpunkt der Anfrage und IP-Adresse. Diese Daten dienen der technischen
+                  Bereitstellung, Stabilität und Sicherheit der Website.
                 </p>
                 <p className="mt-4">
                   Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einem
                   sicheren Betrieb).
                 </p>
+                <p className="mt-4">
+                  Speicherdauer: Die Logdaten werden vom Hosting-Anbieter nur so lange gespeichert,
+                  wie es für den Betrieb erforderlich ist (in der Regel wenige Tage bis Wochen).
+                </p>
               </SectionBlock>
 
-              <SectionBlock id="formulare" title="4. Kontakt- und Anfrageformulare">
+              <SectionBlock id="auftragsverarbeiter" title="4. Auftragsverarbeiter">
+                <p>
+                  Zur Bereitstellung dieser Website setzen wir folgende Dienstleister als
+                  Auftragsverarbeiter ein (Art. 28 DSGVO). Mit diesen bestehen bzw. bestehen auf
+                  Anbieterseite Verträge zur Auftragsverarbeitung:
+                </p>
+                <ul className="mt-4 space-y-3 list-disc list-inside">
+                  <li>
+                    <strong className="text-foreground">Vercel Inc.</strong> – Hosting der Website
+                    und Auslieferung der Inhalte
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Supabase Inc.</strong> – Speicherung von
+                    Formular-Eingängen, Paten-Daten und hochgeladenen Dateien (Datenbank &
+                    Dateispeicher)
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Resend Inc.</strong> – optionaler Versand
+                    von E-Mail-Benachrichtigungen bei neuen Formular-Eingängen (sofern
+                    eingerichtet)
+                  </li>
+                </ul>
+                <p className="mt-4">
+                  Die Anbieter verarbeiten Daten in unserem Auftrag und nur nach unseren Weisungen.
+                  Soweit Dienstleister außerhalb der EU/des EWR eingesetzt werden, erfolgt dies auf
+                  Grundlage geeigneter Garantien (z. B. EU-Standardvertragsklauseln), sofern der
+                  Anbieter dies vorsieht.
+                </p>
+              </SectionBlock>
+
+              <SectionBlock id="formulare" title="5. Kontakt- und Anfrageformulare">
                 <p>
                   Wenn du uns über Formulare kontaktierst, verarbeiten wir die von dir eingegebenen
-                  Daten (z. B. Name, E-Mail, Anschrift, Telefon, Nachricht) ausschließlich zur
-                  Bearbeitung deiner Anfrage.
+                  Daten ausschließlich zur Bearbeitung deiner Anfrage. Vor dem Absenden musst du
+                  die Datenschutzerklärung aktiv bestätigen (Pflicht-Checkbox).
                 </p>
                 <p className="mt-4">Formulare auf dieser Website:</p>
                 <ul className="mt-3 space-y-2 list-disc list-inside">
-                  <li>Kontaktformular</li>
-                  <li>Patenschaftsanfrage (inkl. optionaler Geschenk-Patenschaft)</li>
+                  <li>Kontaktformular (Name, E-Mail, Betreff, Nachricht)</li>
+                  <li>Patenschaftsanfrage (inkl. Anschrift, optional Telefon, Geschenk-Patenschaft)</li>
+                  <li>Fundmeldung „Waschbär gefunden“ (inkl. optional Foto-Upload)</li>
+                  <li>Anmeldung als Pflegestelle</li>
                   <li>Vermittlungs- und Hilfsanfragen</li>
                 </ul>
                 <p className="mt-4">
                   Bei Patenschaften benötigen wir deine Anschrift für die Zusendung der Urkunde
-                  (DIN A4). Bei Geschenk-Patenschaften zusätzlich Name und Anschrift des
-                  Beschenkten sowie optional eine Grußbotschaft.
+                  (DIN A4). Bei Geschenk-Patenschaften verarbeiten wir zusätzlich Name, Anschrift
+                  und ggf. eine Grußbotschaft des Beschenkten – ausschließlich zur Urkunde und
+                  Zusendung.
+                </p>
+                <p className="mt-4">
+                  Bei Fundmeldungen kannst du optional ein Foto hochladen (max. 8 MB, JPG/PNG/WebP/GIF).
+                  Das Foto wird in unserem Dateispeicher abgelegt und nur zur Bearbeitung der Meldung
+                  genutzt.
                 </p>
                 <p className="mt-4">
                   Die Übertragung erfolgt verschlüsselt (SSL/TLS). Eine Weitergabe an Dritte
                   erfolgt nicht, sofern keine gesetzliche Verpflichtung besteht.
                 </p>
                 <p className="mt-4">
-                  Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche Maßnahmen /
-                  Vertragsanbahnung) bzw. Art. 6 Abs. 1 lit. a DSGVO (Einwilligung über
-                  Formularhinweis).
+                  Speicherort: Formularinhalte werden in einer Datenbank (Supabase) gespeichert und
+                  sind nur für uns im geschützten Admin-Bereich einsehbar. Optional erhalten wir
+                  zusätzlich eine E-Mail-Benachrichtigung.
+                </p>
+                <p className="mt-4">
+                  Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung durch die
+                  Pflicht-Checkbox vor dem Absenden). Für Anfragen, die auf einen späteren Vertrag
+                  abzielen (z. B. Patenschaft), zusätzlich Art. 6 Abs. 1 lit. b DSGVO
+                  (vorvertragliche Maßnahmen).
                 </p>
                 <p className="mt-4">
                   Speicherdauer: bis zur vollständigen Bearbeitung der Anfrage, längstens jedoch
                   24 Monate – sofern keine gesetzlichen Aufbewahrungspflichten entgegenstehen.
+                  Danach werden die Daten gelöscht.
                 </p>
               </SectionBlock>
 
-              <SectionBlock id="cookies" title="5. Cookies und lokale Speicherung">
+              <SectionBlock id="paten-bereich" title="6. Paten-Bereich">
+                <p>
+                  Für aktive Paten stellen wir einen geschützten Bereich mit persönlichem
+                  Zugangscode bereit. Dort werden der Patenname, die gewählte Patenschaftsstufe,
+                  der zugeordnete Waschbär sowie veröffentlichte Updates (Texte und Fotos)
+                  angezeigt.
+                </p>
+                <p className="mt-4">
+                  Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Durchführung der Patenschaft) bzw.
+                  Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Kommunikation mit
+                  Unterstützern).
+                </p>
+                <p className="mt-4">
+                  Speicherdauer: für die Dauer der Patenschaft und anschließend bis zu 24 Monate,
+                  sofern keine längere Aufbewahrung erforderlich ist.
+                </p>
+              </SectionBlock>
+
+              <SectionBlock id="cookies" title="7. Cookies und lokale Speicherung">
                 <p>
                   <strong className="text-foreground">
                     Es werden keine Tracking-, Analyse- oder Marketing-Cookies eingesetzt.
@@ -160,7 +228,7 @@ export default function DatenschutzPage() {
                 </p>
               </SectionBlock>
 
-              <SectionBlock id="externe-dienste" title="6. Externe Dienste und Links">
+              <SectionBlock id="externe-dienste" title="8. Externe Dienste und Links">
                 <p>
                   Auf dieser Website verlinken wir zu externen Angeboten. Beim Anklicken
                   verlässt du unsere Website; es gelten die Datenschutzbestimmungen des jeweiligen
@@ -190,7 +258,7 @@ export default function DatenschutzPage() {
                 </p>
               </SectionBlock>
 
-              <SectionBlock title="7. Bildnachweise">
+              <SectionBlock title="9. Bildnachweise">
                 <p>
                   Auf einigen Seiten werden Stock-Fotos (z. B. Pexels) verwendet. Details findest
                   du im{" "}
@@ -201,7 +269,7 @@ export default function DatenschutzPage() {
                 </p>
               </SectionBlock>
 
-              <SectionBlock title="8. Deine Rechte">
+              <SectionBlock title="10. Deine Rechte">
                 <p>Du hast gegenüber uns folgende Rechte bezüglich deiner personenbezogenen Daten:</p>
                 <ul className="mt-4 space-y-2 list-disc list-inside">
                   <li>Auskunft (Art. 15 DSGVO)</li>
@@ -220,11 +288,11 @@ export default function DatenschutzPage() {
                 </p>
               </SectionBlock>
 
-              <SectionBlock title="9. Beschwerderecht">
+              <SectionBlock title="11. Beschwerderecht">
                 <p>
                   Du hast das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren.
-                  Zuständig in Sachsen-Anhalt ist u. a. der Landesbeauftragte für den
-                  Datenschutz Sachsen-Anhalt.
+                  Zuständig in Sachsen-Anhalt ist der Landesbeauftragte für den Datenschutz
+                  Sachsen-Anhalt, Leiterstraße 9, 39104 Magdeburg.
                 </p>
               </SectionBlock>
 

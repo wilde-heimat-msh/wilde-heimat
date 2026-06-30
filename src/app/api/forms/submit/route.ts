@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getWaschbaerBySlug } from "@/data/waschbaeren";
+import { FORM_PRIVACY_CONSENT_FIELD } from "@/data/privacy";
 import { patenschaftsStufen } from "@/data/site";
 import { formatFormFields, isFormMailConfigured, sendFormNotification } from "@/lib/formMail";
 import { isFormType, type FormType } from "@/lib/forms/types";
@@ -238,6 +239,13 @@ export async function POST(request: Request) {
 
     if (optional(formData, "website")) {
       return NextResponse.json({ ok: true });
+    }
+
+    if (formData.get(FORM_PRIVACY_CONSENT_FIELD) !== "ja") {
+      return NextResponse.json(
+        { error: "Bitte bestätige die Datenschutzerklärung." },
+        { status: 400 }
+      );
     }
 
     const typeRaw = formData.get("type");

@@ -1,3 +1,4 @@
+import { AboutBrandIntro } from "@/components/AboutBrandIntro";
 import Image from "next/image";
 import { PhotoPageHero } from "@/components/layout/PhotoPageHero";
 import { StatsBand } from "@/components/layout/StatsBand";
@@ -55,6 +56,12 @@ export default function UeberUnsPage() {
           regionStat,
         ]}
       />
+
+      <Section soft className="py-12 md:py-20">
+        <FadeIn>
+          <AboutBrandIntro />
+        </FadeIn>
+      </Section>
 
       <Section>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">

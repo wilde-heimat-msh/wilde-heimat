@@ -1,5 +1,7 @@
 import { type ReactNode } from "react";
 
+export { PrivacyConsentField } from "./PrivacyConsentField";
+
 type FormFieldProps = {
   label: string;
   name: string;
@@ -122,18 +124,6 @@ export function Select({
   );
 }
 
-export function FormNotice() {
-  return (
-    <p className="text-xs text-muted leading-relaxed">
-      Mit dem Absenden stimmst du der Verarbeitung deiner Angaben zur Bearbeitung deiner Anfrage
-      gemäß der{" "}
-      <a href="/datenschutz#formulare" className="underline hover:no-underline">
-        Datenschutzerklärung
-      </a>{" "}
-      zu. Die Übertragung erfolgt verschlüsselt (SSL/TLS) an Wilde Heimat.
-    </p>
-  );
-}
 
 /** Unsichtbares Spam-Feld – nicht ausfüllen */
 export function FormHoneypot() {
@@ -156,7 +146,8 @@ export function SubmitButton({
     <button
       type="submit"
       disabled={disabled}
-      className="w-full min-h-11 sm:w-auto px-8 py-3 bg-foreground text-background font-medium rounded-xl shadow-soft hover:shadow-soft-hover hover:bg-accent hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 disabled:opacity-60 disabled:hover:translate-y-0"
+      aria-disabled={disabled}
+      className="btn-hover w-full min-h-11 rounded-xl bg-foreground px-8 py-3 text-sm font-medium text-background shadow-soft hover:bg-accent hover:shadow-soft-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-soft sm:w-auto"
     >
       {label}
     </button>

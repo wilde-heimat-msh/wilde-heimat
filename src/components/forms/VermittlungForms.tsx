@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import {
   FormField,
   FormHoneypot,
-  FormNotice,
+  PrivacyConsentField,
   SubmitButton,
   TextArea,
 } from "./FormFields";
@@ -14,9 +14,14 @@ export function PflegestelleForm() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!privacyAccepted) {
+      setError("Bitte bestätige die Datenschutzerklärung.");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -68,8 +73,11 @@ export function PflegestelleForm() {
           {error}
         </p>
       ) : null}
-      <FormNotice />
-      <SubmitButton label={loading ? "Wird gesendet …" : "Als Pflegestelle melden"} disabled={loading} />
+      <PrivacyConsentField onConsentChange={setPrivacyAccepted} />
+      <SubmitButton
+        label={loading ? "Wird gesendet …" : "Als Pflegestelle melden"}
+        disabled={loading || !privacyAccepted}
+      />
     </form>
   );
 }
@@ -78,9 +86,14 @@ export function WaschbaerGefundenForm() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!privacyAccepted) {
+      setError("Bitte bestätige die Datenschutzerklärung.");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -124,7 +137,14 @@ export function WaschbaerGefundenForm() {
           accept="image/*"
           className="w-full min-w-0 text-sm text-muted file:mr-4 file:min-h-11 file:py-2 file:px-4 file:border file:border-border file:bg-muted-light file:text-foreground hover:file:bg-border overflow-hidden"
         />
-        <p className="mt-1 text-xs text-muted">Optional – JPG, PNG oder WebP, max. 8 MB</p>
+        <p className="mt-1 text-xs text-muted">
+          Optional – JPG, PNG oder WebP, max. 8 MB. Das Foto wird nur zur Bearbeitung deiner
+          Meldung gespeichert (siehe{" "}
+          <a href="/datenschutz#formulare" className="font-medium text-forest underline decoration-forest underline-offset-4 hover:text-forest-mid">
+            Datenschutzerklärung
+          </a>
+          ).
+        </p>
       </div>
       <TextArea
         label="Beschreibung"
@@ -142,8 +162,11 @@ export function WaschbaerGefundenForm() {
           {error}
         </p>
       ) : null}
-      <FormNotice />
-      <SubmitButton label={loading ? "Wird gesendet …" : "Fund melden"} disabled={loading} />
+      <PrivacyConsentField onConsentChange={setPrivacyAccepted} />
+      <SubmitButton
+        label={loading ? "Wird gesendet …" : "Fund melden"}
+        disabled={loading || !privacyAccepted}
+      />
     </form>
   );
 }
@@ -152,9 +175,14 @@ export function VermittlungsForm() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!privacyAccepted) {
+      setError("Bitte bestätige die Datenschutzerklärung.");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -195,8 +223,11 @@ export function VermittlungsForm() {
           {error}
         </p>
       ) : null}
-      <FormNotice />
-      <SubmitButton label={loading ? "Wird gesendet …" : "Anfrage senden"} disabled={loading} />
+      <PrivacyConsentField onConsentChange={setPrivacyAccepted} />
+      <SubmitButton
+        label={loading ? "Wird gesendet …" : "Anfrage senden"}
+        disabled={loading || !privacyAccepted}
+      />
     </form>
   );
 }

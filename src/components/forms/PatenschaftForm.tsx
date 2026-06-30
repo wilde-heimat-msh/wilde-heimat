@@ -7,7 +7,7 @@ import {
   Checkbox,
   FormField,
   FormHoneypot,
-  FormNotice,
+  PrivacyConsentField,
   Select,
   SubmitButton,
   TextArea,
@@ -37,6 +37,7 @@ export function PatenschaftForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isGift, setIsGift] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   const waschbaerSlug = resolveWaschbaer(preselectedWaschbaer);
   const stufeId = resolveStufe(preselectedStufe);
@@ -47,6 +48,10 @@ export function PatenschaftForm({
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!privacyAccepted) {
+      setError("Bitte bestätige die Datenschutzerklärung.");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -145,6 +150,11 @@ export function PatenschaftForm({
 
         {isGift && (
           <div className="space-y-4 pt-2 border-t border-border/60">
+            <p className="text-xs text-muted leading-relaxed">
+              Mit den Angaben zum Beschenkten verarbeiten wir auch Daten einer dritten Person
+              (Name, Anschrift, ggf. Grußbotschaft) ausschließlich zur Ausstellung und Zusendung
+              der Urkunde. Bitte stelle sicher, dass du dazu berechtigt bist.
+            </p>
             <FormField
               label="Name des Beschenkten"
               name="beschenkter_name"
@@ -171,7 +181,7 @@ export function PatenschaftForm({
           {error}
         </p>
       ) : null}
-      <FormNotice />
+      <PrivacyConsentField onConsentChange={setPrivacyAccepted} />
       <SubmitButton
         label={
           loading
@@ -180,7 +190,7 @@ export function PatenschaftForm({
               ? "Geschenk-Patenschaft anfragen"
               : "Patenschaft anfragen"
         }
-        disabled={loading}
+        disabled={loading || !privacyAccepted}
       />
     </form>
   );

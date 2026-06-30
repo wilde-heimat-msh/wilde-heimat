@@ -1,3 +1,10 @@
+/** Einleitungstext auf der Über-uns-Seite – umschließt das schwebende Logo */
+export const aboutBrandIntro = [
+  "Wilde Heimat steht für Nähe zur Natur, Herz für Waschbären und den Mut, Tiere sichtbar zu machen, die oft missverstanden werden. Unser rundes Logo mit Bergen, Wald und Wildtieren erzählt genau das: Heimat bedeutet für uns Schutz, Aufklärung und Gemeinschaft.",
+  "Was als private Pflege einzelner Tiere begann, ist heute ein wachsendes Projekt in Mansfeld-Südharz – mit Ratgeber, Vermittlung, Patenschaften und ehrlicher Kommunikation. Wir sind kein Verein, sondern eine Initiative mit Gesicht und Haltung.",
+  "Wenn du unsere Arbeit unterstützen oder Teil der Community werden möchtest, bist du hier genau richtig. Wilde Heimat lebt von Menschen, die Waschbären eine Stimme geben wollen – so wie Juja es seit dem ersten Tag tut.",
+] as const;
+
 export const meilensteine = [
   {
     year: "Juni 2024",

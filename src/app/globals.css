@@ -145,6 +145,40 @@ body {
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Über-uns: Logo schwebt im Fließtext */
+.about-brand-intro::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.about-brand-logo {
+  float: left;
+  width: 11rem;
+  height: 11rem;
+  margin: 0.25rem 1.5rem 1rem 0;
+  shape-outside: circle(50%);
+  shape-margin: 0.75rem;
+  filter: drop-shadow(0 12px 28px rgba(42, 51, 38, 0.14));
+}
+
+@media (min-width: 768px) {
+  .about-brand-logo {
+    width: 17.5rem;
+    height: 17.5rem;
+    margin: 0.5rem 2rem 1.25rem 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .about-brand-logo {
+    float: none;
+    shape-outside: none;
+    shape-margin: 0;
+    margin: 0 auto 1.5rem;
+  }
+}
+
 @utility scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -410,6 +444,10 @@ body {
   .motion-blob-pulse,
   .motion-blob-pulse-x,
   .motion-scroll-hint {
+    animation: none;
+  }
+
+  .about-brand-logo {
     animation: none;
   }
 

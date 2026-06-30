@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import {
   FormField,
   FormHoneypot,
-  FormNotice,
+  PrivacyConsentField,
   SubmitButton,
   TextArea,
 } from "./FormFields";
@@ -14,9 +14,14 @@ export function KontaktForm() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!privacyAccepted) {
+      setError("Bitte bestätige die Datenschutzerklärung.");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -54,8 +59,11 @@ export function KontaktForm() {
           {error}
         </p>
       ) : null}
-      <FormNotice />
-      <SubmitButton label={loading ? "Wird gesendet …" : "Nachricht senden"} disabled={loading} />
+      <PrivacyConsentField onConsentChange={setPrivacyAccepted} />
+      <SubmitButton
+        label={loading ? "Wird gesendet …" : "Nachricht senden"}
+        disabled={loading || !privacyAccepted}
+      />
     </form>
   );
 }

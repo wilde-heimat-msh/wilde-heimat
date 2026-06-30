@@ -41,8 +41,8 @@ export function CookieBanner() {
             er nicht bei jedem Besuch erneut erscheint.
           </p>
           <p className="text-background/85 text-xs sm:text-sm">
-            Beim Absenden von Formularen werden personenbezogene Daten verarbeitet. Externe
-            Spendenlinks (PayPal, GoFundMe, Amazon) haben eigene Datenschutzregeln.
+            Beim Absenden von Formularen ist eine Einwilligung erforderlich. Externe Spendenlinks
+            (PayPal, GoFundMe, Amazon) haben eigene Datenschutzregeln.
           </p>
           <p>
             Details in der{" "}

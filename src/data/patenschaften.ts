@@ -135,6 +135,31 @@ export function getPatenschaftStufe(id: PatenschaftStufeId) {
   return patenschaftsStufen.find((s) => s.id === id)!;
 }
 
+/** Erklärung im Paten-Dashboard – abgestimmt auf die Stufen-Leistungen */
+export function getPatenPortalUpdatesText(stufeId: PatenschaftStufeId): string {
+  if (stufeId === "bronze") {
+    return "In der Bronze-Stufe erhältst du die persönliche Urkunde per Post. Fotos und Updates in diesem Bereich gibt es ab Silber.";
+  }
+  if (stufeId === "silber") {
+    return "Hier findest du regelmäßige Fotos deines Patentiers – wie bei der Silber-Patenschaft beschrieben.";
+  }
+  return "Hier findest du die wöchentlichen Updates von Juja zu deinem Patentier – plus Fotos und alle Gold-Extras.";
+}
+
+export function getPatenPortalEmptyText(stufeId: PatenschaftStufeId): string {
+  if (stufeId === "bronze") {
+    return "Bei Bronze gibt es keinen Foto-Feed. Deine Urkunde senden wir dir per Post. Für Fotos im Paten-Bereich ist Silber die passende Stufe.";
+  }
+  if (stufeId === "silber") {
+    return "Schau bald wieder vorbei – wir laden regelmäßig neue Fotos deines Patentiers hoch.";
+  }
+  return "Schau bald wieder vorbei – Juja meldet sich wöchentlich, sobald es Neues von deinem Patentier gibt.";
+}
+
+export function patenStufeHatPortalFeed(stufeId: PatenschaftStufeId): boolean {
+  return stufeId !== "bronze";
+}
+
 /** Tassen-Bilder für die Belohnungs-Vorschau (Silber & Gold) */
 export const patenschaftBelohnungTassen = [
   einzelTassen[4],

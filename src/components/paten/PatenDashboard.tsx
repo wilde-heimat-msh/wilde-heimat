@@ -1,11 +1,17 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { PatenschaftUpdateCard } from "@/components/paten/PatenschaftUpdateCard";
 import { PatenLogoutButton, PatenPortalNav } from "@/components/paten/PatenPortalNav";
-import { patenschaftUrkundeStufeStyles } from "@/data/patenschaften";
+import {
+  getPatenPortalEmptyText,
+  getPatenPortalUpdatesText,
+  patenschaftUrkundeStufeStyles,
+  patenStufeHatPortalFeed,
+} from "@/data/patenschaften";
 import type { PatenschaftStufeId } from "@/data/patenschaften";
 import type { PatenschaftUpdate } from "@/types/patenschaftPortal";
 
@@ -131,14 +137,26 @@ export function PatenDashboard() {
       <section className="space-y-4">
         <div>
           <h2 className="text-lg font-medium text-forest">Updates</h2>
-          <p className="text-sm text-muted">
-            {feed.pate.stufeId === "gold"
-              ? "Hier findest du die wöchentlichen Neuigkeiten von Juja zu deinem Patentier."
-              : "Hier findest du Fotos und Neuigkeiten zu deinem Patentier."}
-          </p>
+          <p className="text-sm text-muted">{getPatenPortalUpdatesText(feed.pate.stufeId)}</p>
         </div>
 
-        {feed.updates.length === 0 ? (
+        {!patenStufeHatPortalFeed(feed.pate.stufeId) ? (
+          <div className="rounded-2xl border border-border bg-background/60 px-6 py-8">
+            <p className="text-sm leading-relaxed text-muted">
+              {getPatenPortalEmptyText(feed.pate.stufeId)}
+            </p>
+            <ul className="mt-4 space-y-2 text-sm text-muted">
+              <li>✓ Silber: Fotos deines Patentiers und Tasse mit Waschbärmotiv</li>
+              <li>✓ Gold: wöchentliche Updates von Juja plus alle Extras</li>
+            </ul>
+            <Link
+              href="/patenschaften#stufen"
+              className="mt-5 inline-flex min-h-11 items-center rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-muted-light/60"
+            >
+              Stufen vergleichen
+            </Link>
+          </div>
+        ) : feed.updates.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border bg-background/60 px-6 py-10 text-center">
             <div
               className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sage/15 text-forest"
@@ -154,7 +172,7 @@ export function PatenDashboard() {
             </div>
             <p className="mt-4 text-base font-medium text-forest">Noch keine Updates</p>
             <p className="mt-2 text-sm text-muted leading-relaxed">
-              Schau bald wieder vorbei – wir melden uns, sobald es Neues von deinem Patentier gibt.
+              {getPatenPortalEmptyText(feed.pate.stufeId)}
             </p>
           </div>
         ) : (
