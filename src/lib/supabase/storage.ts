@@ -2,15 +2,23 @@ import { getSupabaseAdmin, isSupabaseConfigured, UPLOADS_BUCKET } from "@/lib/su
 
 const MAX_BYTES = 8 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
 export function isSupabaseStorageEnabled(): boolean {
   return isSupabaseConfigured();
 }
 
+export function isStoragePath(value: string): boolean {
+  return (
+    !value.startsWith("http") &&
+    (value.startsWith("form-uploads/") || value.startsWith("paten-updates/"))
+  );
+}
+
 export async function uploadImage(
   folder: "paten-updates" | "form-uploads",
   file: File
-): Promise<{ url: string } | { error: string }> {
+): Promise<{ publicUrl: string } | { storagePath: string } | { error: string }> {
   if (!ALLOWED_TYPES.has(file.type)) {
     return { error: "Nur JPG, PNG, WebP oder GIF erlaubt." };
   }
@@ -22,14 +30,24 @@ export async function uploadImage(
   const path = `${folder}/${crypto.randomUUID()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
-  return uploadBuffer(path, buffer, file.type);
+  const uploaded = await uploadBuffer(path, buffer, file.type);
+  if ("error" in uploaded) {
+    return uploaded;
+  }
+
+  if (folder === "form-uploads") {
+    return { storagePath: path };
+  }
+
+  const { data } = getSupabaseAdmin().storage.from(UPLOADS_BUCKET).getPublicUrl(path);
+  return { publicUrl: data.publicUrl };
 }
 
 export async function uploadBuffer(
   storagePath: string,
   buffer: Buffer,
   contentType: string
-): Promise<{ url: string } | { error: string }> {
+): Promise<{ storagePath: string } | { error: string }> {
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.storage.from(UPLOADS_BUCKET).upload(storagePath, buffer, {
     contentType,
@@ -40,8 +58,26 @@ export async function uploadBuffer(
     return { error: error.message };
   }
 
-  const { data } = supabase.storage.from(UPLOADS_BUCKET).getPublicUrl(storagePath);
-  return { url: data.publicUrl };
+  return { storagePath };
+}
+
+export async function resolveAttachmentPreviewUrl(
+  storagePathOrUrl: string
+): Promise<string | null> {
+  if (storagePathOrUrl.startsWith("http")) {
+    return storagePathOrUrl;
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.storage
+    .from(UPLOADS_BUCKET)
+    .createSignedUrl(storagePathOrUrl, SIGNED_URL_TTL_SECONDS);
+
+  if (error || !data?.signedUrl) {
+    return null;
+  }
+
+  return data.signedUrl;
 }
 
 export async function saveFormSubmission(input: {

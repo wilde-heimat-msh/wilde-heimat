@@ -6,13 +6,14 @@ import { FadeIn } from "@/components/motion/FadeIn";
 import { formatAbsoluteDateDe } from "@/lib/relativeTime";
 import {
   formatEuro,
+  formatDonorDisplayName,
   gofundmeCampaign,
   gofundmeTopDonors,
   gofundmeUpdates,
 } from "@/data/gofundme";
 
-function DonorAvatar({ name, anonym }: { name: string; anonym?: boolean }) {
-  const initial = anonym ? "♥" : name.charAt(0).toUpperCase();
+function DonorAvatar({ displayName }: { displayName: string }) {
+  const initial = displayName === "Anonym" ? "♥" : displayName.charAt(0).toUpperCase();
   return (
     <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-sand-light text-sm font-medium text-forest shrink-0">
       {initial}
@@ -85,23 +86,24 @@ export function GoFundMeCampaign() {
             Spenden · {gofundmeCampaign.donorCount}
           </h4>
           <ul className="space-y-3">
-            {gofundmeTopDonors.map((donor, i) => (
+            {gofundmeTopDonors.map((donor, i) => {
+              const displayName = formatDonorDisplayName(donor);
+              return (
               <li
                 key={`${donor.name}-${i}`}
                 className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-sand-light/30"
               >
-                <DonorAvatar name={donor.name} anonym={donor.anonym} />
+                <DonorAvatar displayName={displayName} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">
-                    {donor.anonym ? "Anonym" : donor.name}
-                  </p>
+                  <p className="text-sm font-medium truncate">{displayName}</p>
                   <RelativeTime date={donor.date} className="text-xs text-muted" />
                 </div>
                 <span className="text-sm font-medium shrink-0">
                   {formatEuro(donor.amount)}
                 </span>
               </li>
-            ))}
+            );
+            })}
           </ul>
           <div className="mt-4">
             <Button href={gofundmeCampaign.url} variant="outline" external className="text-sm">
@@ -111,11 +113,12 @@ export function GoFundMeCampaign() {
         </FadeIn>
       </div>
 
-      <FadeIn>
+        <FadeIn>
         <InfoBox className="text-sm text-muted">
           Spenden laufen über GoFundMe und sind freiwillig. Aktuell können keine
-          steuerlich absetzbaren Spendenbescheinigungen ausgestellt werden. Zahlen
-          und Updates werden regelmäßig mit der{" "}
+          steuerlich absetzbaren Spendenbescheinigungen ausgestellt werden. Spender-Namen
+          werden auf dieser Website nur in gekürzter Form (Vorname und Anfangsbuchstabe des
+          Nachnamens) angezeigt. Zahlen und Updates werden regelmäßig mit der{" "}
           <a
             href={gofundmeCampaign.url}
             target="_blank"

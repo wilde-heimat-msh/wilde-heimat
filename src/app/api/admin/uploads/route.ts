@@ -35,7 +35,10 @@ export async function POST(request: Request) {
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
-    return NextResponse.json({ url: result.url });
+    if ("publicUrl" in result) {
+      return NextResponse.json({ url: result.publicUrl });
+    }
+    return NextResponse.json({ error: "Upload fehlgeschlagen." }, { status: 500 });
   }
 
   const ext = file.type.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";

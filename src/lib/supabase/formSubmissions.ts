@@ -1,4 +1,5 @@
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase/admin";
+import { resolveAttachmentPreviewUrl } from "@/lib/supabase/storage";
 
 export type FormSubmissionRecord = {
   id: string;
@@ -34,14 +35,24 @@ export async function listFormSubmissions(limit = 100): Promise<FormSubmissionRe
     throw new Error(error.message);
   }
 
-  return (data as FormSubmissionRow[]).map((row) => ({
-    id: row.id,
-    type: row.type,
-    payload: row.payload ?? {},
-    replyTo: row.reply_to ?? undefined,
-    attachmentUrl: row.attachment_url ?? undefined,
-    createdAt: row.created_at,
-  }));
+  return Promise.all(
+    (data as FormSubmissionRow[]).map(async (row) => {
+      let attachmentUrl = row.attachment_url ?? undefined;
+      if (attachmentUrl) {
+        const resolved = await resolveAttachmentPreviewUrl(attachmentUrl);
+        attachmentUrl = resolved ?? undefined;
+      }
+
+      return {
+        id: row.id,
+        type: row.type,
+        payload: row.payload ?? {},
+        replyTo: row.reply_to ?? undefined,
+        attachmentUrl,
+        createdAt: row.created_at,
+      };
+    })
+  );
 }
 
 export async function deleteFormSubmission(id: string): Promise<boolean> {

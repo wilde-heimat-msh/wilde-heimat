@@ -7,6 +7,7 @@ import { FadeIn } from "@/components/motion/FadeIn";
 import { CONSENT_STORAGE_KEY } from "@/data/privacy";
 import { siteConfig } from "@/data/site";
 import { formatContactAddressLines } from "@/lib/contact";
+import { PATEN_SESSION_COOKIE } from "@/lib/patenAuth";
 import { pagePhotos } from "@/data/pagePhotos";
 import { createMetadata } from "@/lib/seo";
 
@@ -103,31 +104,34 @@ export default function DatenschutzPage() {
 
               <SectionBlock id="auftragsverarbeiter" title="4. Auftragsverarbeiter">
                 <p>
-                  Zur Bereitstellung dieser Website setzen wir folgende Dienstleister als
-                  Auftragsverarbeiter ein (Art. 28 DSGVO). Mit diesen bestehen bzw. bestehen auf
-                  Anbieterseite Verträge zur Auftragsverarbeitung:
+                  Zur Bereitstellung dieser Website setzen wir folgende Dienstleister ein, die
+                  personenbezogene Daten in unserem Auftrag verarbeiten (Art. 28 DSGVO):
                 </p>
                 <ul className="mt-4 space-y-3 list-disc list-inside">
                   <li>
-                    <strong className="text-foreground">Vercel Inc.</strong> – Hosting der Website
-                    und Auslieferung der Inhalte
+                    <strong className="text-foreground">Vercel Inc.</strong> – Hosting der Website,
+                    Auslieferung der Inhalte und technische Server-Logfiles
                   </li>
                   <li>
                     <strong className="text-foreground">Supabase Inc.</strong> – Speicherung von
                     Formular-Eingängen, Paten-Daten und hochgeladenen Dateien (Datenbank &
-                    Dateispeicher)
+                    Dateispeicher, EU-Region sofern im Projekt gewählt)
                   </li>
                   <li>
-                    <strong className="text-foreground">checkdomain GmbH</strong> – optionaler
-                    Versand von E-Mail-Benachrichtigungen bei neuen Formular-Eingängen über unser
-                    Postfach (sofern eingerichtet)
+                    <strong className="text-foreground">checkdomain GmbH</strong> – Versand von
+                    E-Mail-Benachrichtigungen bei neuen Formular-Eingängen über unser Postfach
                   </li>
                 </ul>
                 <p className="mt-4">
-                  Die Anbieter verarbeiten Daten in unserem Auftrag und nur nach unseren Weisungen.
-                  Soweit Dienstleister außerhalb der EU/des EWR eingesetzt werden, erfolgt dies auf
-                  Grundlage geeigneter Garantien (z. B. EU-Standardvertragsklauseln), sofern der
-                  Anbieter dies vorsieht.
+                  Mit diesen Anbietern bestehen Verträge zur Auftragsverarbeitung bzw. entsprechende
+                  Standardvertragsklauseln der Anbieter (z. B. Vercel DPA, Supabase DPA). Die
+                  Verarbeitung erfolgt ausschließlich nach unseren Weisungen und nur soweit für den
+                  Betrieb der Website erforderlich.
+                </p>
+                <p className="mt-4">
+                  Soweit Dienstleister außerhalb der EU/des EWR eingesetzt werden, erfolgt die
+                  Übermittlung auf Grundlage geeigneter Garantien (insbesondere EU-Standardvertragsklauseln
+                  gemäß Art. 46 DSGVO), sofern kein Angemessenheitsbeschluss vorliegt.
                 </p>
               </SectionBlock>
 
@@ -152,9 +156,18 @@ export default function DatenschutzPage() {
                   Zusendung.
                 </p>
                 <p className="mt-4">
+                  Bei Patenschaftsanfragen musst du zusätzlich die{" "}
+                  <a href="/widerruf" className="underline hover:no-underline">
+                    Widerrufsbelehrung
+                  </a>{" "}
+                  zur Kenntnis nehmen. Diese Bestätigung wird ebenfalls mit Zeitstempel gespeichert.
+                </p>
+                <p className="mt-4">
                   Bei Fundmeldungen kannst du optional ein Foto hochladen (max. 8 MB, JPG/PNG/WebP/GIF).
-                  Das Foto wird in unserem Dateispeicher abgelegt und nur zur Bearbeitung der Meldung
-                  genutzt.
+                  Fund-Fotos werden in einem geschützten Dateispeicher abgelegt und sind{" "}
+                  <strong className="text-foreground">nicht öffentlich</strong> abrufbar – nur wir
+                  können sie im Admin-Bereich einsehen (zeitlich begrenzte Zugriffs-Links). Das Foto
+                  wird ausschließlich zur Bearbeitung der Meldung genutzt.
                 </p>
                 <p className="mt-4">
                   Die Übertragung erfolgt verschlüsselt (SSL/TLS). Eine Weitergabe an Dritte
@@ -162,8 +175,10 @@ export default function DatenschutzPage() {
                 </p>
                 <p className="mt-4">
                   Speicherort: Formularinhalte werden in einer Datenbank (Supabase) gespeichert und
-                  sind nur für uns im geschützten Admin-Bereich einsehbar. Optional erhalten wir
-                  zusätzlich eine E-Mail-Benachrichtigung.
+                  sind nur für uns im geschützten Admin-Bereich einsehbar. Die Einwilligung in die
+                  Datenschutzerklärung wird mit Zeitstempel im Formular-Datensatz dokumentiert.
+                  Optional erhalten wir zusätzlich eine E-Mail-Benachrichtigung (Fund-Fotos als
+                  E-Mail-Anhang, nicht als öffentlicher Link).
                 </p>
                 <p className="mt-4">
                   Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung durch die
@@ -184,6 +199,14 @@ export default function DatenschutzPage() {
                   Zugangscode bereit. Dort werden der Patenname, die gewählte Patenschaftsstufe,
                   der zugeordnete Waschbär sowie veröffentlichte Updates (Texte und Fotos)
                   angezeigt.
+                </p>
+                <p className="mt-4">
+                  Nach erfolgreicher Anmeldung setzen wir ein technisch notwendiges Session-Cookie{" "}
+                  <code className="text-xs bg-muted-light px-1.5 py-0.5 rounded">
+                    {PATEN_SESSION_COOKIE}
+                  </code>{" "}
+                  (httpOnly, max. 30 Tage). Es dient ausschließlich dazu, dich im Paten-Bereich
+                  angemeldet zu halten. Es werden keine Tracking- oder Profiling-Daten erhoben.
                 </p>
                 <p className="mt-4">
                   Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Durchführung der Patenschaft) bzw.
@@ -241,6 +264,10 @@ export default function DatenschutzPage() {
                   </li>
                   <li>
                     <strong className="text-foreground">GoFundMe</strong> – für Spendenkampagnen
+                    (Zahlungsabwicklung durch GoFundMe). Auf unserer Website zeigen wir ausgewählte
+                    Spenden in gekürzter Form (Vorname und Anfangsbuchstabe des Nachnamens) sowie
+                    Betrag und Datum – Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (transparente
+                    Darstellung der Kampagne). Vollständige Namen sind nur auf GoFundMe einsehbar.
                   </li>
                   <li>
                     <strong className="text-foreground">Amazon</strong> – Wunschliste für
@@ -258,7 +285,19 @@ export default function DatenschutzPage() {
                 </p>
               </SectionBlock>
 
-              <SectionBlock title="9. Bildnachweise">
+              <SectionBlock id="widerruf" title="9. Widerrufsrecht bei Patenschaften">
+                <p>
+                  Für entgeltliche Patenschaften und damit verbundene Leistungen (z. B. Urkunde,
+                  Tasse) gelten die Regelungen zum Widerrufsrecht bei Fernabsatzverträgen. Die
+                  vollständige Widerrufsbelehrung inkl. Muster-Widerrufsformular findest du unter{" "}
+                  <a href="/widerruf" className="underline hover:no-underline">
+                    Widerrufsbelehrung
+                  </a>
+                  .
+                </p>
+              </SectionBlock>
+
+              <SectionBlock title="10. Bildnachweise">
                 <p>
                   Auf einigen Seiten werden Stock-Fotos (z. B. Pexels) verwendet. Details findest
                   du im{" "}
@@ -269,7 +308,7 @@ export default function DatenschutzPage() {
                 </p>
               </SectionBlock>
 
-              <SectionBlock title="10. Deine Rechte">
+              <SectionBlock title="11. Deine Rechte">
                 <p>Du hast gegenüber uns folgende Rechte bezüglich deiner personenbezogenen Daten:</p>
                 <ul className="mt-4 space-y-2 list-disc list-inside">
                   <li>Auskunft (Art. 15 DSGVO)</li>
@@ -288,7 +327,7 @@ export default function DatenschutzPage() {
                 </p>
               </SectionBlock>
 
-              <SectionBlock title="11. Beschwerderecht">
+              <SectionBlock title="12. Beschwerderecht">
                 <p>
                   Du hast das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren.
                   Zuständig in Sachsen-Anhalt ist der Landesbeauftragte für den Datenschutz

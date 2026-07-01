@@ -17,8 +17,10 @@ Backend für Formulare, Paten-Daten und Foto-Uploads.
 
 1. Supabase → **Storage** → **New bucket**
 2. Name: `uploads`
-3. **Public bucket**: aktivieren
+3. **Public bucket**: aktivieren (Paten-Update-Fotos sind öffentlich lesbar)
 4. Ordner entstehen automatisch: `paten-updates/`, `form-uploads/`
+
+**Bestehendes Projekt (DSGVO):** Zusätzlich `supabase/migration-form-uploads-private.sql` im SQL Editor ausführen. Danach sind Fund-Fotos unter `form-uploads/` nur noch per Admin (Signed URLs) einsehbar – nicht öffentlich im Internet.
 
 ## 4. API-Schlüssel für Vercel
 

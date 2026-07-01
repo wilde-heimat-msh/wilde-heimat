@@ -69,6 +69,7 @@ export const footerNavigation = {
   rechtliches: [
     { label: "Impressum", href: "/impressum" },
     { label: "Datenschutz", href: "/datenschutz" },
+    { label: "Widerrufsbelehrung", href: "/widerruf" },
     { label: "Administration", href: "/admin" },
   ],
 };

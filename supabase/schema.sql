@@ -74,19 +74,23 @@ alter table public.form_submissions enable row level security;
 
 -- Storage: Im Dashboard unter Storage → New bucket
 -- Name: uploads
--- Public bucket: yes (für Paten-Fotos in Updates)
--- Erlaubte Ordner: paten-updates/, form-uploads/
+-- Public bucket: yes (Paten-Update-Fotos öffentlich; Fund-Fotos nur per Signed URL)
+-- Ordner: paten-updates/ (öffentlich), form-uploads/ (privat)
 
 -- Optional: Bucket per SQL anlegen (falls noch nicht vorhanden)
 insert into storage.buckets (id, name, public)
 values ('uploads', 'uploads', true)
 on conflict (id) do update set public = true;
 
--- Öffentlicher Lesezugriff auf hochgeladene Bilder
+-- Öffentlicher Lesezugriff nur auf Paten-Update-Fotos
 drop policy if exists "Public read uploads" on storage.objects;
-create policy "Public read uploads"
+drop policy if exists "Public read paten updates" on storage.objects;
+create policy "Public read paten updates"
   on storage.objects for select
-  using (bucket_id = 'uploads');
+  using (
+    bucket_id = 'uploads'
+    and (storage.foldername(name))[1] = 'paten-updates'
+  );
 
 -- Schreibzugriff nur über Service Role (Next.js API)
 drop policy if exists "Service role write uploads" on storage.objects;

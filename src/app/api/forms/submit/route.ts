@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getWaschbaerBySlug } from "@/data/waschbaeren";
+import { FORM_WIDERRUF_CONSENT_FIELD } from "@/data/legal";
 import { FORM_PRIVACY_CONSENT_FIELD } from "@/data/privacy";
 import { patenschaftsStufen } from "@/data/site";
 import { formatFormFields, isFormMailConfigured, sendFormNotification } from "@/lib/formMail";
@@ -253,6 +254,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Ungültiger Formulartyp." }, { status: 400 });
     }
 
+    if (typeRaw === "patenschaft" && formData.get(FORM_WIDERRUF_CONSENT_FIELD) !== "ja") {
+      return NextResponse.json(
+        { error: "Bitte bestätige die Kenntnisnahme der Widerrufsbelehrung." },
+        { status: 400 }
+      );
+    }
+
+    const consentAt = new Date().toISOString();
+
     const payload = await buildMailPayload(typeRaw, formData);
     if ("error" in payload) {
       return NextResponse.json({ error: payload.error }, { status: payload.status });
@@ -268,24 +278,36 @@ export async function POST(request: Request) {
       );
     }
 
-    let attachmentUrl: string | undefined;
+    let attachmentRef: string | undefined;
 
     if (payload.attachmentFile && isSupabaseStorageEnabled()) {
       const uploaded = await uploadImage("form-uploads", payload.attachmentFile);
       if ("error" in uploaded) {
         return NextResponse.json({ error: uploaded.error }, { status: 400 });
       }
-      attachmentUrl = uploaded.url;
-      payload.fields.Foto = attachmentUrl;
-      payload.text = `${payload.text}\nFoto-URL: ${attachmentUrl}`;
+      if ("storagePath" in uploaded) {
+        attachmentRef = uploaded.storagePath;
+        payload.fields.Foto = "Im Admin-Bereich einsehbar";
+      }
+    }
+
+    const storedPayload: Record<string, string | undefined> = {
+      ...payload.fields,
+      [FORM_PRIVACY_CONSENT_FIELD]: "ja",
+      datenschutz_einwilligung_zeitpunkt: consentAt,
+    };
+
+    if (typeRaw === "patenschaft") {
+      storedPayload[FORM_WIDERRUF_CONSENT_FIELD] = "ja";
+      storedPayload.widerrufsbelehrung_zeitpunkt = consentAt;
     }
 
     if (isSupabaseConfigured()) {
       const saved = await saveFormSubmission({
         type: typeRaw,
-        payload: payload.fields,
+        payload: storedPayload,
         replyTo: payload.replyTo,
-        attachmentUrl,
+        attachmentUrl: attachmentRef,
       });
       if (!saved.ok) {
         return NextResponse.json({ error: saved.error }, { status: 503 });
@@ -296,9 +318,8 @@ export async function POST(request: Request) {
       const result = await sendFormNotification({
         subject: payload.subject,
         text: payload.text,
-        fields: payload.fields,
+        fields: storedPayload,
         replyTo: payload.replyTo,
-        attachmentUrl,
         attachments: payload.attachment ? [payload.attachment] : [],
       });
 

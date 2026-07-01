@@ -42,6 +42,19 @@ export function formatEuro(amount: number): string {
   });
 }
 
+/** Öffentliche Anzeige ohne vollständigen Namen (DSGVO) */
+export function formatDonorDisplayName(donor: GoFundMeDonor): string {
+  if (donor.anonym) return "Anonym";
+
+  const parts = donor.name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "Spender";
+  if (parts.length === 1) return `${parts[0].charAt(0).toUpperCase()}.`;
+
+  const first = parts[0];
+  const lastInitial = parts[parts.length - 1].charAt(0).toUpperCase();
+  return `${first} ${lastInitial}.`;
+}
+
 /** Ausgewählte Spenden – vollständige Liste auf GoFundMe */
 export const gofundmeTopDonors: GoFundMeDonor[] = [
   { name: "Nico Wüst", amount: 328, date: "2026-05-20" },

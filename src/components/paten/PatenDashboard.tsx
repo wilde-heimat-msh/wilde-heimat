@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { WaschbaerFotoFolgt } from "@/components/WaschbaerFotoFolgt";
 import { PatenschaftUpdateCard } from "@/components/paten/PatenschaftUpdateCard";
 import { PatenLogoutButton, PatenPortalNav } from "@/components/paten/PatenPortalNav";
 import {
@@ -25,7 +26,7 @@ type FeedResponse = {
     name: string;
     slug: string;
     kurztext: string;
-    foto: string;
+    foto: string | null;
   } | null;
   updates: PatenschaftUpdate[];
 };
@@ -115,13 +116,17 @@ export function PatenDashboard() {
           className={`rounded-2xl border p-5 sm:p-6 shadow-soft grid gap-5 sm:grid-cols-[7rem_1fr] items-center ${styles.panel}`}
         >
           <div className="relative mx-auto sm:mx-0 aspect-[3/4] w-full max-w-[7rem] overflow-hidden rounded-xl border-2 bg-neutral-200 shadow-sm">
-            <Image
-              src={feed.waschbaer.foto}
-              alt={feed.waschbaer.name}
-              fill
-              className="object-cover"
-              sizes="112px"
-            />
+            {feed.waschbaer.foto ? (
+              <Image
+                src={feed.waschbaer.foto}
+                alt={feed.waschbaer.name}
+                fill
+                className="object-cover"
+                sizes="112px"
+              />
+            ) : (
+              <WaschbaerFotoFolgt name={feed.waschbaer.name} compact className="h-full w-full" />
+            )}
           </div>
           <div>
             <p className="text-xs uppercase tracking-wide text-muted">Dein Patentier</p>

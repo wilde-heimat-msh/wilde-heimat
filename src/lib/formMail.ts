@@ -91,11 +91,11 @@ function escapeHtml(value: string): string {
 
 function buildHtmlBody({
   fields,
-  attachmentUrl,
+  hasPhotoAttachment,
   adminUrl,
 }: {
   fields: Record<string, string | undefined>;
-  attachmentUrl?: string;
+  hasPhotoAttachment?: boolean;
   adminUrl: string;
 }): string {
   const rows = Object.entries(fields)
@@ -106,9 +106,8 @@ function buildHtmlBody({
     )
     .join("");
 
-  const imageBlock = attachmentUrl
-    ? `<p style="margin:16px 0 8px;"><strong>Foto:</strong><br><a href="${escapeHtml(attachmentUrl)}">${escapeHtml(attachmentUrl)}</a></p>
-       <p><img src="${escapeHtml(attachmentUrl)}" alt="Fundmeldung Foto" style="max-width:100%;height:auto;border-radius:8px;border:1px solid #e5e7eb;" /></p>`
+  const imageBlock = hasPhotoAttachment
+    ? `<p style="margin:16px 0 8px;"><strong>Foto:</strong> Siehe E-Mail-Anhang bzw. Admin-Bereich.</p>`
     : "";
 
   return `<!DOCTYPE html>
@@ -216,14 +215,12 @@ export async function sendFormNotification({
   fields,
   replyTo,
   attachments = [],
-  attachmentUrl,
 }: {
   subject: string;
   text: string;
   fields?: Record<string, string | undefined>;
   replyTo?: string;
   attachments?: FormAttachment[];
-  attachmentUrl?: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   if (!isFormMailConfigured()) {
     return {
@@ -237,7 +234,7 @@ export async function sendFormNotification({
   const textWithFooter = `${text}\n\n───\nIm Admin ansehen: ${adminUrl}`;
   const html = buildHtmlBody({
     fields: fields ?? {},
-    attachmentUrl,
+    hasPhotoAttachment: attachments.length > 0,
     adminUrl,
   });
 

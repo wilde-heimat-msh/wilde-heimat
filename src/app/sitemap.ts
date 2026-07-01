@@ -30,6 +30,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry("/kontakt", 0.75),
     entry("/impressum", 0.3, "yearly"),
     entry("/datenschutz", 0.3, "yearly"),
+    entry("/widerruf", 0.3, "yearly"),
     ...ratgeberArtikel.map((a) => entry(`/ratgeber/${a.slug}`, 0.85, "monthly")),
     ...waschbaeren.map((w) => entry(`/waschbaeren/${w.slug}`, 0.75)),
   ];

@@ -12,6 +12,7 @@ import {
   SubmitButton,
   TextArea,
 } from "./FormFields";
+import { WiderrufConsentField } from "./WiderrufConsentField";
 import { submitPublicForm } from "@/lib/submitPublicForm";
 
 function resolveWaschbaer(slug?: string) {
@@ -38,6 +39,7 @@ export function PatenschaftForm({
   const [error, setError] = useState<string | null>(null);
   const [isGift, setIsGift] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [widerrufAccepted, setWiderrufAccepted] = useState(false);
 
   const waschbaerSlug = resolveWaschbaer(preselectedWaschbaer);
   const stufeId = resolveStufe(preselectedStufe);
@@ -50,6 +52,10 @@ export function PatenschaftForm({
     e.preventDefault();
     if (!privacyAccepted) {
       setError("Bitte bestätige die Datenschutzerklärung.");
+      return;
+    }
+    if (!widerrufAccepted) {
+      setError("Bitte bestätige die Kenntnisnahme der Widerrufsbelehrung.");
       return;
     }
     setLoading(true);
@@ -181,6 +187,7 @@ export function PatenschaftForm({
           {error}
         </p>
       ) : null}
+      <WiderrufConsentField onConsentChange={setWiderrufAccepted} />
       <PrivacyConsentField onConsentChange={setPrivacyAccepted} />
       <SubmitButton
         label={
@@ -190,7 +197,7 @@ export function PatenschaftForm({
               ? "Geschenk-Patenschaft anfragen"
               : "Patenschaft anfragen"
         }
-        disabled={loading || !privacyAccepted}
+        disabled={loading || !privacyAccepted || !widerrufAccepted}
       />
     </form>
   );

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { InfoBox } from "@/components/ui/InfoBox";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { siteConfig } from "@/data/site";
+import { vsbgHinweis } from "@/data/legal";
 import { formatContactAddressLines } from "@/lib/contact";
 import { pexelsLicense, stockPhotoCredits } from "@/data/photoCredits";
 import { pagePhotos } from "@/data/pagePhotos";
@@ -83,6 +84,19 @@ export default function ImpressumPage() {
                 sich nicht um eine gemeinnützige Organisation. Freiwillige Unterstützungen
                 können derzeit keine steuerlich absetzbaren Bescheinigungen erhalten.
               </InfoBox>
+
+              <div>
+                <h2 className="text-xl font-medium text-foreground mb-4">
+                  Verbraucherstreitbeilegung
+                </h2>
+                <p className="text-sm">
+                  {vsbgHinweis} Informationen zur{" "}
+                  <a href="/widerruf" className="underline hover:no-underline">
+                    Widerrufsbelehrung
+                  </a>{" "}
+                  bei Patenschaften.
+                </p>
+              </div>
 
               <div>
                 <h2 className="text-xl font-medium text-foreground mb-4">
