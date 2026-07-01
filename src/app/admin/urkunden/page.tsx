@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
 import { AdminGate } from "@/components/admin/AdminGate";
 import { AdminUrkundenEditor } from "@/components/admin/AdminUrkundenEditor";
+import { adminMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Urkunden-Administration",
-  robots: { index: false, follow: false },
-};
+export const metadata = adminMetadata("Urkunden-Administration");
 
 export default function AdminUrkundenPage() {
   return (

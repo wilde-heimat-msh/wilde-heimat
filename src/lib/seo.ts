@@ -26,6 +26,25 @@ export function absoluteUrl(path = ""): string {
   return `${getSiteUrl()}${normalized === "/" ? "" : normalized}`;
 }
 
+/** Favicon & App-Icons – auf jeder Seite im Tab sichtbar */
+export const siteIcons: NonNullable<Metadata["icons"]> = {
+  icon: [
+    { url: "/favicon.ico", sizes: "32x32" },
+    { url: "/icon.png", type: "image/png", sizes: "192x192" },
+    { url: "/icon.png", type: "image/png", sizes: "512x512" },
+  ],
+  apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
+  shortcut: "/favicon.ico",
+};
+
+export function adminMetadata(title: string): Metadata {
+  return {
+    title,
+    robots: { index: false, follow: false },
+    icons: siteIcons,
+  };
+}
+
 export function createMetadata({
   title,
   description,
@@ -52,6 +71,7 @@ export function createMetadata({
     title: isHome ? { absolute: pageTitle } : pageTitle,
     description,
     keywords: [...new Set([...siteConfig.keywords, ...keywords])],
+    icons: siteIcons,
     authors: [{ name: "Julia Rothmann", url: absoluteUrl("/ueber-uns") }],
     creator: siteConfig.name,
     publisher: siteConfig.name,
@@ -114,10 +134,7 @@ export const rootMetadata: Metadata = {
     address: false,
     telephone: false,
   },
-  icons: {
-    icon: [{ url: "/icon.png", type: "image/png", sizes: "512x512" }],
-    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
-  },
+  icons: siteIcons,
   openGraph: {
     siteName: siteConfig.name,
     locale: "de_DE",

@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
 import { AdminGate } from "@/components/admin/AdminGate";
 import { AdminAnfragenManager } from "@/components/admin/AdminAnfragenManager";
+import { adminMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Formular-Anfragen",
-  robots: { index: false, follow: false },
-};
+export const metadata = adminMetadata("Formular-Anfragen");
 
 export default function AdminAnfragenPage() {
   return (

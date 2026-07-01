@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
 import { AdminGate } from "@/components/admin/AdminGate";
 import { AdminUpdatesManager } from "@/components/admin/AdminUpdatesManager";
+import { adminMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Paten-Updates",
-  robots: { index: false, follow: false },
-};
+export const metadata = adminMetadata("Paten-Updates");
 
 export default function AdminUpdatesPage() {
   return (
