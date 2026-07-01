@@ -2,21 +2,11 @@ import Image from "next/image";
 import { Stagger, StaggerItem } from "@/components/motion/FadeIn";
 import type { WaschbaerGalerieFoto } from "@/data/photos";
 
-function aspectClass(foto: WaschbaerGalerieFoto, featured: boolean): string {
-  if (featured) {
-    return foto.aspect === "portrait" ? "aspect-[4/5]" : "aspect-[16/10]";
-  }
-  if (foto.aspect === "portrait") return "aspect-[3/4]";
-  if (foto.aspect === "landscape") return "aspect-[4/3]";
-  return "aspect-square";
-}
-
 type WaschbaerGalleryProps = {
   fotos: WaschbaerGalerieFoto[];
-  name: string;
 };
 
-export function WaschbaerGallery({ fotos, name }: WaschbaerGalleryProps) {
+export function WaschbaerGallery({ fotos }: WaschbaerGalleryProps) {
   if (fotos.length === 0) return null;
 
   return (
@@ -26,14 +16,13 @@ export function WaschbaerGallery({ fotos, name }: WaschbaerGalleryProps) {
 
         return (
           <StaggerItem key={foto.src} className={featured ? "col-span-2" : undefined}>
-            <div
-              className={`relative overflow-hidden rounded-2xl bg-neutral-800 shadow-soft ${aspectClass(foto, featured)}`}
-            >
+            <div className="overflow-hidden rounded-2xl bg-neutral-800 shadow-soft">
               <Image
                 src={foto.src}
                 alt={foto.alt}
-                fill
-                className="object-cover"
+                width={foto.width}
+                height={foto.height}
+                className="h-auto w-full"
                 style={{ objectPosition: foto.objectPosition ?? "center center" }}
                 sizes={featured ? "(max-width: 768px) 100vw, 480px" : "240px"}
               />

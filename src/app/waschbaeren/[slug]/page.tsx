@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import { getWaschbaerBySlug, waschbaeren } from "@/data/waschbaeren";
 import {
   getWaschbaerGalerie,
@@ -15,6 +14,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PatenschaftForm } from "@/components/forms/PatenschaftForm";
 import { WaschbaerGallery } from "@/components/WaschbaerGallery";
+import { WaschbaerFotoFolgt } from "@/components/WaschbaerFotoFolgt";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/FadeIn";
 import { pagePhotos } from "@/data/pagePhotos";
 import { createMetadata } from "@/lib/seo";
@@ -34,6 +34,8 @@ export async function generateMetadata({ params }: Props) {
   const waschbaer = getWaschbaerBySlug(slug);
   if (!waschbaer) return {};
 
+  const hatEchteFotos = hasWaschbaerEchteFotos(slug);
+
   return createMetadata({
     title: `${waschbaer.name} – Waschbär-Patenschaft`,
     description: `${waschbaer.kurztext} Patenschaft für ${waschbaer.name} bei Wilde Heimat – private Waschbärhilfe in Mansfeld-Südharz, Sachsen-Anhalt.`,
@@ -43,13 +45,13 @@ export async function generateMetadata({ params }: Props) {
       `${waschbaer.name} Waschbär`,
       "Waschbär Patenschaft Sachsen-Anhalt",
     ],
-    ogImage: getWaschbaerProfilfoto(waschbaer.slug),
-    ogImageAlt: `${waschbaer.name} – Patentier bei Wilde Heimat`,
+    ...(hatEchteFotos
+      ? {
+          ogImage: getWaschbaerProfilfoto(waschbaer.slug),
+          ogImageAlt: `${waschbaer.name} – Patentier bei Wilde Heimat`,
+        }
+      : {}),
   });
-}
-
-function getGalleryIndices(): number[] {
-  return [0, 1, 2, 3];
 }
 
 export default async function WaschbaerDetailPage({ params }: Props) {
@@ -62,7 +64,6 @@ export default async function WaschbaerDetailPage({ params }: Props) {
 
   const hatEchteFotos = hasWaschbaerEchteFotos(slug);
   const galerie = getWaschbaerGalerie(slug);
-  const galleryIndices = getGalleryIndices();
 
   const structuredData = jsonLdGraph([
     webPageSchema({
@@ -111,34 +112,15 @@ export default async function WaschbaerDetailPage({ params }: Props) {
           <FadeIn direction="left">
             <h2 className="text-2xl font-light mb-6">Galerie</h2>
             {galerie.length > 0 ? (
-              <WaschbaerGallery fotos={galerie} name={waschbaer.name} />
+              <WaschbaerGallery fotos={galerie} />
             ) : (
               <>
-                <Stagger className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-3" stagger={0.08}>
-                  {galleryIndices.map((_, i) => (
-                    <StaggerItem
-                      key={i}
-                      className={i === 0 ? "col-span-2" : undefined}
-                    >
-                      <div
-                        className={`relative overflow-hidden rounded-2xl bg-neutral-800 shadow-soft ${
-                          i === 0 ? "aspect-[16/10]" : "aspect-square"
-                        }`}
-                      >
-                        <Image
-                          src={waschbaerProfilPlatzhalter}
-                          alt="Platzhalter – echtes Foto folgt"
-                          fill
-                          className="object-cover opacity-90"
-                          sizes="400px"
-                        />
-                      </div>
-                    </StaggerItem>
-                  ))}
-                </Stagger>
+                <div className="overflow-hidden rounded-2xl border border-border shadow-soft aspect-[16/10]">
+                  <WaschbaerFotoFolgt name={waschbaer.name} className="h-full min-h-[220px]" />
+                </div>
                 <p className="mt-4 text-xs text-muted">
-                  Die Fotos sind noch Platzhalter – die richtigen Bilder ordnen wir
-                  gemeinsam zu, sobald sie vorliegen.
+                  Für {waschbaer.name} liegen noch keine Profilfotos vor – Bilder
+                  folgen, sobald sie fest zugeordnet sind.
                 </p>
               </>
             )}

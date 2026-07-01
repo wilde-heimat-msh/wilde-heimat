@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Waschbaer } from "@/data/waschbaeren";
 import { getWaschbaerCardFoto, hasWaschbaerEchteFotos } from "@/data/photos";
+import { WaschbaerFotoFolgt } from "@/components/WaschbaerFotoFolgt";
 
 type WaschbaerCardProps = {
   waschbaer: Waschbaer;
@@ -14,23 +15,29 @@ type WaschbaerCardProps = {
 
 function CardImage({ waschbaer, compact }: { waschbaer: Waschbaer; compact: boolean }) {
   const hatEchtesFoto = hasWaschbaerEchteFotos(waschbaer.slug);
+
+  if (!hatEchtesFoto) {
+    return (
+      <WaschbaerFotoFolgt
+        name={waschbaer.name}
+        compact={compact}
+        className="aspect-[3/4] border-b border-border"
+      />
+    );
+  }
+
   const src = getWaschbaerCardFoto(waschbaer.slug);
 
   return (
-    <div className="aspect-[4/3] relative overflow-hidden bg-neutral-800">
+    <div className="aspect-[3/4] relative overflow-hidden bg-neutral-800">
       <Image
         src={src}
-        alt={hatEchtesFoto ? `${waschbaer.name} – bei Wilde Heimat` : `${waschbaer.name} – Foto folgt`}
+        alt={`${waschbaer.name} – bei Wilde Heimat`}
         fill
-        className={`group-hover-zoom object-cover ${hatEchtesFoto ? "" : "opacity-90"}`}
+        className="group-hover-zoom object-cover"
         sizes={compact ? "200px" : "(max-width: 768px) 50vw, 33vw"}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 via-transparent to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
-      {!hatEchtesFoto ? (
-        <span className="absolute top-3 right-3 text-[10px] uppercase tracking-wider px-2 py-1 rounded-full bg-background/90 text-muted backdrop-blur-sm">
-          Foto folgt
-        </span>
-      ) : null}
     </div>
   );
 }

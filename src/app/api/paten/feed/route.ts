@@ -3,7 +3,7 @@ import { getAuthenticatedPaten } from "@/lib/patenAuth";
 import { getUpdatesForPaten, listUpdates } from "@/lib/patenschaftStore";
 import { getWaschbaerBySlug } from "@/data/waschbaeren";
 import { getPatenschaftStufe } from "@/data/patenschaften";
-import { getWaschbaerProfilfoto } from "@/data/photos";
+import { getWaschbaerProfilfoto, hasWaschbaerEchteFotos } from "@/data/photos";
 import { apiErrorResponse } from "@/lib/apiError";
 
 export async function GET() {
@@ -29,7 +29,9 @@ export async function GET() {
           name: waschbaer.name,
           slug: waschbaer.slug,
           kurztext: waschbaer.kurztext,
-          foto: getWaschbaerProfilfoto(waschbaer.slug),
+          foto: hasWaschbaerEchteFotos(waschbaer.slug)
+            ? getWaschbaerProfilfoto(waschbaer.slug)
+            : null,
         }
       : null,
     updates,

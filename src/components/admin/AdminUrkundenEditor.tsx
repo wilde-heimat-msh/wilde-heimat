@@ -10,7 +10,7 @@ import {
   type PatenschaftStufeId,
   type PatenschaftUrkundeDaten,
 } from "@/data/patenschaften";
-import { getWaschbaerProfilfoto } from "@/data/photos";
+import { getWaschbaerProfilfoto, hasWaschbaerEchteFotos } from "@/data/photos";
 import { patenschaftUrkundeFormat } from "@/data/privacy";
 import { patenschaftsStufen } from "@/data/site";
 import { waschbaeren } from "@/data/waschbaeren";
@@ -57,7 +57,9 @@ export function AdminUrkundenEditor() {
     update({
       waschbaerSlug: waschbaer.slug,
       waschbaer: waschbaer.name,
-      waschbaerFoto: getWaschbaerProfilfoto(waschbaer.slug),
+      waschbaerFoto: hasWaschbaerEchteFotos(waschbaer.slug)
+        ? getWaschbaerProfilfoto(waschbaer.slug)
+        : "",
     });
   }
 
