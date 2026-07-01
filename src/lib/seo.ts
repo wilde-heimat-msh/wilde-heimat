@@ -136,4 +136,13 @@ export const rootMetadata: Metadata = {
     card: "summary_large_image",
     images: [absoluteUrl(siteShareImage)],
   },
+  ...(process.env.GOOGLE_SITE_VERIFICATION || "QfuhirGa1T8RJZGzCYvdmgLPtt2DqrVFmReuG1SCOgY"
+    ? {
+        verification: {
+          google:
+            process.env.GOOGLE_SITE_VERIFICATION ??
+            "QfuhirGa1T8RJZGzCYvdmgLPtt2DqrVFmReuG1SCOgY",
+        },
+      }
+    : {}),
 };
