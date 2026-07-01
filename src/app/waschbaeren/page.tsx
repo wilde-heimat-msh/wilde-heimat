@@ -26,7 +26,7 @@ export const metadata = createMetadata({
 });
 
 const profilHinweis =
-  "Profilfotos werden nach und nach ergänzt. Luna, Oskar, Mila, Pablo und Loki haben bereits echte Bilder – weitere Tiere folgen, sobald die Fotos fest zugeordnet sind.";
+  "Profilfotos werden nach und nach ergänzt. Luna, Oskar, Mila, Pablo, Loki und Boba haben bereits echte Bilder – weitere Tiere folgen, sobald die Fotos fest zugeordnet sind.";
 
 export default function WaschbaerenPage() {
   const structuredData = jsonLdGraph([

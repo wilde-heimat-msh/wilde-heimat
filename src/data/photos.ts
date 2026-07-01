@@ -91,6 +91,17 @@ const waschbaerGalerien: Partial<Record<string, WaschbaerGalerieFoto[]>> = {
       aspect: "portrait",
     },
   ],
+  boba: [
+    {
+      src: "/photos/waschbaeren/boba-portrait.jpg",
+      alt: "Boba schaut neugierig von unten in die Kamera",
+      caption:
+        "Boba – frech, neugierig und immer bereit für das nächste Abenteuer.",
+      featured: true,
+      objectPosition: "center 30%",
+      aspect: "portrait",
+    },
+  ],
   loki: [
     {
       src: "/photos/waschbaeren/loki-portrait.jpg",
