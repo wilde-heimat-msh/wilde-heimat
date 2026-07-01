@@ -147,13 +147,22 @@ const waschbaerGalerien: Partial<Record<string, WaschbaerGalerieFoto[]>> = {
   ],
   boba: [
     {
+      src: "/photos/waschbaeren/boba-aufgestanden.jpg",
+      width: 768,
+      height: 1024,
+      alt: "Boba lugt verschlafen aus seiner Kuscheldecke hervor",
+      caption:
+        "Gerade aufgestanden – Boba schaut neugierig aus seiner Kuschelhöhle.",
+      featured: true,
+      objectPosition: "center 35%",
+    },
+    {
       src: "/photos/waschbaeren/boba-portrait.jpg",
       width: 646,
       height: 1024,
       alt: "Boba schaut neugierig von unten in die Kamera",
       caption:
         "Boba – frech, neugierig und immer bereit für das nächste Abenteuer.",
-      featured: true,
       objectPosition: "center 30%",
     },
   ],
@@ -223,6 +232,27 @@ const waschbaerGalerien: Partial<Record<string, WaschbaerGalerieFoto[]>> = {
       alt: "Mausi sitzt selbstbewusst auf einem Steinsockel",
       caption: "Selbstbewusst und voller Charme – Mausi regiert mit Herz.",
       objectPosition: "center 30%",
+    },
+  ],
+  charlie: [
+    {
+      src: "/photos/waschbaeren/charlie-portrait.jpg",
+      width: 629,
+      height: 1024,
+      alt: "Charlie schaut neugierig in die Kamera",
+      caption:
+        "Charlie – die Sportskanone mit offenem Blick und voller Energie.",
+      featured: true,
+      objectPosition: "center 30%",
+    },
+    {
+      src: "/photos/waschbaeren/charlie-klettergelaende.jpg",
+      width: 587,
+      height: 1024,
+      alt: "Charlie steht auf dem Klettergerüst in seinem Gehege",
+      caption:
+        "Immer in Bewegung – Charlie erobert jedes Klettergerüst mit Schwung.",
+      objectPosition: "center 35%",
     },
   ],
 };

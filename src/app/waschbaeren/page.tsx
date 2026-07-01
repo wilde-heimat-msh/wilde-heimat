@@ -26,7 +26,7 @@ export const metadata = createMetadata({
 });
 
 const profilHinweis =
-  "Echte Profilfotos: Pedro, Mausi, Minnie, Mika, Luna, Oskar, Mila, Pablo, Loki und Boba. Für Lotti und Charlie folgen die Bilder noch.";
+  "Echte Profilfotos: Pedro, Mausi, Minnie, Mika, Luna, Oskar, Mila, Pablo, Loki, Boba und Charlie. Für Lotti folgen die Bilder noch.";
 
 export default function WaschbaerenPage() {
   const structuredData = jsonLdGraph([
