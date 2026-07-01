@@ -16,6 +16,7 @@ const typeLabels: Record<string, string> = {
 type MailStatus = {
   configured: boolean;
   domainVerified: boolean;
+  provider: "smtp" | "resend" | null;
   to: string;
   from: string;
 };
@@ -84,14 +85,14 @@ function MailStatusBanner({ mail }: { mail: MailStatus | null }) {
   if (!mail.configured) {
     return (
       <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-        E-Mail-Benachrichtigungen sind noch nicht aktiv (<code className="text-xs">RESEND_API_KEY</code> fehlt).
-        Anfragen werden hier gespeichert. Sobald die Domain freigeschaltet ist, Resend einrichten – siehe{" "}
+        E-Mail-Benachrichtigungen sind noch nicht aktiv (SMTP-Zugangsdaten fehlen in Vercel).
+        Anfragen werden hier gespeichert. Checkdomain-SMTP einrichten – siehe{" "}
         <code className="text-xs">docs/email-setup.md</code>.
       </p>
     );
   }
 
-  if (!mail.domainVerified) {
+  if (mail.provider === "resend" && !mail.domainVerified) {
     return (
       <p className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
         E-Mail-Versand vorbereitet an <strong>{mail.to}</strong> (Absender: {mail.from}).
@@ -167,7 +168,7 @@ export function AdminAnfragenManager() {
           <h1 className="text-2xl font-medium text-forest">Formular-Anfragen</h1>
           <p className="mt-1 text-sm text-muted max-w-2xl">
             Alle eingegangenen Kontakt-, Fund- und Patenschaftsanfragen – inkl. Fotos. Zusätzlich
-            E-Mail an kontakt@wilde-heimat-msh.de, sobald Resend aktiv ist.
+            E-Mail an kontakt@wilde-heimat-msh.de, sobald Checkdomain-SMTP in Vercel aktiv ist.
           </p>
         </div>
         <AdminLogoutButton />

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isFormMailConfigured } from "@/lib/formMail";
+import { getFormMailProvider, isFormMailConfigured } from "@/lib/formMail";
 import { isSupabaseConfigured } from "@/lib/supabase/admin";
 
 export async function GET() {
@@ -15,6 +15,7 @@ export async function GET() {
     },
     email: {
       configured: isFormMailConfigured(),
+      provider: getFormMailProvider(),
     },
   });
 }

@@ -262,7 +262,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Formular-Versand ist noch nicht eingerichtet (Supabase oder Resend fehlt auf dem Server).",
+            "Formular-Versand ist noch nicht eingerichtet (Supabase oder E-Mail-Versand fehlt auf dem Server).",
         },
         { status: 503 }
       );

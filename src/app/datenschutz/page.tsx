@@ -118,9 +118,9 @@ export default function DatenschutzPage() {
                     Dateispeicher)
                   </li>
                   <li>
-                    <strong className="text-foreground">Resend Inc.</strong> – optionaler Versand
-                    von E-Mail-Benachrichtigungen bei neuen Formular-Eingängen (sofern
-                    eingerichtet)
+                    <strong className="text-foreground">checkdomain GmbH</strong> – optionaler
+                    Versand von E-Mail-Benachrichtigungen bei neuen Formular-Eingängen über unser
+                    Postfach (sofern eingerichtet)
                   </li>
                 </ul>
                 <p className="mt-4">

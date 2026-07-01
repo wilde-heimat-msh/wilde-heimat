@@ -67,7 +67,7 @@ git push origin main
 5. **Environment Variables** setzen:
    - `ADMIN_URKUNDEN_PASSWORD` = sicheres Passwort
    - `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (siehe `supabase/README.md`)
-   - Optional: `RESEND_API_KEY` für E-Mail bei neuen Formularen
+   - Optional: SMTP-Zugangsdaten (Checkdomain) für E-Mail bei neuen Formularen
 6. **Deploy**
 
 Nach dem Deploy ist die Seite unter `https://<projekt>.vercel.app` erreichbar.
@@ -96,5 +96,5 @@ NEXT_PUBLIC_SITE_URL=https://www.wilde-heimat-msh.de
 
 Formulare, Paten-Daten und Fotos laufen über **Supabase** (PostgreSQL + Storage). Einrichtung: `supabase/README.md`.
 
-Optional: **Resend** für E-Mail-Benachrichtigungen an `kontakt@wilde-heimat-msh.de` – Anleitung: [`docs/email-setup.md`](docs/email-setup.md).
+Optional: **Checkdomain SMTP** für E-Mail-Benachrichtigungen an `kontakt@wilde-heimat-msh.de` – Anleitung: [`docs/email-setup.md`](docs/email-setup.md).
 

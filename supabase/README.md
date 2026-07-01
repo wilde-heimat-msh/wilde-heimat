@@ -35,7 +35,7 @@ In **Vercel → Environment Variables** eintragen → **Redeploy**.
 
 Supabase → **Table Editor** → `form_submissions`
 
-Optional zusätzlich `RESEND_API_KEY` für E-Mail-Benachrichtigung bei neuen Anfragen.
+Optional zusätzlich SMTP-Zugangsdaten (Checkdomain) für E-Mail-Benachrichtigung bei neuen Anfragen.
 
 ## Lokal ohne Supabase
 

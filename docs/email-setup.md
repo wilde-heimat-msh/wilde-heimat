@@ -2,7 +2,7 @@
 
 Neue Formular-Anfragen werden **immer in Supabase gespeichert** und im Admin unter **Anfragen** angezeigt (inkl. Fotos).
 
-Zusätzlich kann bei jedem Eingang eine **E-Mail an `kontakt@wilde-heimat-msh.de`** verschickt werden – sobald Resend eingerichtet ist.
+Zusätzlich kann bei jedem Eingang eine **E-Mail an `kontakt@wilde-heimat-msh.de`** verschickt werden – über euer **Checkdomain-Postfach** (SMTP).
 
 ## Ablauf
 
@@ -10,68 +10,69 @@ Zusätzlich kann bei jedem Eingang eine **E-Mail an `kontakt@wilde-heimat-msh.de
 2. Daten landen in Supabase → sichtbar unter `/admin/anfragen`
 3. Optional: E-Mail mit allen Feldern (+ Foto als Anhang bei Fundmeldungen) an euch
 
-## Phase 1 – Jetzt (ohne eigene Domain)
+## Checkdomain SMTP einrichten (empfohlen)
 
-Formulare funktionieren über Supabase. E-Mails können schon getestet werden, solange Resend nur an die **verifizierte Test-Adresse** sendet.
+### 1. Server-Daten aus Checkdomain holen
 
-### Resend einrichten
+1. [checkdomain Kundenbereich](https://www.checkdomain.de) → **E-Mails**
+2. Neben `kontakt@wilde-heimat-msh.de` auf das **Zahnrad** klicken
+3. Unten **E-Mail-Server-Infos** öffnen
+4. Notieren: **Postausgang (SMTP)** – Server-Adresse und Port (meist **587** mit STARTTLS oder **465** mit SSL)
 
-1. Konto auf [resend.com](https://resend.com) anlegen
-2. **API Keys** → neuen Key erstellen
-3. In **Vercel → Environment Variables** eintragen:
+### 2. Variablen in Vercel setzen
+
+**Settings → Environment Variables → Production:**
 
 ```
-RESEND_API_KEY=re_xxxxxxxx
+SMTP_HOST=<Postausgangsserver aus Checkdomain>
+SMTP_PORT=587
+SMTP_USER=kontakt@wilde-heimat-msh.de
+SMTP_PASS=<Postfach-Passwort>
 FORM_MAIL_TO=kontakt@wilde-heimat-msh.de
 ```
 
-4. **Ohne Domain-Verifizierung** muss der Absender vorerst sein:
+Optional (Standard ist schon `Wilde Heimat <kontakt@wilde-heimat-msh.de>`):
 
 ```
-FORM_MAIL_FROM=Wilde Heimat <onboarding@resend.dev>
-```
-
-5. Vercel neu deployen
-
-> Resend erlaubt ohne Domain nur Versand **an die E-Mail-Adresse eures Resend-Kontos**. Zum Testen reicht das. Alle Anfragen seht ihr trotzdem im Admin.
-
-## Phase 2 – Sobald `wilde-heimat-msh.de` freigeschaltet ist
-
-### Domain bei Resend verifizieren
-
-1. Resend → **Domains** → **Add Domain** → `wilde-heimat-msh.de`
-2. Die angezeigten **DNS-Einträge** (SPF, DKIM, ggf. MX) beim Domain-Anbieter eintragen
-3. Warten bis Resend „Verified“ anzeigt
-
-### Vercel-Umgebungsvariablen anpassen
-
-```
-RESEND_API_KEY=re_xxxxxxxx
-FORM_MAIL_TO=kontakt@wilde-heimat-msh.de
 FORM_MAIL_FROM=Wilde Heimat <kontakt@wilde-heimat-msh.de>
-FORM_MAIL_DOMAIN_VERIFIED=true
 ```
 
-Alternativ nur `FORM_MAIL_DOMAIN_VERIFIED=true` setzen – dann wird `kontakt@wilde-heimat-msh.de` automatisch als Absender verwendet.
+Bei Port **465** zusätzlich:
 
-### Test
+```
+SMTP_SECURE=true
+```
 
-1. Kontaktformular auf der Live-Website ausfüllen
-2. E-Mail an `kontakt@wilde-heimat-msh.de` prüfen
-3. Fundmeldung mit Foto testen → Foto als Anhang + Vorschau-Link
-4. Admin → **Anfragen** → Eintrag mit Bildvorschau prüfen
+### 3. Redeploy
+
+Nach dem Speichern der Variablen in Vercel ein **Redeploy** auslösen.
+
+### 4. Test
+
+1. Kontaktformular auf https://www.wilde-heimat-msh.de ausfüllen
+2. Posteingang von `kontakt@wilde-heimat-msh.de` prüfen
+3. Fundmeldung mit Foto testen → Foto als Anhang + Link im Admin
+4. Admin → **Anfragen** → grüner Hinweis „E-Mail wird gesendet“
 
 ## Alle relevanten Variablen
 
 | Variable | Beschreibung |
 |----------|--------------|
-| `RESEND_API_KEY` | API-Schlüssel von Resend (aktiviert E-Mail-Versand) |
+| `SMTP_HOST` | Postausgangsserver von Checkdomain |
+| `SMTP_PORT` | Meist `587` (STARTTLS) oder `465` (SSL) |
+| `SMTP_SECURE` | `true` bei Port 465 |
+| `SMTP_USER` | E-Mail-Adresse des Postfachs |
+| `SMTP_PASS` | Passwort des Postfachs |
 | `FORM_MAIL_TO` | Empfänger (Standard: `kontakt@wilde-heimat-msh.de`) |
-| `FORM_MAIL_FROM` | Absender (überschreibt automatische Logik) |
-| `FORM_MAIL_DOMAIN_VERIFIED` | `true` → Absender `kontakt@wilde-heimat-msh.de` |
+| `FORM_MAIL_FROM` | Absender (optional) |
 
 ## Fehlerbehebung
 
-- **Keine E-Mail, aber Admin zeigt Anfrage:** `RESEND_API_KEY` fehlt oder ist falsch – Supabase speichert trotzdem.
-- **E-Mail kommt nicht an:** Domain noch nicht verifiziert und `FORM_MAIL_FROM` nicht `onboarding@resend.dev`.
+- **Keine E-Mail, aber Admin zeigt Anfrage:** SMTP-Zugangsdaten prüfen – Supabase speichert trotzdem.
+- **Verbindung schlägt fehl:** `SMTP_HOST` und `SMTP_PORT` mit Checkdomain-Server-Infos abgleichen.
+- **Falsches Passwort:** Postfach-Passwort im Checkdomain-Kundenbereich zurücksetzen.
 - **Foto fehlt in E-Mail:** Fundmeldung erneut testen; Anhang max. 8 MB (JPG, PNG, WebP, GIF).
+
+## Alternative: Resend (optional)
+
+Falls SMTP nicht funktionieren soll, kann alternativ `RESEND_API_KEY` gesetzt werden. SMTP hat Vorrang, wenn beides konfiguriert ist.

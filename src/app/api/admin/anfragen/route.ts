@@ -6,6 +6,7 @@ import {
 } from "@/lib/supabase/formSubmissions";
 import {
   getFormMailFrom,
+  getFormMailProvider,
   getFormMailTo,
   isFormMailConfigured,
   isFormMailDomainVerified,
@@ -30,6 +31,7 @@ export async function GET() {
       mail: {
         configured: isFormMailConfigured(),
         domainVerified: isFormMailDomainVerified(),
+        provider: getFormMailProvider(),
         to: getFormMailTo(),
         from: getFormMailFrom(),
       },
