@@ -72,14 +72,25 @@ git push origin main
 
 Nach dem Deploy ist die Seite unter `https://<projekt>.vercel.app` erreichbar.
 
-### Schritt 3: Eigene Domain (später)
+### Schritt 3: Eigene Domain (live)
 
-Wenn `wilde-heimat-msh.de` registriert ist:
+Domain `wilde-heimat-msh.de` bei Checkdomain → Vercel:
 
-1. Vercel → **Project Settings → Domains** → Domain hinzufügen
-2. DNS beim Domain-Anbieter wie von Vercel angegeben eintragen
-3. In Vercel setzen: `NEXT_PUBLIC_SITE_URL=https://wilde-heimat-msh.de`
-4. Neu deployen
+1. Vercel → **Project Settings → Domains** → `wilde-heimat-msh.de` + `www.wilde-heimat-msh.de`
+2. DNS bei Checkdomain:
+   - **Haupt-IP (A):** `216.198.79.1` (oder aktuelle IP laut Vercel)
+   - **CNAME www:** Wert aus Vercel (z. B. `….vercel-dns-017.com`)
+   - **Inklusive www:** Nein
+   - **E-Mail / MX / SPF:** unverändert lassen
+3. In Vercel setzen:
+
+```
+NEXT_PUBLIC_SITE_URL=https://www.wilde-heimat-msh.de
+```
+
+4. **Redeploy** – kanonische URLs, Sitemap und OG-Tags nutzen dann `www`
+
+> `wilde-heimat-msh.de` (ohne www) leitet bei Vercel per 308 auf `www` weiter.
 
 ### Backend (Supabase)
 

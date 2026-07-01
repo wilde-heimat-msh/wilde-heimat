@@ -12,7 +12,7 @@ export const siteConfig = {
   operatingAreaShort: "MSH",
   helpScope:
     "Verwurzelt in Mansfeld-Südharz – unser Ratgeber und unsere Hilfe gelten deutschlandweit, wo wir können.",
-  url: "https://wilde-heimat-msh.de",
+  url: "https://www.wilde-heimat-msh.de",
   email: "kontakt@wilde-heimat-msh.de",
   /** Ansprechperson der privaten Initiative (Impressum & Datenschutz) */
   contact: {

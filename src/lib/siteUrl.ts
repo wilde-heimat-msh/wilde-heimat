@@ -1,9 +1,11 @@
-/** Kanonische Domain – wird gesetzt, sobald wilde-heimat-msh.de verbunden ist. */
-export const productionSiteUrl = "https://wilde-heimat-msh.de";
+/** Kanonische Produktions-URL (www – Apex leitet per Vercel auf www weiter). */
+export const productionSiteUrl = "https://www.wilde-heimat-msh.de";
+export const productionSiteHost = "www.wilde-heimat-msh.de";
+export const productionSiteApex = "wilde-heimat-msh.de";
 
 /**
  * Aktuelle öffentliche Basis-URL der Website.
- * Vercel: automatisch *.vercel.app, später NEXT_PUBLIC_SITE_URL auf die echte Domain setzen.
+ * In Vercel: NEXT_PUBLIC_SITE_URL=https://www.wilde-heimat-msh.de setzen.
  */
 export function getSiteUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
