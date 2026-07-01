@@ -26,7 +26,7 @@ export const metadata = createMetadata({
 });
 
 const profilHinweis =
-  "Echte Profilfotos: Pedro, Mausi, Minnie, Mika, Luna, Oskar, Mila, Pablo, Loki, Boba und Charlie. Für Lotti folgen die Bilder noch.";
+  "Alle zwölf Waschbären haben jetzt echte Profilfotos und Galeriebilder.";
 
 export default function WaschbaerenPage() {
   const structuredData = jsonLdGraph([

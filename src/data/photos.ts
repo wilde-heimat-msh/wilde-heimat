@@ -234,17 +234,28 @@ const waschbaerGalerien: Partial<Record<string, WaschbaerGalerieFoto[]>> = {
       objectPosition: "center 30%",
     },
   ],
-  charlie: [
+  lotti: [
     {
-      src: "/photos/waschbaeren/charlie-portrait.jpg",
-      width: 629,
+      src: "/photos/waschbaeren/lotti-schulter.jpg",
+      width: 660,
       height: 1024,
-      alt: "Charlie schaut neugierig in die Kamera",
+      alt: "Lotti sitzt vertrauensvoll auf einer Schulter unter blauem Himmel",
       caption:
-        "Charlie – die Sportskanone mit offenem Blick und voller Energie.",
+        "Lotti – der Süßzahn mit großem Vertrauen und anhänglichem Wesen.",
       featured: true,
       objectPosition: "center 30%",
     },
+    {
+      src: "/photos/waschbaeren/lotti-portrait.jpg",
+      width: 588,
+      height: 1024,
+      alt: "Lotti schaut sanft in die Kamera",
+      caption:
+        "Verspielt und verschmust – Lotti mit ihrem offenen, herzlichen Blick.",
+      objectPosition: "center 35%",
+    },
+  ],
+  charlie: [
     {
       src: "/photos/waschbaeren/charlie-klettergelaende.jpg",
       width: 587,
@@ -252,7 +263,17 @@ const waschbaerGalerien: Partial<Record<string, WaschbaerGalerieFoto[]>> = {
       alt: "Charlie steht auf dem Klettergerüst in seinem Gehege",
       caption:
         "Immer in Bewegung – Charlie erobert jedes Klettergerüst mit Schwung.",
+      featured: true,
       objectPosition: "center 35%",
+    },
+    {
+      src: "/photos/waschbaeren/charlie-portrait.jpg",
+      width: 629,
+      height: 1024,
+      alt: "Charlie schaut neugierig in die Kamera",
+      caption:
+        "Charlie – die Sportskanone mit offenem Blick und voller Energie.",
+      objectPosition: "center 30%",
     },
   ],
 };
