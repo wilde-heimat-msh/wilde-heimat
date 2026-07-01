@@ -21,7 +21,7 @@ export function FormField({
 }: FormFieldProps) {
   if (children) {
     return (
-      <div>
+      <div className="min-w-0">
         <label htmlFor={name} className="block text-sm font-medium mb-2">
           {label}
           {required && <span className="text-muted ml-1">*</span>}
@@ -33,7 +33,7 @@ export function FormField({
   }
 
   return (
-    <div>
+    <div className="min-w-0">
       <label htmlFor={name} className="block text-sm font-medium mb-2">
         {label}
         {required && <span className="text-muted ml-1">*</span>}
@@ -43,7 +43,7 @@ export function FormField({
         id={name}
         name={name}
         required={required}
-        className="w-full min-w-0 px-4 py-3 border border-border bg-background input-base focus:border-foreground focus:outline-none"
+        className="block w-full max-w-full min-w-0 box-border px-4 py-3 border border-border bg-background input-base focus:border-foreground focus:outline-none"
       />
       {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
     </div>
@@ -64,7 +64,7 @@ export function TextArea({
   hint?: string;
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       <label htmlFor={name} className="block text-sm font-medium mb-2">
         {label}
         {required && <span className="text-muted ml-1">*</span>}
@@ -74,7 +74,7 @@ export function TextArea({
         name={name}
         required={required}
         rows={rows}
-        className="w-full px-4 py-3 border border-border bg-background input-base focus:border-foreground focus:outline-none resize-y"
+        className="block w-full max-w-full min-w-0 box-border px-4 py-3 border border-border bg-background input-base focus:border-foreground focus:outline-none resize-y"
       />
       {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
     </div>
@@ -97,7 +97,7 @@ export function Select({
   defaultValue?: string;
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       <label htmlFor={name} className="block text-sm font-medium mb-2">
         {label}
         {required && <span className="text-muted ml-1">*</span>}
@@ -106,7 +106,7 @@ export function Select({
         id={name}
         name={name}
         required={required}
-        className="w-full min-w-0 min-h-11 px-4 py-3 border border-border bg-background input-base focus:border-foreground focus:outline-none"
+        className="block w-full max-w-full min-w-0 min-h-11 box-border px-4 py-3 border border-border bg-background input-base focus:border-foreground focus:outline-none"
         defaultValue={defaultValue}
       >
         {placeholder && (

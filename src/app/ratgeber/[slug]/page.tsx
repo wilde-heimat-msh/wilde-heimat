@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { sitePhotos } from "@/data/photos";
 import { getArtikelBySlug, ratgeberArtikel } from "@/data/ratgeber";
 import { RatgeberArtikelContent } from "@/components/ratgeber/RatgeberArtikelContent";
 import { PhotoPageHero } from "@/components/layout/PhotoPageHero";
@@ -38,6 +39,10 @@ export async function generateMetadata({ params }: Props) {
     path: `/ratgeber/${slug}`,
     keywords: artikel.keywords,
     type: "article",
+    ogImage: sitePhotos.hero,
+    ogImageAlt: `${artikel.title} – Ratgeber Wilde Heimat`,
+    publishedTime: "2025-06-01",
+    modifiedTime: "2025-06-01",
   });
 }
 
@@ -62,6 +67,9 @@ export default async function RatgeberArtikelPage({ params }: Props) {
       description: artikel.excerpt,
       path: `/ratgeber/${slug}`,
       keywords: artikel.keywords,
+      datePublished: "2025-06-01",
+      dateModified: "2025-06-01",
+      image: sitePhotos.hero,
     }),
     breadcrumbSchema([
       { name: "Start", path: "/" },

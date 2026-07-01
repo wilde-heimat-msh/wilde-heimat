@@ -75,7 +75,16 @@ export function HeroSection() {
           </motion.h1>
 
           <motion.p
-            className="mt-4 text-sm tracking-wide text-muted-light/90 md:text-base"
+            className="mt-4 text-base font-medium tracking-wide text-sage-light md:text-lg"
+            initial={reduced ? false : { opacity: 0, y: lite ? 12 : 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: enterDuration, delay: 0.14, ease: MOTION_EASE }}
+          >
+            {siteConfig.seoHeadline}
+          </motion.p>
+
+          <motion.p
+            className="mt-3 text-sm tracking-wide text-muted-light/90 md:text-base"
             initial={reduced ? false : { opacity: 0, y: lite ? 12 : 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: enterDuration, delay: 0.18, ease: MOTION_EASE }}

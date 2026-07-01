@@ -40,8 +40,6 @@ export const metadata = createMetadata({
     "Waschbär adoptieren",
     "Waschbär unterstützen",
   ],
-  ogImage: pagePhotos.patenschaften.src,
-  ogImageAlt: "Waschbär-Patenschaft bei Wilde Heimat",
 });
 
 export default function PatenschaftenPage() {

@@ -17,6 +17,13 @@ import { organization } from "@/data/organization";
 import { projekte, regionStat, siteConfig } from "@/data/site";
 import { waschbaeren } from "@/data/waschbaeren";
 import { createMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/JsonLd";
+import {
+  breadcrumbSchema,
+  founderSchema,
+  jsonLdGraph,
+  webPageSchema,
+} from "@/lib/jsonLd";
 
 export const metadata = createMetadata({
   title: "Über Wilde Heimat & Juja",
@@ -31,8 +38,23 @@ export const metadata = createMetadata({
 });
 
 export default function UeberUnsPage() {
+  const structuredData = jsonLdGraph([
+    founderSchema(),
+    webPageSchema({
+      title: "Über Wilde Heimat & Juja",
+      description:
+        "Private Initiative für Waschbärhilfe und Aufklärung in Mansfeld-Südharz.",
+      path: "/ueber-uns",
+    }),
+    breadcrumbSchema([
+      { name: "Start", path: "/" },
+      { name: "Über uns", path: "/ueber-uns" },
+    ]),
+  ]);
+
   return (
     <>
+      <JsonLd data={structuredData} />
       <PhotoPageHero
         eyebrow="Über Wilde Heimat"
         title="Ein Herzensprojekt mit Mission."

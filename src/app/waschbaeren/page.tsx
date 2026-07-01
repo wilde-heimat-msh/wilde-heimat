@@ -16,8 +16,7 @@ import { breadcrumbSchema, itemListSchema, jsonLdGraph, webPageSchema } from "@/
 
 export const metadata = createMetadata({
   title: "Unsere Waschbären – Patenschaft übernehmen",
-  description:
-    "12 Waschbären bei Wilde Heimat kennenlernen: Pedro, Mausi, Lotti und mehr. Jeder mit eigener Geschichte – Patenschaft ab 10 € monatlich in Mansfeld-Südharz.",
+  description: `${waschbaeren.length} Waschbären bei Wilde Heimat: Pedro, Mausi, Lotti und mehr. Eigene Geschichte, Steckbrief & Patenschaft ab 10 € – Mansfeld-Südharz, Sachsen-Anhalt.`,
   path: "/waschbaeren",
   keywords: [
     "Waschbär Patenschaft",
@@ -27,7 +26,7 @@ export const metadata = createMetadata({
 });
 
 const profilHinweis =
-  "Profilfotos werden nach finaler Zuordnung ergänzt. Die aktuellen Platzhalter dienen der Gestaltung – jedes Tier bekommt sein eigenes Bild, sobald es fest zugeordnet ist.";
+  "Profilfotos werden nach und nach ergänzt. Luna, Oskar, Mila, Pablo und Loki haben bereits echte Bilder – weitere Tiere folgen, sobald die Fotos fest zugeordnet sind.";
 
 export default function WaschbaerenPage() {
   const structuredData = jsonLdGraph([

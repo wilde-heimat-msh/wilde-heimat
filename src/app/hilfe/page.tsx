@@ -13,9 +13,10 @@ import { DesignPhotoStrip } from "@/components/PhotoStrip";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/FadeIn";
 import { pagePhotos } from "@/data/pagePhotos";
 import { vermittlungHinweis, siteConfig } from "@/data/site";
+import { hilfeFaq } from "@/data/hilfeFaq";
 import { createMetadata } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { breadcrumbSchema, jsonLdGraph, webPageSchema } from "@/lib/jsonLd";
+import { breadcrumbSchema, faqPageSchema, jsonLdGraph, webPageSchema } from "@/lib/jsonLd";
 
 export const metadata = createMetadata({
   title: "Waschbär gefunden – Hilfe & Vermittlung",
@@ -66,6 +67,7 @@ export default function HilfePage() {
       { name: "Start", path: "/" },
       { name: "Hilfe", path: "/hilfe" },
     ]),
+    faqPageSchema([...hilfeFaq]),
   ]);
 
   return (
@@ -107,8 +109,8 @@ export default function HilfePage() {
                 className={index > 0 ? "pt-12 border-t border-border" : undefined}
               >
                 <SectionHeader title={section.title} subtitle={section.subtitle} />
-                <div className="max-w-2xl">
-                  <Card hover={false} padding="md">
+                <div className="max-w-2xl min-w-0">
+                  <Card hover={false} padding="md" className="min-w-0 overflow-x-clip">
                     {section.form}
                   </Card>
                 </div>
@@ -116,6 +118,29 @@ export default function HilfePage() {
             </StaggerItem>
           ))}
         </Stagger>
+      </Section>
+
+      <Section soft>
+        <FadeIn>
+          <SectionHeader
+            title="Häufige Fragen"
+            subtitle="Kurz und klar – besonders wenn du einen Waschbärfund melden möchtest."
+            centered
+          />
+        </FadeIn>
+        <FadeIn className="max-w-3xl mx-auto">
+          <dl className="space-y-6">
+            {hilfeFaq.map((item) => (
+              <div
+                key={item.question}
+                className="rounded-2xl border border-border bg-background/90 p-5 sm:p-6 shadow-soft"
+              >
+                <dt className="font-medium text-forest">{item.question}</dt>
+                <dd className="mt-2 text-sm text-muted leading-relaxed">{item.answer}</dd>
+              </div>
+            ))}
+          </dl>
+        </FadeIn>
       </Section>
 
       <Section soft>

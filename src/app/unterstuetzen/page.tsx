@@ -15,6 +15,8 @@ import { isPayPalConfigured, paypalDonation } from "@/data/paypal";
 import { pagePhotos } from "@/data/pagePhotos";
 import { amazonWishlist, siteConfig } from "@/data/site";
 import { createMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { breadcrumbSchema, jsonLdGraph, webPageSchema } from "@/lib/jsonLd";
 
 export const metadata = createMetadata({
   title: "Wilde Heimat unterstützen",
@@ -89,8 +91,22 @@ const plattformen = [
 ];
 
 export default function UnterstuetzenPage() {
+  const structuredData = jsonLdGraph([
+    webPageSchema({
+      title: "Wilde Heimat unterstützen",
+      description:
+        "Waschbärhilfe unterstützen durch Spende, Patenschaft oder Sachspende.",
+      path: "/unterstuetzen",
+    }),
+    breadcrumbSchema([
+      { name: "Start", path: "/" },
+      { name: "Unterstützen", path: "/unterstuetzen" },
+    ]),
+  ]);
+
   return (
     <>
+      <JsonLd data={structuredData} />
       <PhotoPageHero
         eyebrow="Unterstützen"
         title="Jede Unterstützung zählt."

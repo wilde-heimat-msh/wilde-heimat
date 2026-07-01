@@ -10,6 +10,13 @@ import { FadeIn } from "@/components/motion/FadeIn";
 import { pagePhotos } from "@/data/pagePhotos";
 import { siteConfig } from "@/data/site";
 import { createMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/JsonLd";
+import {
+  breadcrumbSchema,
+  contactPageSchema,
+  jsonLdGraph,
+  webPageSchema,
+} from "@/lib/jsonLd";
 
 export const metadata = createMetadata({
   title: "Kontakt – Wilde Heimat",
@@ -20,8 +27,22 @@ export const metadata = createMetadata({
 });
 
 export default function KontaktPage() {
+  const structuredData = jsonLdGraph([
+    contactPageSchema({
+      title: "Kontakt – Wilde Heimat",
+      description:
+        "Kontakt zu Wilde Heimat für Fragen, Fundmeldungen und Patenschaften.",
+      path: "/kontakt",
+    }),
+    breadcrumbSchema([
+      { name: "Start", path: "/" },
+      { name: "Kontakt", path: "/kontakt" },
+    ]),
+  ]);
+
   return (
     <>
+      <JsonLd data={structuredData} />
       <PhotoPageHero
         eyebrow="Kontakt"
         title="Wir freuen uns auf deine Nachricht."

@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { getWaschbaerBySlug, waschbaeren } from "@/data/waschbaeren";
-import { waschbaerProfilPlatzhalter } from "@/data/photos";
+import {
+  getWaschbaerGalerie,
+  getWaschbaerProfilfoto,
+  hasWaschbaerEchteFotos,
+  waschbaerProfilPlatzhalter,
+} from "@/data/photos";
 import { PhotoPageHero } from "@/components/layout/PhotoPageHero";
 import { BackLink } from "@/components/layout/BackLink";
 import { PageCta } from "@/components/layout/PageCta";
@@ -9,12 +14,12 @@ import { Section } from "@/components/ui/Section";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PatenschaftForm } from "@/components/forms/PatenschaftForm";
+import { WaschbaerGallery } from "@/components/WaschbaerGallery";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/FadeIn";
 import { pagePhotos } from "@/data/pagePhotos";
 import { createMetadata } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { breadcrumbSchema, jsonLdGraph, webPageSchema } from "@/lib/jsonLd";
-import { getWaschbaerProfilfoto } from "@/data/photos";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -55,6 +60,8 @@ export default async function WaschbaerDetailPage({ params }: Props) {
     notFound();
   }
 
+  const hatEchteFotos = hasWaschbaerEchteFotos(slug);
+  const galerie = getWaschbaerGalerie(slug);
   const galleryIndices = getGalleryIndices();
 
   const structuredData = jsonLdGraph([
@@ -78,8 +85,10 @@ export default async function WaschbaerDetailPage({ params }: Props) {
         title={waschbaer.name}
         subtitle={`Aufgenommen ${waschbaer.aufgenommen} – ${waschbaer.kurztext}`}
         backgroundPhoto={{
-          src: waschbaerProfilPlatzhalter,
-          alt: `${waschbaer.name} – Foto folgt`,
+          src: hatEchteFotos ? getWaschbaerProfilfoto(slug) : waschbaerProfilPlatzhalter,
+          alt: hatEchteFotos
+            ? `${waschbaer.name} – bei Wilde Heimat`
+            : `${waschbaer.name} – Foto folgt`,
           objectPosition: "center center",
           overlay: "medium",
         }}
@@ -101,32 +110,38 @@ export default async function WaschbaerDetailPage({ params }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
           <FadeIn direction="left">
             <h2 className="text-2xl font-light mb-6">Galerie</h2>
-            <Stagger className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-3" stagger={0.08}>
-              {galleryIndices.map((_, i) => (
-                <StaggerItem
-                  key={i}
-                  className={i === 0 ? "col-span-2" : undefined}
-                >
-                  <div
-                    className={`relative overflow-hidden rounded-2xl bg-neutral-800 shadow-soft ${
-                      i === 0 ? "aspect-[16/10]" : "aspect-square"
-                    }`}
-                  >
-                    <Image
-                      src={waschbaerProfilPlatzhalter}
-                      alt="Platzhalter – echtes Foto folgt"
-                      fill
-                      className="object-cover opacity-90"
-                      sizes="400px"
-                    />
-                  </div>
-                </StaggerItem>
-              ))}
-            </Stagger>
-            <p className="mt-4 text-xs text-muted">
-              Die Fotos sind noch Platzhalter – die richtigen Bilder ordnen wir
-              gemeinsam zu, sobald sie vorliegen.
-            </p>
+            {galerie.length > 0 ? (
+              <WaschbaerGallery fotos={galerie} name={waschbaer.name} />
+            ) : (
+              <>
+                <Stagger className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-3" stagger={0.08}>
+                  {galleryIndices.map((_, i) => (
+                    <StaggerItem
+                      key={i}
+                      className={i === 0 ? "col-span-2" : undefined}
+                    >
+                      <div
+                        className={`relative overflow-hidden rounded-2xl bg-neutral-800 shadow-soft ${
+                          i === 0 ? "aspect-[16/10]" : "aspect-square"
+                        }`}
+                      >
+                        <Image
+                          src={waschbaerProfilPlatzhalter}
+                          alt="Platzhalter – echtes Foto folgt"
+                          fill
+                          className="object-cover opacity-90"
+                          sizes="400px"
+                        />
+                      </div>
+                    </StaggerItem>
+                  ))}
+                </Stagger>
+                <p className="mt-4 text-xs text-muted">
+                  Die Fotos sind noch Platzhalter – die richtigen Bilder ordnen wir
+                  gemeinsam zu, sobald sie vorliegen.
+                </p>
+              </>
+            )}
           </FadeIn>
 
           <FadeIn delay={0.1}>

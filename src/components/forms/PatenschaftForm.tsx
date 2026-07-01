@@ -80,7 +80,7 @@ export function PatenschaftForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="relative space-y-6">
+    <form onSubmit={handleSubmit} className="relative min-w-0 max-w-full space-y-6">
       <FormHoneypot />
       {(selectedWaschbaer || selectedStufe) && (
         <div className="rounded-xl border border-sage/25 bg-sage/5 px-4 py-3 text-sm">

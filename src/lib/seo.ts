@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/data/site";
-import { sitePhotos } from "@/data/photos";
+import { siteShareImage } from "@/data/photos";
 import { getSiteUrl } from "@/lib/siteUrl";
 
-const DEFAULT_OG_IMAGE = sitePhotos.hero;
+const DEFAULT_OG_IMAGE = siteShareImage;
+const DEFAULT_OG_WIDTH = 1200;
+const DEFAULT_OG_HEIGHT = 630;
 
 export type PageSeo = {
   title: string;
@@ -15,6 +17,8 @@ export type PageSeo = {
   ogImageAlt?: string;
   type?: "website" | "article";
   noIndex?: boolean;
+  publishedTime?: string;
+  modifiedTime?: string;
 };
 
 export function absoluteUrl(path = ""): string {
@@ -28,9 +32,11 @@ export function createMetadata({
   path = "",
   keywords = [],
   ogImage = DEFAULT_OG_IMAGE,
-  ogImageAlt = "Waschbär – Wilde Heimat, private Initiative für Waschbärhilfe",
+  ogImageAlt = "Wilde Heimat – Logo",
   type = "website",
   noIndex = false,
+  publishedTime,
+  modifiedTime,
 }: PageSeo): Metadata {
   const canonicalPath = path || "/";
   const url = absoluteUrl(canonicalPath);
@@ -70,12 +76,16 @@ export function createMetadata({
       siteName: siteConfig.name,
       locale: "de_DE",
       type,
+      ...(type === "article" && publishedTime
+        ? { publishedTime, modifiedTime: modifiedTime ?? publishedTime }
+        : {}),
       images: [
         {
           url: imageUrl,
-          width: 1200,
-          height: 630,
+          width: ogImage === DEFAULT_OG_IMAGE ? DEFAULT_OG_WIDTH : 1200,
+          height: ogImage === DEFAULT_OG_IMAGE ? DEFAULT_OG_HEIGHT : 630,
           alt: ogImageAlt,
+          type: imageUrl.endsWith(".png") ? "image/png" : undefined,
         },
       ],
     },
@@ -103,5 +113,27 @@ export const rootMetadata: Metadata = {
     email: false,
     address: false,
     telephone: false,
+  },
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "512x512" }],
+    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
+  },
+  openGraph: {
+    siteName: siteConfig.name,
+    locale: "de_DE",
+    type: "website",
+    images: [
+      {
+        url: absoluteUrl(siteShareImage),
+        width: DEFAULT_OG_WIDTH,
+        height: DEFAULT_OG_HEIGHT,
+        alt: "Wilde Heimat – Logo",
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: [absoluteUrl(siteShareImage)],
   },
 };

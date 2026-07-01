@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { createMetadata } from "@/lib/seo";
 import {
   createPatenSessionToken,
   getPatenSessionCookieOptions,
@@ -10,6 +11,13 @@ import { getPatenByAccessCode } from "@/lib/patenschaftStore";
 type PageProps = {
   params: Promise<{ code: string }>;
 };
+
+export const metadata = createMetadata({
+  title: "Paten-Zugang",
+  description: "Interner Zugang für Paten von Wilde Heimat.",
+  path: "/paten/zugang",
+  noIndex: true,
+});
 
 export default async function PatenZugangPage({ params }: PageProps) {
   const { code } = await params;

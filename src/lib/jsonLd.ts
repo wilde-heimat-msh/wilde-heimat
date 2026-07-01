@@ -1,4 +1,5 @@
 import { siteConfig } from "@/data/site";
+import { siteShareImage } from "@/data/photos";
 import { absoluteUrl } from "@/lib/seo";
 import { getSiteUrl } from "@/lib/siteUrl";
 
@@ -12,12 +13,26 @@ type ArticleSchemaInput = {
   description: string;
   path: string;
   keywords?: string[];
+  datePublished?: string;
+  dateModified?: string;
+  image?: string;
 };
 
 type FaqItem = {
   question: string;
   answer: string;
 };
+
+export function founderSchema() {
+  return {
+    "@type": "Person",
+    "@id": `${getSiteUrl()}/#founder`,
+    name: siteConfig.contact.name,
+    jobTitle: "Gründerin",
+    worksFor: { "@id": `${getSiteUrl()}/#organization` },
+    url: absoluteUrl("/ueber-uns"),
+  };
+}
 
 export function organizationSchema() {
   return {
@@ -27,14 +42,19 @@ export function organizationSchema() {
     url: getSiteUrl(),
     logo: {
       "@type": "ImageObject",
-      url: absoluteUrl("/logo.svg"),
+      url: absoluteUrl(siteShareImage),
+      width: 1200,
+      height: 630,
     },
+    image: absoluteUrl(siteShareImage),
     description: siteConfig.description,
+    founder: { "@id": `${getSiteUrl()}/#founder` },
     address: {
       "@type": "PostalAddress",
       streetAddress: siteConfig.contact.street,
       postalCode: siteConfig.contact.postalCode,
       addressLocality: siteConfig.contact.city,
+      addressRegion: siteConfig.state,
       addressCountry: "DE",
     },
     email: siteConfig.email,
@@ -57,6 +77,7 @@ export function organizationSchema() {
       "Waschbärbaby gefunden",
       "Waschbär Patenschaft",
       "Wildtieraufklärung",
+      "Fundtierberatung",
     ],
     sameAs: [siteConfig.instagram, siteConfig.tiktok, siteConfig.gofundme].filter(Boolean),
   };
@@ -95,6 +116,27 @@ export function webPageSchema({
   };
 }
 
+export function contactPageSchema({
+  title,
+  description,
+  path,
+}: {
+  title: string;
+  description: string;
+  path: string;
+}) {
+  return {
+    "@type": "ContactPage",
+    "@id": `${absoluteUrl(path)}#contactpage`,
+    url: absoluteUrl(path),
+    name: title,
+    description,
+    isPartOf: { "@id": `${getSiteUrl()}/#website` },
+    about: { "@id": `${getSiteUrl()}/#organization` },
+    inLanguage: "de-DE",
+  };
+}
+
 export function breadcrumbSchema(items: BreadcrumbItem[]) {
   return {
     "@type": "BreadcrumbList",
@@ -107,7 +149,18 @@ export function breadcrumbSchema(items: BreadcrumbItem[]) {
   };
 }
 
-export function articleSchema({ title, description, path, keywords = [] }: ArticleSchemaInput) {
+export function articleSchema({
+  title,
+  description,
+  path,
+  keywords = [],
+  datePublished,
+  dateModified,
+  image,
+}: ArticleSchemaInput) {
+  const published = datePublished ?? "2025-06-01";
+  const modified = dateModified ?? published;
+
   return {
     "@type": "Article",
     "@id": `${absoluteUrl(path)}#article`,
@@ -116,7 +169,10 @@ export function articleSchema({ title, description, path, keywords = [] }: Artic
     url: absoluteUrl(path),
     inLanguage: "de-DE",
     keywords: keywords.join(", "),
-    author: { "@id": `${getSiteUrl()}/#organization` },
+    datePublished: published,
+    dateModified: modified,
+    image: image ? absoluteUrl(image) : absoluteUrl(siteShareImage),
+    author: { "@id": `${getSiteUrl()}/#founder` },
     publisher: { "@id": `${getSiteUrl()}/#organization` },
     mainEntityOfPage: { "@id": `${absoluteUrl(path)}#webpage` },
     isPartOf: { "@id": `${getSiteUrl()}/#website` },

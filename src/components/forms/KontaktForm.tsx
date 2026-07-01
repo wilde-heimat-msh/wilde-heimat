@@ -46,7 +46,7 @@ export function KontaktForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="relative space-y-6">
+    <form onSubmit={handleSubmit} className="relative min-w-0 max-w-full space-y-6">
       <FormHoneypot />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <FormField label="Name" name="name" required />

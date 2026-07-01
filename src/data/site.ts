@@ -2,6 +2,8 @@ export const siteConfig = {
   name: "Wilde Heimat",
   subtitle: "Private Initiative für Waschbärhilfe und Aufklärung",
   tagline: "Eine Stimme für Waschbären.",
+  /** Sichtbar unter der H1 – regionale & thematische Keywords */
+  seoHeadline: "Waschbärhilfe, Patenschaften & Ratgeber in Mansfeld-Südharz",
   description:
     "Wilde Heimat ist ein privates Pflege- und Aufklärungsprojekt von Juja – verwurzelt in Mansfeld-Südharz, mit Hilfe und Aufklärung, wo wir können.",
   /** Schwerpunkt vor Ort */

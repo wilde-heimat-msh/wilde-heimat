@@ -48,7 +48,7 @@ export function PflegestelleForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="relative space-y-6">
+    <form onSubmit={handleSubmit} className="relative min-w-0 max-w-full space-y-6">
       <FormHoneypot />
       <FormField label="Name" name="name" required />
       <FormField label="Anschrift" name="anschrift" required />
@@ -122,11 +122,11 @@ export function WaschbaerGefundenForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="relative space-y-6">
+    <form onSubmit={handleSubmit} className="relative min-w-0 max-w-full space-y-6">
       <FormHoneypot />
       <FormField label="Fundort" name="fundort" required />
       <FormField label="Datum des Fundes" name="datum" type="date" required />
-      <div>
+      <div className="min-w-0">
         <label htmlFor="foto" className="block text-sm font-medium mb-2">
           Foto hochladen
         </label>
@@ -152,7 +152,7 @@ export function WaschbaerGefundenForm() {
         required
         hint="Altersschätzung, Zustand des Tieres, besondere Beobachtungen"
       />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="grid min-w-0 grid-cols-1 gap-6 sm:grid-cols-2">
         <FormField label="Dein Name" name="name" required />
         <FormField label="Telefon" name="telefon" type="tel" required />
       </div>
@@ -209,7 +209,7 @@ export function VermittlungsForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="relative space-y-6">
+    <form onSubmit={handleSubmit} className="relative min-w-0 max-w-full space-y-6">
       <FormHoneypot />
       <FormField label="Anliegen" name="anliegen" required />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

@@ -77,7 +77,16 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-            <p className="mt-6 text-sm text-muted-light">
+            <p className="mt-6 text-sm text-muted-light leading-relaxed">
+              <span className="block font-medium text-background">{siteConfig.contact.name}</span>
+              <span className="block mt-1">
+                {siteConfig.contact.street}
+                <br />
+                {siteConfig.contact.postalCode} {siteConfig.contact.city}
+              </span>
+              <span className="block mt-2">{siteConfig.region}</span>
+            </p>
+            <p className="mt-4 text-sm text-muted-light">
               <a
                 href={`mailto:${siteConfig.email}`}
                 className="hover:text-background transition-colors break-all"
@@ -85,7 +94,6 @@ export function Footer() {
                 {siteConfig.email}
               </a>
             </p>
-            <p className="mt-2 text-sm text-muted-light">{siteConfig.region}</p>
           </div>
         </div>
 
