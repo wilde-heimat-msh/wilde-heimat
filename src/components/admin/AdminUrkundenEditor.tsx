@@ -10,10 +10,9 @@ import {
   type PatenschaftStufeId,
   type PatenschaftUrkundeDaten,
 } from "@/data/patenschaften";
-import { getWaschbaerProfilfoto, hasWaschbaerEchteFotos } from "@/data/photos";
 import { patenschaftUrkundeFormat } from "@/data/privacy";
 import { patenschaftsStufen } from "@/data/site";
-import { waschbaeren } from "@/data/waschbaeren";
+import { useWaschbaeren } from "@/hooks/useWaschbaeren";
 import { exportUrkundePdf, urkundePdfFilename } from "@/lib/exportUrkundePdf";
 
 const STORAGE_KEY = "wh-admin-urkunde-draft";
@@ -34,6 +33,7 @@ function saveDraft(data: PatenschaftUrkundeDaten) {
 }
 
 export function AdminUrkundenEditor() {
+  const { waschbaeren } = useWaschbaeren();
   const [data, setData] = useState<PatenschaftUrkundeDaten>(() => createDefaultUrkundeDaten());
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -57,9 +57,7 @@ export function AdminUrkundenEditor() {
     update({
       waschbaerSlug: waschbaer.slug,
       waschbaer: waschbaer.name,
-      waschbaerFoto: hasWaschbaerEchteFotos(waschbaer.slug)
-        ? getWaschbaerProfilfoto(waschbaer.slug)
-        : "",
+      waschbaerFoto: waschbaer.hasEchteFotos ? waschbaer.profilFoto : "",
     });
   }
 

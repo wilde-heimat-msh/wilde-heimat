@@ -10,9 +10,9 @@ import { HeroSection } from "@/components/motion/HeroSection";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/FadeIn";
 import { Marquee, MarqueeItem } from "@/components/motion/Marquee";
 import { ratgeberArtikel } from "@/data/ratgeber";
-import { waschbaeren } from "@/data/waschbaeren";
 import { projekte, regionStat, siteConfig } from "@/data/site";
 import { sitePhotos } from "@/data/photos";
+import { listWaschbaerenPublic } from "@/lib/waschbaerStore";
 import { PatenschaftTierCards } from "@/components/PatenschaftTierCards";
 import { StatsBand } from "@/components/layout/StatsBand";
 import { pagePhotos } from "@/data/pagePhotos";
@@ -28,7 +28,8 @@ const marqueeItems = [
   "Verantwortung",
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const waschbaeren = await listWaschbaerenPublic();
   const featuredWaschbaeren = waschbaeren.slice(0, 4);
   const neuesteArtikel = ratgeberArtikel.slice(0, 3);
 
@@ -48,7 +49,7 @@ export default function HomePage() {
       {/* Stats */}
       <StatsBand
         items={[
-          { type: "counter", value: 12, label: "Waschbären" },
+          { type: "counter", value: waschbaeren.length, label: "Waschbären" },
           { type: "counter", value: 9, label: "Ratgeber-Artikel" },
           { type: "counter", value: 3, label: "Patenschaftsstufen" },
           regionStat,
@@ -126,7 +127,12 @@ export default function HomePage() {
         <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" stagger={0.08}>
           {featuredWaschbaeren.map((w) => (
             <StaggerItem key={w.slug}>
-              <WaschbaerCard waschbaer={w} compact />
+              <WaschbaerCard
+                waschbaer={w}
+                profilFoto={w.profilFoto}
+                hasEchteFotos={w.hasEchteFotos}
+                compact
+              />
             </StaggerItem>
           ))}
         </Stagger>

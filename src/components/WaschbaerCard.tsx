@@ -8,13 +8,25 @@ import { WaschbaerFotoFolgt } from "@/components/WaschbaerFotoFolgt";
 
 type WaschbaerCardProps = {
   waschbaer: Waschbaer;
+  profilFoto?: string;
+  hasEchteFotos?: boolean;
   compact?: boolean;
   /** Zeigt „Als Pate wählen“-Button (Patenschaften-Seite) */
   patenschaftSelect?: boolean;
 };
 
-function CardImage({ waschbaer, compact }: { waschbaer: Waschbaer; compact: boolean }) {
-  const hatEchtesFoto = hasWaschbaerEchteFotos(waschbaer.slug);
+function CardImage({
+  waschbaer,
+  compact,
+  profilFoto,
+  hasEchteFotos,
+}: {
+  waschbaer: Waschbaer;
+  compact: boolean;
+  profilFoto?: string;
+  hasEchteFotos?: boolean;
+}) {
+  const hatEchtesFoto = hasEchteFotos ?? hasWaschbaerEchteFotos(waschbaer.slug);
 
   if (!hatEchtesFoto) {
     return (
@@ -26,7 +38,7 @@ function CardImage({ waschbaer, compact }: { waschbaer: Waschbaer; compact: bool
     );
   }
 
-  const src = getWaschbaerCardFoto(waschbaer.slug);
+  const src = profilFoto ?? getWaschbaerCardFoto(waschbaer.slug);
 
   return (
     <div className="aspect-[3/4] relative overflow-hidden bg-neutral-800">
@@ -78,6 +90,8 @@ function CardBody({
 
 export function WaschbaerCard({
   waschbaer,
+  profilFoto,
+  hasEchteFotos,
   compact = false,
   patenschaftSelect = false,
 }: WaschbaerCardProps) {
@@ -90,7 +104,12 @@ export function WaschbaerCard({
     return (
       <div className={`${cardClass} flex h-full flex-col`}>
         <Link href={`/waschbaeren/${waschbaer.slug}`} className="block flex-1">
-          <CardImage waschbaer={waschbaer} compact={compact} />
+          <CardImage
+            waschbaer={waschbaer}
+            compact={compact}
+            profilFoto={profilFoto}
+            hasEchteFotos={hasEchteFotos}
+          />
           <div className={compact ? "p-3 sm:p-4" : "p-5 sm:p-6"}>
             <CardBody waschbaer={waschbaer} compact={compact} />
           </div>
@@ -109,7 +128,12 @@ export function WaschbaerCard({
 
   return (
     <Link href={`/waschbaeren/${waschbaer.slug}`} className={`${cardClass} block`}>
-      <CardImage waschbaer={waschbaer} compact={compact} />
+      <CardImage
+        waschbaer={waschbaer}
+        compact={compact}
+        profilFoto={profilFoto}
+        hasEchteFotos={hasEchteFotos}
+      />
       <div className={compact ? "p-3 sm:p-4" : "p-5 sm:p-6"}>
         <CardBody waschbaer={waschbaer} compact={compact} />
       </div>

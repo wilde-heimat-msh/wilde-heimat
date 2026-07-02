@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getWaschbaerBySlug } from "@/data/waschbaeren";
+import { getWaschbaerBySlug } from "@/lib/waschbaerStore";
 import { FORM_WIDERRUF_CONSENT_FIELD } from "@/data/legal";
 import { FORM_PRIVACY_CONSENT_FIELD } from "@/data/privacy";
 import { patenschaftsStufen } from "@/data/site";
@@ -89,7 +89,7 @@ async function buildMailPayload(
       if (!isValidEmail(email)) {
         return { error: "Bitte eine gültige E-Mail-Adresse angeben.", status: 400 };
       }
-      const waschbaer = getWaschbaerBySlug(waschbaerSlug);
+      const waschbaer = await getWaschbaerBySlug(waschbaerSlug);
       const stufe = patenschaftsStufen.find((s) => s.id === stufeId);
       const isGift = formData.get("geschenk") === "ja";
 

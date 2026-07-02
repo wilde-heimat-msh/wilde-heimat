@@ -6,12 +6,12 @@ import { AdminLogoutButton, AdminNav } from "@/components/admin/AdminLogin";
 import { FormField } from "@/components/forms/FormFields";
 import type { PatenschaftStufeId } from "@/data/patenschaften";
 import { patenschaftsStufen } from "@/data/site";
-import { waschbaeren } from "@/data/waschbaeren";
+import { useWaschbaeren } from "@/hooks/useWaschbaeren";
 import { formatAbsoluteDateDe } from "@/lib/relativeTime";
 import type { PatenschaftPate, PatenschaftUpdate } from "@/types/patenschaftPortal";
 
 const emptyForm = {
-  waschbaerSlug: waschbaeren[0]?.slug ?? "pedro",
+  waschbaerSlug: "pedro",
   minStufe: "gold" as PatenschaftStufeId,
   patronId: "",
   title: "",
@@ -21,6 +21,7 @@ const emptyForm = {
 };
 
 export function AdminUpdatesManager() {
+  const { waschbaeren } = useWaschbaeren();
   const [updates, setUpdates] = useState<PatenschaftUpdate[]>([]);
   const [paten, setPaten] = useState<PatenschaftPate[]>([]);
   const [loading, setLoading] = useState(true);

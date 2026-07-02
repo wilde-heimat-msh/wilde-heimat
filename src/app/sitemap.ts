@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/lib/siteUrl";
-import { waschbaeren } from "@/data/waschbaeren";
 import { ratgeberArtikel } from "@/data/ratgeber";
+import { listWaschbaeren } from "@/lib/waschbaerStore";
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
 
@@ -18,7 +18,9 @@ function entry(
   };
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const waschbaeren = await listWaschbaeren();
+
   return [
     entry("/", 1),
     entry("/hilfe", 0.95, "weekly"),

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedPaten } from "@/lib/patenAuth";
 import { getUpdatesForPaten, listUpdates } from "@/lib/patenschaftStore";
-import { getWaschbaerBySlug } from "@/data/waschbaeren";
 import { getPatenschaftStufe } from "@/data/patenschaften";
-import { getWaschbaerProfilfoto, hasWaschbaerEchteFotos } from "@/data/photos";
+import { getWaschbaerFeaturedFoto } from "@/data/photos";
+import { getWaschbaerBySlug, getWaschbaerGalerie } from "@/lib/waschbaerStore";
 import { apiErrorResponse } from "@/lib/apiError";
 
 export async function GET() {
@@ -13,8 +13,10 @@ export async function GET() {
   }
 
   try {
-    const waschbaer = getWaschbaerBySlug(pate.waschbaerSlug);
+    const waschbaer = await getWaschbaerBySlug(pate.waschbaerSlug);
     const updates = getUpdatesForPaten(await listUpdates(), pate);
+    const galerie = waschbaer ? await getWaschbaerGalerie(waschbaer.slug) : [];
+    const featuredFoto = getWaschbaerFeaturedFoto(galerie);
 
     return NextResponse.json({
     pate: {
@@ -29,9 +31,7 @@ export async function GET() {
           name: waschbaer.name,
           slug: waschbaer.slug,
           kurztext: waschbaer.kurztext,
-          foto: hasWaschbaerEchteFotos(waschbaer.slug)
-            ? getWaschbaerProfilfoto(waschbaer.slug)
-            : null,
+          foto: featuredFoto?.src ?? null,
         }
       : null,
     updates,

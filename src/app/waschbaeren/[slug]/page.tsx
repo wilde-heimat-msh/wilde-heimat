@@ -1,11 +1,5 @@
 import { notFound } from "next/navigation";
-import { getWaschbaerBySlug, waschbaeren } from "@/data/waschbaeren";
-import {
-  getWaschbaerGalerie,
-  getWaschbaerProfilfoto,
-  hasWaschbaerEchteFotos,
-  waschbaerProfilPlatzhalter,
-} from "@/data/photos";
+import { getWaschbaerFeaturedFoto, waschbaerProfilPlatzhalter } from "@/data/photos";
 import { PhotoPageHero } from "@/components/layout/PhotoPageHero";
 import { BackLink } from "@/components/layout/BackLink";
 import { PageCta } from "@/components/layout/PageCta";
@@ -18,6 +12,11 @@ import { WaschbaerFotoFolgt } from "@/components/WaschbaerFotoFolgt";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/FadeIn";
 import { pagePhotos } from "@/data/pagePhotos";
 import { createMetadata } from "@/lib/seo";
+import {
+  getWaschbaerBySlug,
+  getWaschbaerGalerie,
+  listWaschbaeren,
+} from "@/lib/waschbaerStore";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { breadcrumbSchema, jsonLdGraph, webPageSchema } from "@/lib/jsonLd";
 
@@ -26,15 +25,20 @@ type Props = {
 };
 
 export async function generateStaticParams() {
+  const waschbaeren = await listWaschbaeren();
   return waschbaeren.map((w) => ({ slug: w.slug }));
 }
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  const waschbaer = getWaschbaerBySlug(slug);
+  const waschbaer = await getWaschbaerBySlug(slug);
   if (!waschbaer) return {};
 
-  const hatEchteFotos = hasWaschbaerEchteFotos(slug);
+  const galerie = await getWaschbaerGalerie(slug);
+  const featuredFoto = getWaschbaerFeaturedFoto(galerie);
+  const hatEchteFotos = galerie.length > 0;
+  const profilFoto = featuredFoto?.src ?? waschbaerProfilPlatzhalter;
+  const profilObjectPosition = featuredFoto?.objectPosition ?? "center center";
 
   return createMetadata({
     title: `${waschbaer.name} – Waschbär-Patenschaft`,
@@ -45,9 +49,9 @@ export async function generateMetadata({ params }: Props) {
       `${waschbaer.name} Waschbär`,
       "Waschbär Patenschaft Sachsen-Anhalt",
     ],
-    ...(hatEchteFotos
+    ...(hatEchteFotos && profilFoto
       ? {
-          ogImage: getWaschbaerProfilfoto(waschbaer.slug),
+          ogImage: profilFoto,
           ogImageAlt: `${waschbaer.name} – Patentier bei Wilde Heimat`,
         }
       : {}),
@@ -56,14 +60,17 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function WaschbaerDetailPage({ params }: Props) {
   const { slug } = await params;
-  const waschbaer = getWaschbaerBySlug(slug);
+  const waschbaer = await getWaschbaerBySlug(slug);
 
   if (!waschbaer) {
     notFound();
   }
 
-  const hatEchteFotos = hasWaschbaerEchteFotos(slug);
-  const galerie = getWaschbaerGalerie(slug);
+  const galerie = await getWaschbaerGalerie(slug);
+  const featuredFoto = getWaschbaerFeaturedFoto(galerie);
+  const hatEchteFotos = galerie.length > 0;
+  const profilFoto = featuredFoto?.src ?? waschbaerProfilPlatzhalter;
+  const profilObjectPosition = featuredFoto?.objectPosition ?? "center center";
 
   const structuredData = jsonLdGraph([
     webPageSchema({
@@ -86,11 +93,11 @@ export default async function WaschbaerDetailPage({ params }: Props) {
         title={waschbaer.name}
         subtitle={`Aufgenommen ${waschbaer.aufgenommen} – ${waschbaer.kurztext}`}
         backgroundPhoto={{
-          src: hatEchteFotos ? getWaschbaerProfilfoto(slug) : waschbaerProfilPlatzhalter,
+          src: hatEchteFotos ? profilFoto : waschbaerProfilPlatzhalter,
           alt: hatEchteFotos
             ? `${waschbaer.name} – bei Wilde Heimat`
             : `${waschbaer.name} – Foto folgt`,
-          objectPosition: "center center",
+          objectPosition: hatEchteFotos ? profilObjectPosition : "center center",
           overlay: "medium",
         }}
       >

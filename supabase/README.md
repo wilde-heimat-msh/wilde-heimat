@@ -18,9 +18,11 @@ Backend für Formulare, Paten-Daten und Foto-Uploads.
 1. Supabase → **Storage** → **New bucket**
 2. Name: `uploads`
 3. **Public bucket**: aktivieren (Paten-Update-Fotos sind öffentlich lesbar)
-4. Ordner entstehen automatisch: `paten-updates/`, `form-uploads/`
+4. Ordner entstehen automatisch: `paten-updates/`, `waschbaeren/`, `form-uploads/`
 
 **Bestehendes Projekt (DSGVO):** Zusätzlich `supabase/migration-form-uploads-private.sql` im SQL Editor ausführen. Danach sind Fund-Fotos unter `form-uploads/` nur noch per Admin (Signed URLs) einsehbar – nicht öffentlich im Internet.
+
+**Bestehendes Projekt (Waschbär-Verwaltung):** Zusätzlich `supabase/migration-waschbaeren.sql` im SQL Editor ausführen. Danach unter `/admin/waschbaeren` Profile anlegen, bearbeiten und Fotos hochladen. Beim ersten Mal: Button **„Bestehende 12 Waschbären importieren“** klicken.
 
 ## 4. API-Schlüssel für Vercel
 

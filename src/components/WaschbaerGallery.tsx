@@ -1,21 +1,22 @@
 import Image from "next/image";
 import { Stagger, StaggerItem } from "@/components/motion/FadeIn";
-import type { WaschbaerGalerieFoto } from "@/data/photos";
+import { normalizeWaschbaerGalerie, type WaschbaerGalerieFoto } from "@/data/photos";
 
 type WaschbaerGalleryProps = {
   fotos: WaschbaerGalerieFoto[];
 };
 
 export function WaschbaerGallery({ fotos }: WaschbaerGalleryProps) {
-  if (fotos.length === 0) return null;
+  const ordered = normalizeWaschbaerGalerie(fotos);
+  if (ordered.length === 0) return null;
 
   return (
     <Stagger className="grid grid-cols-2 gap-2 sm:gap-3" stagger={0.08}>
-      {fotos.map((foto, index) => {
-        const featured = foto.featured ?? index === 0;
+      {ordered.map((foto, index) => {
+        const isFeatured = index === 0;
 
         return (
-          <StaggerItem key={foto.src} className={featured ? "col-span-2" : undefined}>
+          <StaggerItem key={foto.src} className={isFeatured ? "col-span-2" : undefined}>
             <div className="overflow-hidden rounded-2xl bg-neutral-800 shadow-soft">
               <Image
                 src={foto.src}
@@ -24,7 +25,7 @@ export function WaschbaerGallery({ fotos }: WaschbaerGalleryProps) {
                 height={foto.height}
                 className="h-auto w-full"
                 style={{ objectPosition: foto.objectPosition ?? "center center" }}
-                sizes={featured ? "(max-width: 768px) 100vw, 480px" : "240px"}
+                sizes={isFeatured ? "(max-width: 768px) 100vw, 480px" : "240px"}
               />
             </div>
             {foto.caption ? (

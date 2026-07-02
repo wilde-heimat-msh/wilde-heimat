@@ -9,26 +9,31 @@ import { DesignPhotoStrip } from "@/components/PhotoStrip";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/FadeIn";
 import { pagePhotos } from "@/data/pagePhotos";
 import { patenschaftHinweis } from "@/data/site";
-import { waschbaeren } from "@/data/waschbaeren";
 import { createMetadata } from "@/lib/seo";
+import { listWaschbaerenPublic } from "@/lib/waschbaerStore";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { breadcrumbSchema, itemListSchema, jsonLdGraph, webPageSchema } from "@/lib/jsonLd";
 
-export const metadata = createMetadata({
-  title: "Unsere Waschbären – Patenschaft übernehmen",
-  description: `${waschbaeren.length} Waschbären bei Wilde Heimat: Pedro, Mausi, Lotti und mehr. Eigene Geschichte, Steckbrief & Patenschaft ab 10 € – Mansfeld-Südharz, Sachsen-Anhalt.`,
-  path: "/waschbaeren",
-  keywords: [
-    "Waschbär Patenschaft",
-    "Waschbären Mansfeld-Südharz",
-    "Waschbär adoptieren",
-  ],
-});
+export async function generateMetadata() {
+  const waschbaeren = await listWaschbaerenPublic();
+  return createMetadata({
+    title: "Unsere Waschbären – Patenschaft übernehmen",
+    description: `${waschbaeren.length} Waschbären bei Wilde Heimat: Pedro, Mausi, Lotti und mehr. Eigene Geschichte, Steckbrief & Patenschaft ab 10 € – Mansfeld-Südharz, Sachsen-Anhalt.`,
+    path: "/waschbaeren",
+    keywords: [
+      "Waschbär Patenschaft",
+      "Waschbären Mansfeld-Südharz",
+      "Waschbär adoptieren",
+    ],
+  });
+}
 
 const profilHinweis =
-  "Alle zwölf Waschbären haben jetzt echte Profilfotos und Galeriebilder.";
+  "Alle Waschbären haben eigene Profilseiten mit Steckbrief, Geschichte und Galerie.";
 
-export default function WaschbaerenPage() {
+export default async function WaschbaerenPage() {
+  const waschbaeren = await listWaschbaerenPublic();
+
   const structuredData = jsonLdGraph([
     webPageSchema({
       title: "Unsere Waschbären",
@@ -87,7 +92,11 @@ export default function WaschbaerenPage() {
         <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8" stagger={0.06}>
           {waschbaeren.map((w) => (
             <StaggerItem key={w.slug}>
-              <WaschbaerCard waschbaer={w} />
+              <WaschbaerCard
+                waschbaer={w}
+                profilFoto={w.profilFoto}
+                hasEchteFotos={w.hasEchteFotos}
+              />
             </StaggerItem>
           ))}
         </Stagger>

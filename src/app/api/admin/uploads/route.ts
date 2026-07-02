@@ -31,7 +31,18 @@ export async function POST(request: Request) {
   }
 
   if (isSupabaseStorageEnabled()) {
-    const result = await uploadImage("paten-updates", file);
+    const folder = (formData.get("folder") as string) || "paten-updates";
+    const subfolder = (formData.get("subfolder") as string) || undefined;
+    const allowedFolders = new Set(["paten-updates", "waschbaeren"]);
+    if (!allowedFolders.has(folder)) {
+      return NextResponse.json({ error: "Ungültiger Upload-Ordner." }, { status: 400 });
+    }
+
+    const result = await uploadImage(
+      folder as "paten-updates" | "waschbaeren",
+      file,
+      subfolder
+    );
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }

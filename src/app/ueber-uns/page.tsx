@@ -15,8 +15,8 @@ import { pagePhotos } from "@/data/pagePhotos";
 import { sitePhotos } from "@/data/photos";
 import { organization } from "@/data/organization";
 import { projekte, regionStat, siteConfig } from "@/data/site";
-import { waschbaeren } from "@/data/waschbaeren";
 import { createMetadata } from "@/lib/seo";
+import { listWaschbaerenPublic } from "@/lib/waschbaerStore";
 import { JsonLd } from "@/components/seo/JsonLd";
 import {
   breadcrumbSchema,
@@ -37,7 +37,9 @@ export const metadata = createMetadata({
   ],
 });
 
-export default function UeberUnsPage() {
+export default async function UeberUnsPage() {
+  const waschbaeren = await listWaschbaerenPublic();
+
   const structuredData = jsonLdGraph([
     founderSchema(),
     webPageSchema({

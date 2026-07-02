@@ -16,8 +16,9 @@ export function isStoragePath(value: string): boolean {
 }
 
 export async function uploadImage(
-  folder: "paten-updates" | "form-uploads",
-  file: File
+  folder: "paten-updates" | "form-uploads" | "waschbaeren",
+  file: File,
+  subfolder?: string
 ): Promise<{ publicUrl: string } | { storagePath: string } | { error: string }> {
   if (!ALLOWED_TYPES.has(file.type)) {
     return { error: "Nur JPG, PNG, WebP oder GIF erlaubt." };
@@ -27,7 +28,8 @@ export async function uploadImage(
   }
 
   const ext = file.type.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
-  const path = `${folder}/${crypto.randomUUID()}.${ext}`;
+  const prefix = subfolder ? `${folder}/${subfolder}` : folder;
+  const path = `${prefix}/${crypto.randomUUID()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
   const uploaded = await uploadBuffer(path, buffer, file.type);

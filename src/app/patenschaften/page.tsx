@@ -19,8 +19,8 @@ import { pagePhotos } from "@/data/pagePhotos";
 import { paypalDonation } from "@/data/paypal";
 import { patenschaftAblauf, patenschaftHinweis } from "@/data/site";
 import { patenschaftFaq } from "@/data/patenschaften";
-import { waschbaeren } from "@/data/waschbaeren";
 import { createMetadata } from "@/lib/seo";
+import { listWaschbaerenPublic } from "@/lib/waschbaerStore";
 import { JsonLd } from "@/components/seo/JsonLd";
 import {
   breadcrumbSchema,
@@ -42,7 +42,9 @@ export const metadata = createMetadata({
   ],
 });
 
-export default function PatenschaftenPage() {
+export default async function PatenschaftenPage() {
+  const waschbaeren = await listWaschbaerenPublic();
+
   const structuredData = jsonLdGraph([
     webPageSchema({
       title: "Waschbär-Patenschaften",
@@ -123,7 +125,13 @@ export default function PatenschaftenPage() {
         <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" stagger={0.06}>
           {waschbaeren.map((w) => (
             <StaggerItem key={w.slug}>
-              <WaschbaerCard waschbaer={w} compact patenschaftSelect />
+              <WaschbaerCard
+                waschbaer={w}
+                profilFoto={w.profilFoto}
+                hasEchteFotos={w.hasEchteFotos}
+                compact
+                patenschaftSelect
+              />
             </StaggerItem>
           ))}
         </Stagger>

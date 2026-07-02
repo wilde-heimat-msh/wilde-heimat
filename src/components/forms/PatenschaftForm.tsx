@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { waschbaeren, getWaschbaerBySlug } from "@/data/waschbaeren";
 import { patenschaftsStufen } from "@/data/site";
+import { useWaschbaeren } from "@/hooks/useWaschbaeren";
 import {
   Checkbox,
   FormField,
@@ -15,9 +15,9 @@ import {
 import { WiderrufConsentField } from "./WiderrufConsentField";
 import { submitPublicForm } from "@/lib/submitPublicForm";
 
-function resolveWaschbaer(slug?: string) {
+function resolveWaschbaer(slug: string | undefined, slugs: string[]) {
   if (!slug) return undefined;
-  return getWaschbaerBySlug(slug) ? slug : undefined;
+  return slugs.includes(slug) ? slug : undefined;
 }
 
 function resolveStufe(id?: string) {
@@ -40,10 +40,16 @@ export function PatenschaftForm({
   const [isGift, setIsGift] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [widerrufAccepted, setWiderrufAccepted] = useState(false);
+  const { waschbaeren } = useWaschbaeren();
 
-  const waschbaerSlug = resolveWaschbaer(preselectedWaschbaer);
+  const waschbaerSlug = resolveWaschbaer(
+    preselectedWaschbaer,
+    waschbaeren.map((w) => w.slug)
+  );
   const stufeId = resolveStufe(preselectedStufe);
-  const selectedWaschbaer = waschbaerSlug ? getWaschbaerBySlug(waschbaerSlug) : undefined;
+  const selectedWaschbaer = waschbaerSlug
+    ? waschbaeren.find((w) => w.slug === waschbaerSlug)
+    : undefined;
   const selectedStufe = stufeId
     ? patenschaftsStufen.find((s) => s.id === stufeId)
     : undefined;

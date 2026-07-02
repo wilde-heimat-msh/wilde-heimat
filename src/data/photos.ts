@@ -40,8 +40,28 @@ export type WaschbaerGalerieFoto = {
   objectPosition?: string;
 };
 
-/** Echte Galerie-Fotos pro Waschbär (Reihenfolge = Anzeige) */
-const waschbaerGalerien: Partial<Record<string, WaschbaerGalerieFoto[]>> = {
+/** Galerie für die Website: Profilbild zuerst, genau ein großes Bild oben (col-span-2). */
+export function normalizeWaschbaerGalerie(fotos: WaschbaerGalerieFoto[]): WaschbaerGalerieFoto[] {
+  if (fotos.length === 0) return [];
+
+  const featuredIndex = fotos.findIndex((foto) => foto.featured);
+  const leadIndex = featuredIndex >= 0 ? featuredIndex : 0;
+  const lead = { ...fotos[leadIndex], featured: true };
+  const rest = fotos
+    .filter((_, index) => index !== leadIndex)
+    .map((foto) => ({ ...foto, featured: false }));
+
+  return [lead, ...rest];
+}
+
+export function getWaschbaerFeaturedFoto(
+  fotos: WaschbaerGalerieFoto[]
+): WaschbaerGalerieFoto | null {
+  return normalizeWaschbaerGalerie(fotos)[0] ?? null;
+}
+
+/** Echte Galerie-Fotos pro Waschbär (Reihenfolge = Anzeige) – statischer Fallback */
+export const staticWaschbaerGalerien: Partial<Record<string, WaschbaerGalerieFoto[]>> = {
   luna: [
     {
       src: "/photos/waschbaeren/luna-flasche.jpg",
@@ -278,24 +298,33 @@ const waschbaerGalerien: Partial<Record<string, WaschbaerGalerieFoto[]>> = {
   ],
 };
 
-const waschbaerMitEchtenFotos = new Set(Object.keys(waschbaerGalerien));
+const waschbaerMitEchtenFotos = new Set(Object.keys(staticWaschbaerGalerien));
 
-/** Bestes verfügbares Profilbild (Galerie-Highlight oder Karten-PNG) */
-export function getWaschbaerProfilfoto(slug: string): string {
-  const galerie = waschbaerGalerien[slug];
-  if (galerie?.length) {
-    const featured = galerie.find((foto) => foto.featured) ?? galerie[0];
-    return featured.src;
-  }
+export function getStaticWaschbaerGalerie(slug: string): WaschbaerGalerieFoto[] {
+  return normalizeWaschbaerGalerie(staticWaschbaerGalerien[slug] ?? []);
+}
+
+export function getStaticWaschbaerProfilfoto(slug: string): string {
+  const featured = getWaschbaerFeaturedFoto(staticWaschbaerGalerien[slug] ?? []);
+  if (featured) return featured.src;
   return `/photos/waschbaeren/${slug}.png`;
 }
 
-export function hasWaschbaerEchteFotos(slug: string): boolean {
+export function hasStaticWaschbaerEchteFotos(slug: string): boolean {
   return waschbaerMitEchtenFotos.has(slug);
 }
 
+/** Bestes verfügbares Profilbild (Galerie-Highlight oder Karten-PNG) */
+export function getWaschbaerProfilfoto(slug: string): string {
+  return getStaticWaschbaerProfilfoto(slug);
+}
+
+export function hasWaschbaerEchteFotos(slug: string): boolean {
+  return hasStaticWaschbaerEchteFotos(slug);
+}
+
 export function getWaschbaerGalerie(slug: string): WaschbaerGalerieFoto[] {
-  return waschbaerGalerien[slug] ?? [];
+  return getStaticWaschbaerGalerie(slug);
 }
 
 export function getWaschbaerCardFoto(slug: string): string {

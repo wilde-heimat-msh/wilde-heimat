@@ -10,6 +10,12 @@ export function AdminDashboard() {
         "Kontakt-, Fund- und Patenschaftsanfragen aus der Website einsehen und beantworten.",
     },
     {
+      href: "/admin/waschbaeren",
+      title: "Waschbären verwalten",
+      description:
+        "Profile anlegen und bearbeiten: Steckbrief, Geschichte, Charakter und Galerie-Fotos für jeden Waschbären.",
+    },
+    {
       href: "/admin/paten",
       title: "Paten verwalten",
       description:

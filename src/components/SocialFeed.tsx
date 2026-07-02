@@ -1,12 +1,11 @@
 import Image from "next/image";
 import { siteConfig } from "@/data/site";
 import { getDesignWaschbaerBild } from "@/data/photos";
-import { waschbaeren } from "@/data/waschbaeren";
 import { SocialLinks } from "./SocialLinks";
 import { TikTokPreview } from "./TikTokPreview";
 import { FadeIn, Stagger, StaggerItem } from "./motion/FadeIn";
 
-export function SocialFeed() {
+export function SocialFeed({ previewCount = 3 }: { previewCount?: number }) {
   return (
     <section className="relative overflow-hidden bg-sand-light/70 py-16 md:py-24">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -40,8 +39,8 @@ export function SocialFeed() {
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {waschbaeren.slice(0, 3).map((w, index) => (
-                  <div key={w.slug} className="relative aspect-square rounded-lg overflow-hidden">
+                {Array.from({ length: previewCount }, (_, index) => (
+                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
                     <Image
                       src={getDesignWaschbaerBild(index)}
                       alt="Waschbär-Impression"

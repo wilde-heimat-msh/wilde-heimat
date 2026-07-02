@@ -82,6 +82,7 @@ export const patenPortalNav = [
 export const adminPortalNav = [
   { href: "/admin", label: "Übersicht" },
   { href: "/admin/anfragen", label: "Anfragen" },
+  { href: "/admin/waschbaeren", label: "Waschbären" },
   { href: "/admin/paten", label: "Paten" },
   { href: "/admin/updates", label: "Updates" },
   { href: "/admin/urkunden", label: "Urkunden" },
