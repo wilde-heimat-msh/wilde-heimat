@@ -180,21 +180,21 @@ const waschbaerGalerien: Partial<Record<string, WaschbaerGalerieFoto[]>> = {
   ],
   pedro: [
     {
+      src: "/photos/waschbaeren/pedro-reifen.jpg",
+      width: 682,
+      height: 1024,
+      alt: "Pedro schaut neugierig hinter einem Reifen hervor",
+      caption: "Neugierig und aufgeschlossen – Pedro entdeckt seine Umgebung.",
+      featured: true,
+      objectPosition: "center 25%",
+    },
+    {
       src: "/photos/waschbaeren/pedro-portrait.jpg",
       width: 768,
       height: 1024,
       alt: "Pedro genießt einen Snack in seiner Hängematte",
       caption:
         "Pedro – der Kuschelkönig in seiner Hängematte, mit vollem Genuss und dem Lächeln eines echten Anführers.",
-      featured: true,
-      objectPosition: "center 25%",
-    },
-    {
-      src: "/photos/waschbaeren/pedro-reifen.jpg",
-      width: 682,
-      height: 1024,
-      alt: "Pedro schaut neugierig hinter einem Reifen hervor",
-      caption: "Neugierig und aufgeschlossen – Pedro entdeckt seine Umgebung.",
       objectPosition: "center 25%",
     },
     {
