@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { PatenUpdatesLanding } from "@/components/paten/PatenUpdatesLanding";
 import { getAuthenticatedPaten } from "@/lib/patenAuth";
 import { createMetadata } from "@/lib/seo";
@@ -14,9 +13,5 @@ export const metadata = createMetadata({
 
 export default async function PatenLoginPage() {
   const pate = await getAuthenticatedPaten();
-  if (pate) {
-    redirect("/paten/portal");
-  }
-
-  return <PatenUpdatesLanding />;
+  return <PatenUpdatesLanding loggedInPate={pate ?? undefined} />;
 }

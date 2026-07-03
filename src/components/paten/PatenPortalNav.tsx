@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { patenPortalNav } from "@/data/navigation";
 
 function isActive(pathname: string, href: string): boolean {
-  if (href === "/paten") {
+  if (href.startsWith("/paten#")) {
     return pathname === "/paten" || pathname.startsWith("/paten/zugang");
   }
   return pathname === href || pathname.startsWith(`${href}/`);

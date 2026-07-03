@@ -76,7 +76,7 @@ export const footerNavigation = {
 
 export const patenPortalNav = [
   { href: "/paten/portal", label: "Meine Updates" },
-  { href: "/paten", label: "Zugangscode" },
+  { href: "/paten#zugang", label: "Zugangscode" },
 ] as const;
 
 export const adminPortalNav = [

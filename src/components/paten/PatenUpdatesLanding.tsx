@@ -4,16 +4,24 @@ import { PhotoPageHero } from "@/components/layout/PhotoPageHero";
 import { PageCta } from "@/components/layout/PageCta";
 import { PatenschaftQuote } from "@/components/PatenschaftQuote";
 import { PatenschaftTierCards } from "@/components/PatenschaftTierCards";
+import { PatenHashScroller } from "@/components/paten/PatenHashScroller";
 import { PatenLoginForm, PatenLoginFormFallback } from "@/components/paten/PatenLoginForm";
+import { PatenPortalNav } from "@/components/paten/PatenPortalNav";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { Section, SectionHeader } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { pagePhotos } from "@/data/pagePhotos";
 import { patenschaftsStufen } from "@/data/site";
+import type { PatenschaftPate } from "@/types/patenschaftPortal";
 
-export function PatenUpdatesLanding() {
+type PatenUpdatesLandingProps = {
+  loggedInPate?: PatenschaftPate;
+};
+
+export function PatenUpdatesLanding({ loggedInPate }: PatenUpdatesLandingProps) {
   return (
     <>
+      <PatenHashScroller />
       <PhotoPageHero
         eyebrow="Paten-Updates"
         title="Bleib nah an deinem Patentier."
@@ -29,6 +37,11 @@ export function PatenUpdatesLanding() {
       </PhotoPageHero>
 
       <Section soft id="zugang" className="scroll-mt-20">
+        {loggedInPate ? (
+          <div className="mb-6">
+            <PatenPortalNav />
+          </div>
+        ) : null}
         <div className="grid items-start gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
           <FadeIn>
             <SectionHeader
@@ -47,7 +60,7 @@ export function PatenUpdatesLanding() {
 
           <FadeIn delay={0.1} className="lg:sticky lg:top-24">
             <Suspense fallback={<PatenLoginFormFallback />}>
-              <PatenLoginForm />
+              <PatenLoginForm loggedInPate={loggedInPate} />
             </Suspense>
           </FadeIn>
         </div>

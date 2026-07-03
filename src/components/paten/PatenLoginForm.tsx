@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import type { PatenschaftPate } from "@/types/patenschaftPortal";
 
 export function PatenLoginFormFallback() {
   return (
@@ -17,7 +19,11 @@ export function PatenLoginFormFallback() {
   );
 }
 
-export function PatenLoginForm() {
+type PatenLoginFormProps = {
+  loggedInPate?: PatenschaftPate;
+};
+
+export function PatenLoginForm({ loggedInPate }: PatenLoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [code, setCode] = useState("");
@@ -25,6 +31,7 @@ export function PatenLoginForm() {
     searchParams.get("fehler") === "code" ? "Zugangscode ungültig oder inaktiv." : null
   );
   const [loading, setLoading] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -54,6 +61,16 @@ export function PatenLoginForm() {
     }
   }
 
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/paten/logout", { method: "POST", credentials: "same-origin" });
+      router.refresh();
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border bg-background/95 shadow-soft">
       <div
@@ -61,6 +78,32 @@ export function PatenLoginForm() {
         aria-hidden
       />
       <div className="p-6 sm:p-8">
+        {loggedInPate ? (
+          <div className="mb-6 rounded-xl border border-forest/20 bg-forest/5 px-4 py-3 text-sm">
+            <p className="text-forest font-medium">Angemeldet als {loggedInPate.name}</p>
+            <p className="mt-1 text-muted">
+              Aktueller Code:{" "}
+              <span className="font-mono text-forest">{loggedInPate.accessCode}</span>
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link
+                href="/paten/portal"
+                className="min-h-9 inline-flex items-center rounded-lg border border-forest/30 bg-background px-3 text-xs font-medium text-forest hover:bg-forest/5"
+              >
+                Zu meinen Updates
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="min-h-9 px-3 text-xs rounded-lg border border-border hover:bg-muted-light/60 disabled:opacity-60"
+              >
+                {loggingOut ? "Wird abgemeldet …" : "Abmelden"}
+              </button>
+            </div>
+          </div>
+        ) : null}
+
         <div className="flex items-start gap-4">
           <div
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sage/15 text-forest"
@@ -75,10 +118,13 @@ export function PatenLoginForm() {
             </svg>
           </div>
           <div>
-            <h2 className="text-lg font-medium text-forest">Bereits Pate?</h2>
+            <h2 className="text-lg font-medium text-forest">
+              {loggedInPate ? "Anderen Zugangscode verwenden" : "Bereits Pate?"}
+            </h2>
             <p className="mt-1 text-sm text-muted leading-relaxed">
-              Melde dich mit deinem persönlichen Zugangscode an – dort findest du Fotos und
-              Neuigkeiten von deinem Patentier.
+              {loggedInPate
+                ? "Gib einen anderen Code ein, um dich mit einer anderen Patenschaft anzumelden."
+                : "Melde dich mit deinem persönlichen Zugangscode an – dort findest du Fotos und Neuigkeiten von deinem Patentier."}
             </p>
           </div>
         </div>
@@ -112,7 +158,7 @@ export function PatenLoginForm() {
             disabled={loading}
             className="w-full min-h-11 rounded-xl bg-foreground px-4 py-3 text-sm font-medium text-background transition-all duration-200 hover:bg-accent disabled:opacity-60"
           >
-            {loading ? "Wird geprüft …" : "Zu meinen Updates"}
+            {loading ? "Wird geprüft …" : loggedInPate ? "Mit diesem Code anmelden" : "Zu meinen Updates"}
           </button>
         </form>
 
