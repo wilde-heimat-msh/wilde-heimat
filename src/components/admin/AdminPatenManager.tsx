@@ -413,7 +413,7 @@ export function AdminPatenManager() {
                       <div className="flex flex-wrap gap-2">
                         <Link
                           href={`/admin/paten/${encodeURIComponent(pate.id)}`}
-                          className="min-h-9 inline-flex items-center px-4 text-xs font-medium rounded-lg bg-forest text-white shadow-sm hover:bg-forest/90 transition-colors"
+                          className="min-h-9 inline-flex items-center px-4 text-xs font-medium rounded-lg bg-orange-600 text-white shadow-sm hover:bg-orange-700 transition-colors"
                         >
                           Kartei
                         </Link>
