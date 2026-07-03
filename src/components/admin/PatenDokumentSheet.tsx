@@ -6,6 +6,10 @@ import type { PatenDokumentId } from "@/data/patenDokumente";
 import { siteConfig, patenschaftHinweis } from "@/data/site";
 import { formatContactAddressLines } from "@/lib/contact";
 import { formatDateTimeDe, formatFormDateDe } from "@/lib/relativeTime";
+import {
+  URKUNDE_PREVIEW_SCALE,
+  URKUNDE_PREVIEW_WIDTH_PX,
+} from "@/lib/urkundeScale";
 import type { PatenschaftPate } from "@/types/patenschaftPortal";
 import type { ReactNode } from "react";
 import { forwardRef } from "react";
@@ -295,11 +299,12 @@ function Widerrufsformular({ ctx }: { ctx: PatenDokumentContext }) {
 type PatenDokumentSheetProps = {
   dokumentId: PatenDokumentId;
   ctx: PatenDokumentContext;
+  mode?: "preview" | "print";
   className?: string;
 };
 
 export const PatenDokumentSheet = forwardRef<HTMLElement, PatenDokumentSheetProps>(
-  function PatenDokumentSheet({ dokumentId, ctx, className = "" }, ref) {
+  function PatenDokumentSheet({ dokumentId, ctx, mode = "print", className = "" }, ref) {
     let content: ReactNode;
 
     switch (dokumentId) {
@@ -322,10 +327,31 @@ export const PatenDokumentSheet = forwardRef<HTMLElement, PatenDokumentSheetProp
         content = null;
     }
 
-    return (
-      <div ref={ref as React.RefObject<HTMLDivElement>} className={className}>
+    const sheet = (
+      <div ref={mode === "print" ? (ref as React.RefObject<HTMLDivElement>) : undefined} className={className}>
         {content}
       </div>
     );
+
+    if (mode === "preview") {
+      return (
+        <div
+          className="relative mx-auto overflow-hidden"
+          style={{ width: URKUNDE_PREVIEW_WIDTH_PX }}
+        >
+          <div
+            style={{
+              transform: `scale(${URKUNDE_PREVIEW_SCALE})`,
+              transformOrigin: "top left",
+              width: "210mm",
+            }}
+          >
+            {sheet}
+          </div>
+        </div>
+      );
+    }
+
+    return sheet;
   }
 );

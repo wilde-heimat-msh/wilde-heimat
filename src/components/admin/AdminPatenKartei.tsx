@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AdminLogoutButton, AdminNav } from "@/components/admin/AdminLogin";
+import { PatenDokumentPreviewDialog } from "@/components/admin/PatenDokumentPreviewDialog";
 import { PatenDokumentSheet } from "@/components/admin/PatenDokumentSheet";
 import { PatenschaftUrkunde } from "@/components/PatenschaftUrkunde";
 import {
@@ -40,6 +41,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [exportingId, setExportingId] = useState<PatenDokumentId | "all" | null>(null);
+  const [previewDocId, setPreviewDocId] = useState<PatenDokumentId | null>(null);
 
   const urkundePrintRef = useRef<HTMLElement>(null);
   const docRefs = useRef<Partial<Record<PatenDokumentId, HTMLElement | null>>>({});
@@ -279,26 +281,57 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
                   >
                     <p className="text-sm font-medium text-forest">{doc.title}</p>
                     <p className="text-xs text-muted mt-1">{doc.description}</p>
-                    <button
-                      type="button"
-                      onClick={() => exportDocument(doc.id)}
-                      disabled={exportingId !== null}
-                      className="mt-2 min-h-8 px-3 text-xs rounded-lg bg-foreground text-background hover:bg-accent disabled:opacity-60"
-                    >
-                      {exportingId === doc.id ? "Erstelle PDF …" : "PDF herunterladen"}
-                    </button>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewDocId(doc.id)}
+                        className="min-h-8 px-3 text-xs rounded-lg border border-border hover:bg-muted-light/60"
+                      >
+                        Vorschau
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => exportDocument(doc.id)}
+                        disabled={exportingId !== null}
+                        className="min-h-8 px-3 text-xs rounded-lg bg-foreground text-background hover:bg-accent disabled:opacity-60"
+                      >
+                        {exportingId === doc.id ? "Erstelle PDF …" : "PDF speichern"}
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
             </section>
           </div>
 
-          <section className="rounded-2xl border border-border bg-muted-light/20 p-4 sm:p-6 overflow-x-auto">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-muted mb-4">
-              Urkunden-Vorschau
-            </h2>
-            <PatenschaftUrkunde data={data.urkunde} mode="preview" />
+          <section className="rounded-2xl border border-border bg-muted-light/20 p-4 sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted">
+                Schnellvorschau Urkunde
+              </h2>
+              <button
+                type="button"
+                onClick={() => setPreviewDocId("urkunde")}
+                className="min-h-8 px-3 text-xs rounded-lg border border-border bg-background hover:bg-muted-light/60"
+              >
+                Vollbild-Vorschau
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <PatenschaftUrkunde data={data.urkunde} mode="preview" />
+            </div>
           </section>
+
+          {previewDocId && docCtx ? (
+            <PatenDokumentPreviewDialog
+              dokumentId={previewDocId}
+              ctx={docCtx}
+              urkunde={data.urkunde}
+              exporting={exportingId === previewDocId}
+              onClose={() => setPreviewDocId(null)}
+              onDownload={() => exportDocument(previewDocId)}
+            />
+          ) : null}
         </>
       ) : null}
 
