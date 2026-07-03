@@ -30,17 +30,20 @@ export async function getPatenschaftStore(): Promise<PatenschaftStore> {
   return readStore();
 }
 
-export async function getPatenByAccessCode(code: string): Promise<PatenschaftPate | null> {
+export async function listPatenByAccessCode(code: string): Promise<PatenschaftPate[]> {
   if (isSupabaseConfigured()) {
-    return supabaseStore.supabaseGetPatenByAccessCode(code);
+    return supabaseStore.supabaseListPatenByAccessCode(code);
   }
   const normalized = normalizeAccessCode(code);
   const store = await readStore();
-  return (
-    store.paten.find(
-      (p) => p.active && normalizeAccessCode(p.accessCode) === normalized
-    ) ?? null
+  return store.paten.filter(
+    (p) => p.active && normalizeAccessCode(p.accessCode) === normalized
   );
+}
+
+export async function getPatenByAccessCode(code: string): Promise<PatenschaftPate | null> {
+  const paten = await listPatenByAccessCode(code);
+  return paten[0] ?? null;
 }
 
 export async function getPatenLinksBySubmissionIds(
@@ -97,16 +100,44 @@ export async function listUpdates(): Promise<PatenschaftUpdate[]> {
   );
 }
 
-export async function isAccessCodeTaken(code: string, excludeId?: string): Promise<boolean> {
+export async function isPatenschaftSlotTaken(
+  code: string,
+  waschbaerSlug: string,
+  excludeId?: string
+): Promise<boolean> {
   if (isSupabaseConfigured()) {
-    return supabaseStore.supabaseIsAccessCodeTaken(code, excludeId);
+    return supabaseStore.supabaseIsPatenschaftSlotTaken(code, waschbaerSlug, excludeId);
   }
   const normalized = normalizeAccessCode(code);
   const store = await readStore();
   return store.paten.some(
     (p) =>
-      p.id !== excludeId && normalizeAccessCode(p.accessCode) === normalized
+      p.id !== excludeId &&
+      normalizeAccessCode(p.accessCode) === normalized &&
+      p.waschbaerSlug === waschbaerSlug
   );
+}
+
+/** Vorhandenen Code einer Person wiederverwenden (z. B. zweites Patentier). */
+export async function findAccessCodeForPatron(options: {
+  email?: string;
+  name?: string;
+}): Promise<string | null> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseFindAccessCodeForPatron(options);
+  }
+  const store = await readStore();
+  const email = options.email?.trim().toLowerCase();
+  if (email) {
+    const match = store.paten.find((p) => p.email?.trim().toLowerCase() === email);
+    if (match) return match.accessCode;
+  }
+  const name = options.name?.trim().toLowerCase();
+  if (name) {
+    const match = store.paten.find((p) => p.name.trim().toLowerCase() === name);
+    if (match) return match.accessCode;
+  }
+  return null;
 }
 
 export async function createPaten(
@@ -232,4 +263,24 @@ export function getUpdatesForPaten(
     .sort(
       (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
     );
+}
+
+export function getUpdatesForPatenList(
+  updates: PatenschaftUpdate[],
+  paten: PatenschaftPate[]
+): PatenschaftUpdate[] {
+  const seen = new Set<string>();
+  const merged: PatenschaftUpdate[] = [];
+
+  for (const pate of paten) {
+    for (const update of getUpdatesForPaten(updates, pate)) {
+      if (seen.has(update.id)) continue;
+      seen.add(update.id);
+      merged.push(update);
+    }
+  }
+
+  return merged.sort(
+    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  );
 }

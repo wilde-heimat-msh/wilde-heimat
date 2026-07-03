@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
-import { getPatenById } from "@/lib/patenschaftStore";
+import { normalizeAccessCode } from "@/lib/patenschaftTier";
+import { getPatenById, listPatenByAccessCode } from "@/lib/patenschaftStore";
 import type { PatenschaftPate } from "@/types/patenschaftPortal";
 
 export const PATEN_SESSION_COOKIE = "wh-paten-session";
@@ -15,41 +16,74 @@ function getPatenSessionSecret(): string | null {
   );
 }
 
-export function createPatenSessionToken(patenId: string): string | null {
+function signSessionPayload(payload: string): string | null {
   const secret = getPatenSessionSecret();
   if (!secret) return null;
-
-  const signature = createHash("sha256").update(`${patenId}:${secret}`).digest("hex");
-  return `${patenId}.${signature}`;
+  return createHash("sha256").update(`${payload}:${secret}`).digest("hex");
 }
 
-export function verifyPatenSessionToken(token: string): string | null {
-  const secret = getPatenSessionSecret();
-  if (!secret) return null;
-
-  const [patenId, signature] = token.split(".");
-  if (!patenId || !signature) return null;
-
-  const expected = createHash("sha256").update(`${patenId}:${secret}`).digest("hex");
+function verifySessionSignature(payload: string, signature: string): boolean {
+  const expected = signSessionPayload(payload);
+  if (!expected) return false;
   const a = Buffer.from(signature);
   const b = Buffer.from(expected);
-  if (a.length !== b.length) return null;
-  if (!timingSafeEqual(a, b)) return null;
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
 
+/** Session an Zugangscode binden – ein Login für alle Patentiere desselben Codes. */
+export function createPatenSessionToken(accessCode: string): string | null {
+  const normalized = normalizeAccessCode(accessCode);
+  const signature = signSessionPayload(`paten:${normalized}`);
+  if (!signature) return null;
+  return `paten.${normalized}.${signature}`;
+}
+
+function verifyLegacyPatenSessionToken(token: string): string | null {
+  const dotIndex = token.indexOf(".");
+  if (dotIndex <= 0) return null;
+
+  const patenId = token.slice(0, dotIndex);
+  const signature = token.slice(dotIndex + 1);
+  if (!patenId || !signature) return null;
+  if (!verifySessionSignature(patenId, signature)) return null;
   return patenId;
 }
 
-export async function getAuthenticatedPaten(): Promise<PatenschaftPate | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(PATEN_SESSION_COOKIE)?.value;
-  if (!token) return null;
+async function resolveAccessCodeFromToken(token: string): Promise<string | null> {
+  if (token.startsWith("paten.")) {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const [, normalized, signature] = parts;
+    if (!normalized || !signature) return null;
+    if (!verifySessionSignature(`paten:${normalized}`, signature)) return null;
+    return normalized;
+  }
 
-  const patenId = verifyPatenSessionToken(token);
+  const patenId = verifyLegacyPatenSessionToken(token);
   if (!patenId) return null;
 
   const pate = await getPatenById(patenId);
   if (!pate || !pate.active) return null;
-  return pate;
+  return normalizeAccessCode(pate.accessCode);
+}
+
+export async function getAuthenticatedAccessCode(): Promise<string | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(PATEN_SESSION_COOKIE)?.value;
+  if (!token) return null;
+  return resolveAccessCodeFromToken(token);
+}
+
+export async function getAuthenticatedPatens(): Promise<PatenschaftPate[]> {
+  const accessCode = await getAuthenticatedAccessCode();
+  if (!accessCode) return [];
+  return listPatenByAccessCode(accessCode);
+}
+
+export async function getAuthenticatedPaten(): Promise<PatenschaftPate | null> {
+  const paten = await getAuthenticatedPatens();
+  return paten[0] ?? null;
 }
 
 export function getPatenSessionCookieOptions() {

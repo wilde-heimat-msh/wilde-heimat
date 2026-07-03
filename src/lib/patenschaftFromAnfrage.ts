@@ -1,4 +1,5 @@
 import type { PatenschaftStufeId } from "@/data/patenschaften";
+import { suggestPatenAccessCode } from "@/lib/patenschaftTier";
 import {
   createDefaultUrkundeDaten,
   suggestUrkundenNr,
@@ -112,16 +113,12 @@ export function suggestAccessCodeFromAnfrage(
   parsed: ParsedPatenschaftAnfrage,
   year = new Date().getFullYear()
 ): string {
-  const waschbaerPart = parsed.waschbaerSlug.replace(/-/g, "").slice(0, 8).toUpperCase();
-  const stufePart = parsed.stufeId.toUpperCase();
-  const namePart = parsed.name
-    .trim()
-    .split(/\s+/)
-    .map((part) => part[0] ?? "")
-    .join("")
-    .toUpperCase()
-    .slice(0, 4);
-  return `${waschbaerPart}-${stufePart}-${namePart || "PATE"}-${year}`;
+  return suggestPatenAccessCode({
+    waschbaerSlug: parsed.waschbaerSlug,
+    stufeId: parsed.stufeId,
+    name: parsed.name,
+    year,
+  });
 }
 
 export function buildPatenFromAnfrage(

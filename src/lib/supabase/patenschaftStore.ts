@@ -97,16 +97,21 @@ export async function supabaseListPaten(): Promise<PatenschaftPate[]> {
   return (data as PateRow[]).map(mapPate);
 }
 
+export async function supabaseListPatenByAccessCode(
+  code: string
+): Promise<PatenschaftPate[]> {
+  const normalized = normalizeAccessCode(code);
+  const paten = await supabaseListPaten();
+  return paten.filter(
+    (p) => p.active && normalizeAccessCode(p.accessCode) === normalized
+  );
+}
+
 export async function supabaseGetPatenByAccessCode(
   code: string
 ): Promise<PatenschaftPate | null> {
-  const normalized = normalizeAccessCode(code);
-  const paten = await supabaseListPaten();
-  return (
-    paten.find(
-      (p) => p.active && normalizeAccessCode(p.accessCode) === normalized
-    ) ?? null
-  );
+  const paten = await supabaseListPatenByAccessCode(code);
+  return paten[0] ?? null;
 }
 
 export async function supabaseGetPatenById(id: string): Promise<PatenschaftPate | null> {
@@ -121,16 +126,37 @@ export async function supabaseGetPatenById(id: string): Promise<PatenschaftPate 
   return data ? mapPate(data as PateRow) : null;
 }
 
-export async function supabaseIsAccessCodeTaken(
+export async function supabaseIsPatenschaftSlotTaken(
   code: string,
+  waschbaerSlug: string,
   excludeId?: string
 ): Promise<boolean> {
   const normalized = normalizeAccessCode(code);
   const paten = await supabaseListPaten();
   return paten.some(
     (p) =>
-      p.id !== excludeId && normalizeAccessCode(p.accessCode) === normalized
+      p.id !== excludeId &&
+      normalizeAccessCode(p.accessCode) === normalized &&
+      p.waschbaerSlug === waschbaerSlug
   );
+}
+
+export async function supabaseFindAccessCodeForPatron(options: {
+  email?: string;
+  name?: string;
+}): Promise<string | null> {
+  const paten = await supabaseListPaten();
+  const email = options.email?.trim().toLowerCase();
+  if (email) {
+    const match = paten.find((p) => p.email?.trim().toLowerCase() === email);
+    if (match) return match.accessCode;
+  }
+  const name = options.name?.trim().toLowerCase();
+  if (name) {
+    const match = paten.find((p) => p.name.trim().toLowerCase() === name);
+    if (match) return match.accessCode;
+  }
+  return null;
 }
 
 export async function supabaseGetPatenLinksBySubmissionIds(

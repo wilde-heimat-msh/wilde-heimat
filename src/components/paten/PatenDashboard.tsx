@@ -11,24 +11,32 @@ import {
   getPatenPortalEmptyText,
   getPatenPortalUpdatesText,
   patenschaftUrkundeStufeStyles,
-  patenStufeHatPortalFeed,
 } from "@/data/patenschaften";
 import type { PatenschaftStufeId } from "@/data/patenschaften";
 import type { PatenschaftUpdate } from "@/types/patenschaftPortal";
 
-type FeedResponse = {
-  pate: {
-    name: string;
-    stufeId: PatenschaftStufeId;
-    stufeName: string;
-  };
+type PatenschaftFeedItem = {
+  id: string;
+  stufeId: PatenschaftStufeId;
+  stufeName: string;
   waschbaer: {
     name: string;
     slug: string;
     kurztext: string;
     foto: string | null;
   } | null;
-  updates: PatenschaftUpdate[];
+};
+
+type FeedResponse = {
+  pate: {
+    name: string;
+    stufeId: PatenschaftStufeId;
+    stufeName: string;
+    patenschaftCount: number;
+    hasPortalFeed: boolean;
+  };
+  patenschaften: PatenschaftFeedItem[];
+  updates: (PatenschaftUpdate & { waschbaerName?: string })[];
 };
 
 export function PatenDashboard() {
@@ -88,7 +96,14 @@ export function PatenDashboard() {
     );
   }
 
-  const styles = patenschaftUrkundeStufeStyles[feed.pate.stufeId];
+  const tierNames = feed.patenschaften
+    .map((p) => p.waschbaer?.name)
+    .filter((name): name is string => Boolean(name));
+  const patenschaftLabel =
+    tierNames.length > 1
+      ? tierNames.join(" & ")
+      : tierNames[0] ?? "dein Patentier";
+  const showWaschbaerOnUpdates = feed.patenschaften.length > 1;
 
   return (
     <div className="space-y-8">
@@ -102,7 +117,9 @@ export function PatenDashboard() {
             <p className="text-sm uppercase tracking-wide text-muted">Willkommen zurück</p>
             <h1 className="mt-1 text-2xl font-medium text-forest sm:text-3xl">{feed.pate.name}</h1>
             <p className="mt-2 text-sm text-muted">
-              Patenschaft · {feed.waschbaer?.name ?? "dein Patentier"} · Stufe {feed.pate.stufeName}
+              {feed.pate.patenschaftCount > 1
+                ? `${feed.pate.patenschaftCount} Patenschaften · ${patenschaftLabel}`
+                : `Patenschaft · ${patenschaftLabel} · Stufe ${feed.pate.stufeName}`}
             </p>
           </div>
           <PatenLogoutButton onLogout={handleLogout} />
@@ -111,30 +128,50 @@ export function PatenDashboard() {
 
       <PatenPortalNav />
 
-      {feed.waschbaer ? (
-        <section
-          className={`rounded-2xl border p-5 sm:p-6 shadow-soft grid gap-5 sm:grid-cols-[7rem_1fr] items-center ${styles.panel}`}
-        >
-          <div className="relative mx-auto sm:mx-0 aspect-[3/4] w-full max-w-[7rem] overflow-hidden rounded-xl border-2 bg-neutral-200 shadow-sm">
-            {feed.waschbaer.foto ? (
-              <Image
-                src={feed.waschbaer.foto}
-                alt={feed.waschbaer.name}
-                fill
-                className="object-cover"
-                sizes="112px"
-              />
-            ) : (
-              <WaschbaerFotoFolgt name={feed.waschbaer.name} compact className="h-full w-full" />
-            )}
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-wide text-muted">Dein Patentier</p>
-            <h2 className="text-xl font-medium text-forest">{feed.waschbaer.name}</h2>
-            <p className="mt-1 text-sm text-muted leading-relaxed">{feed.waschbaer.kurztext}</p>
-            <p className="mt-3 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border border-current/20">
-              Stufe {feed.pate.stufeName}
-            </p>
+      {feed.patenschaften.length > 0 ? (
+        <section className="space-y-4">
+          <h2 className="text-lg font-medium text-forest">
+            {feed.patenschaften.length > 1 ? "Deine Patentiere" : "Dein Patentier"}
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {feed.patenschaften.map((patenschaft) => {
+              if (!patenschaft.waschbaer) return null;
+              const styles = patenschaftUrkundeStufeStyles[patenschaft.stufeId];
+
+              return (
+                <article
+                  key={patenschaft.id}
+                  className={`rounded-2xl border p-5 shadow-soft grid gap-4 sm:grid-cols-[5.5rem_1fr] items-center ${styles.panel}`}
+                >
+                  <div className="relative mx-auto sm:mx-0 aspect-[3/4] w-full max-w-[5.5rem] overflow-hidden rounded-xl border-2 bg-neutral-200 shadow-sm">
+                    {patenschaft.waschbaer.foto ? (
+                      <Image
+                        src={patenschaft.waschbaer.foto}
+                        alt={patenschaft.waschbaer.name}
+                        fill
+                        className="object-cover"
+                        sizes="88px"
+                      />
+                    ) : (
+                      <WaschbaerFotoFolgt
+                        name={patenschaft.waschbaer.name}
+                        compact
+                        className="h-full w-full"
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-forest">{patenschaft.waschbaer.name}</h3>
+                    <p className="mt-1 text-sm text-muted leading-relaxed line-clamp-3">
+                      {patenschaft.waschbaer.kurztext}
+                    </p>
+                    <p className="mt-3 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border border-current/20">
+                      Stufe {patenschaft.stufeName}
+                    </p>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </section>
       ) : null}
@@ -145,7 +182,7 @@ export function PatenDashboard() {
           <p className="text-sm text-muted">{getPatenPortalUpdatesText(feed.pate.stufeId)}</p>
         </div>
 
-        {!patenStufeHatPortalFeed(feed.pate.stufeId) ? (
+        {!feed.pate.hasPortalFeed ? (
           <div className="rounded-2xl border border-border bg-background/60 px-6 py-8">
             <p className="text-sm leading-relaxed text-muted">
               {getPatenPortalEmptyText(feed.pate.stufeId)}
@@ -183,7 +220,11 @@ export function PatenDashboard() {
         ) : (
           <div className="space-y-4">
             {feed.updates.map((update) => (
-              <PatenschaftUpdateCard key={update.id} update={update} />
+              <PatenschaftUpdateCard
+                key={update.id}
+                update={update}
+                waschbaerName={showWaschbaerOnUpdates ? update.waschbaerName : undefined}
+              />
             ))}
           </div>
         )}

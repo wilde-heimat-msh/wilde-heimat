@@ -27,8 +27,9 @@ create table if not exists public.patenschaft_paten (
   updated_at timestamptz not null default now()
 );
 
-create unique index if not exists patenschaft_paten_access_code_idx
-  on public.patenschaft_paten (upper(trim(access_code)));
+-- Ein Code pro Person; mehrere Zeilen mit gleichem Code = mehrere Patentiere
+create unique index if not exists patenschaft_paten_code_waschbaer_idx
+  on public.patenschaft_paten (upper(trim(access_code)), waschbaer_slug);
 
 create unique index if not exists patenschaft_paten_form_submission_idx
   on public.patenschaft_paten (form_submission_id)

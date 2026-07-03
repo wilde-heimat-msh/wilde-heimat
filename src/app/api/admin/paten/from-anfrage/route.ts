@@ -6,8 +6,9 @@ import {
 } from "@/lib/patenschaftFromAnfrage";
 import {
   createPaten,
+  findAccessCodeForPatron,
   getPatenByFormSubmissionId,
-  isAccessCodeTaken,
+  isPatenschaftSlotTaken,
 } from "@/lib/patenschaftStore";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { apiErrorResponse } from "@/lib/apiError";
@@ -71,11 +72,21 @@ export async function POST(request: Request) {
 
     let accessCode = body.accessCode?.trim().toUpperCase();
     if (!accessCode) {
-      accessCode = suggestAccessCodeFromAnfrage(parsed);
+      accessCode =
+        (await findAccessCodeForPatron({
+          email: parsed.email,
+          name: parsed.isGift && parsed.beschenkterName ? parsed.beschenkterName : parsed.name,
+        })) ?? suggestAccessCodeFromAnfrage(parsed);
     }
 
-    if (await isAccessCodeTaken(accessCode)) {
-      accessCode = `${accessCode}-${Math.floor(Math.random() * 90 + 10)}`;
+    if (await isPatenschaftSlotTaken(accessCode, parsed.waschbaerSlug)) {
+      return NextResponse.json(
+        {
+          error:
+            "Für diese Person existiert bereits eine Patenschaft für diesen Waschbären mit diesem Zugangscode.",
+        },
+        { status: 409 }
+      );
     }
 
     const pateInput = buildPatenFromAnfrage(submission, parsed, {

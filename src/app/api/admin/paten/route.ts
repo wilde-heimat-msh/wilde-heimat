@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import {
   createPaten,
   deletePaten,
-  isAccessCodeTaken,
+  isPatenschaftSlotTaken,
   listPaten,
   updatePaten,
 } from "@/lib/patenschaftStore";
@@ -52,8 +52,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Pflichtfelder fehlen." }, { status: 400 });
   }
 
-  if (await isAccessCodeTaken(body.accessCode)) {
-    return NextResponse.json({ error: "Dieser Zugangscode ist bereits vergeben." }, { status: 409 });
+  if (await isPatenschaftSlotTaken(body.accessCode, body.waschbaerSlug)) {
+    return NextResponse.json(
+      { error: "Für diesen Zugangscode existiert bereits eine Patenschaft für diesen Waschbären." },
+      { status: 409 }
+    );
   }
 
   try {
@@ -116,8 +119,15 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "ID fehlt." }, { status: 400 });
   }
 
-  if (body.accessCode && (await isAccessCodeTaken(body.accessCode, body.id))) {
-    return NextResponse.json({ error: "Dieser Zugangscode ist bereits vergeben." }, { status: 409 });
+  if (
+    body.accessCode &&
+    body.waschbaerSlug &&
+    (await isPatenschaftSlotTaken(body.accessCode, body.waschbaerSlug, body.id))
+  ) {
+    return NextResponse.json(
+      { error: "Für diesen Zugangscode existiert bereits eine Patenschaft für diesen Waschbären." },
+      { status: 409 }
+    );
   }
 
   try {

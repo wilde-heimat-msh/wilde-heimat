@@ -16,3 +16,28 @@ export function stufeMeetsMinimum(
 export function normalizeAccessCode(code: string): string {
   return code.trim().toUpperCase();
 }
+
+/** Vorschlag für einen neuen Paten-Zugangscode – z. B. MILA-SILBER-CG-2026 */
+export function suggestPatenAccessCode(input: {
+  waschbaerSlug: string;
+  stufeId: PatenschaftStufeId;
+  name?: string;
+  year?: number;
+}): string {
+  const year = input.year ?? new Date().getFullYear();
+  const waschbaerPart = input.waschbaerSlug.replace(/-/g, "").slice(0, 8).toUpperCase();
+  const stufePart = input.stufeId.toUpperCase();
+  const namePart = (input.name ?? "")
+    .trim()
+    .split(/\s+/)
+    .map((part) => part[0] ?? "")
+    .join("")
+    .toUpperCase()
+    .slice(0, 4);
+
+  return `${waschbaerPart}-${stufePart}-${namePart || "PATE"}-${year}`;
+}
+
+export function getPatenPortalUrl(origin: string, accessCode: string): string {
+  return `${origin}/paten/zugang/${encodeURIComponent(accessCode)}`;
+}

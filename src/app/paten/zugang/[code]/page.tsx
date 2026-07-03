@@ -6,7 +6,8 @@ import {
   getPatenSessionCookieOptions,
   PATEN_SESSION_COOKIE,
 } from "@/lib/patenAuth";
-import { getPatenByAccessCode } from "@/lib/patenschaftStore";
+import { normalizeAccessCode } from "@/lib/patenschaftTier";
+import { listPatenByAccessCode } from "@/lib/patenschaftStore";
 
 type PageProps = {
   params: Promise<{ code: string }>;
@@ -21,13 +22,13 @@ export const metadata = createMetadata({
 
 export default async function PatenZugangPage({ params }: PageProps) {
   const { code } = await params;
-  const pate = await getPatenByAccessCode(decodeURIComponent(code));
+  const paten = await listPatenByAccessCode(decodeURIComponent(code));
 
-  if (!pate) {
+  if (paten.length === 0) {
     redirect("/paten?fehler=code");
   }
 
-  const token = createPatenSessionToken(pate.id);
+  const token = createPatenSessionToken(normalizeAccessCode(code));
   if (!token) {
     redirect("/paten?fehler=code");
   }
