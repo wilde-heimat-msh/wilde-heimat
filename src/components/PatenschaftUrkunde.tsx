@@ -9,6 +9,7 @@ import {
 } from "@/data/patenschaften";
 import { patenschaftUrkundeFormat } from "@/data/privacy";
 import { formatAbsoluteDateDe } from "@/lib/relativeTime";
+import { VereinUnterschriftBlock } from "@/components/VereinUnterschriftBlock";
 import {
   URKUNDE_PREVIEW_HEIGHT_PX,
   URKUNDE_PREVIEW_SCALE,
@@ -211,10 +212,14 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
           </main>
 
           <footer className="shrink-0 border-t-[1.5px] border-amber-900/15 pt-4 pb-0.5">
-            <div className="grid grid-cols-2 gap-x-6 text-left text-[13px]">
+            <div className="grid grid-cols-2 gap-x-6 text-left text-[13px] mb-4">
               <div>
                 <p className="uppercase tracking-wider text-muted text-[10px] font-medium">
-                  Ausgestellt am
+                  Ausgestellt in
+                </p>
+                <p className="mt-0.5 text-forest font-semibold leading-tight">{ort}</p>
+                <p className="mt-2 uppercase tracking-wider text-muted text-[10px] font-medium">
+                  am
                 </p>
                 <p className="mt-0.5 text-forest font-semibold leading-tight">{datumLang}</p>
               </div>
@@ -223,14 +228,21 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
                   Urkunden-Nr.
                 </p>
                 <p className="mt-0.5 text-forest font-semibold tabular-nums">{urkundenNr}</p>
+                <p className="mt-2 uppercase tracking-wider text-muted text-[10px] font-medium">
+                  Ausgestellt von
+                </p>
+                <p className="mt-0.5 text-forest font-semibold leading-tight">{unterzeichnerin}</p>
+                <p className="text-[11px] text-muted">{funktion}</p>
               </div>
             </div>
 
-            <div className="mt-4">
-              <div className="mx-auto w-40 border-b-[1.5px] border-forest/35 pb-1">
-                <p className="text-[17px] font-light italic text-forest/90">{unterzeichnerin}</p>
-              </div>
-              <p className="mt-1 text-[11px] text-muted">{funktion}</p>
+            <div className="flex justify-center border-t border-amber-900/10 pt-4">
+              <VereinUnterschriftBlock
+                align="center"
+                showAusstellungszeile={false}
+                ausgestelltAm={ausgestelltAm}
+                ort={ort}
+              />
             </div>
 
             {showBeispielHinweis ? (

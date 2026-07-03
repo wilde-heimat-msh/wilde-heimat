@@ -1,4 +1,5 @@
 import { Logo } from "@/components/Logo";
+import { VereinUnterschriftBlock } from "@/components/VereinUnterschriftBlock";
 import { getPatenschaftStufe, type PatenschaftUrkundeDaten } from "@/data/patenschaften";
 import { getWiderrufContactBlock } from "@/data/legal";
 import { paypalDonation } from "@/data/paypal";
@@ -111,23 +112,21 @@ function PatenschaftBestaetigung({ ctx }: { ctx: PatenDokumentContext }) {
       <p className="text-sm text-muted mb-4">{patenschaftHinweis}</p>
 
       <p className="text-sm">
-        Ausgestellt am{" "}
+        Ausgestellt in <strong>{siteConfig.operatingArea}</strong>, am{" "}
         <strong>
           {ctx.pate.ausgestelltAm ? formatFormDateDe(ctx.pate.ausgestelltAm) : formatFormDateDe(new Date().toISOString().slice(0, 10))}
-        </strong>{" "}
-        in {siteConfig.operatingArea}.
-      </p>
-
-      <p className="mt-6 rounded-lg border border-border bg-muted-light/25 px-4 py-3 text-xs text-muted leading-relaxed">
-        Dieses Dokument wurde maschinell erstellt. Es ist ohne handschriftliche Unterschrift gültig
-        und bestätigt die aufgenommene Patenschaft mit den oben genannten Angaben.
+        </strong>
+        .
       </p>
 
       <div className="mt-8">
-        <div className="w-48 border-b border-forest/40 pb-1">
-          <p className="italic text-forest">{siteConfig.contact.name}</p>
-        </div>
-        <p className="text-xs text-muted mt-1">Gründerin, Wilde Heimat (maschinell ausgestellt)</p>
+        <VereinUnterschriftBlock
+          ort={siteConfig.operatingArea}
+          ausgestelltAm={
+            ctx.pate.ausgestelltAm ?? new Date().toISOString().slice(0, 10)
+          }
+          showAusstellungszeile={false}
+        />
       </div>
     </DokumentShell>
   );
@@ -183,6 +182,13 @@ function Zahlungsinfo({ ctx }: { ctx: PatenDokumentContext }) {
         Rückfragen zur Zahlung: {siteConfig.email}
         {ctx.pate.telefon ? ` · ${ctx.pate.telefon}` : ""}
       </p>
+
+      <div className="mt-10 pt-6 border-t border-border">
+        <VereinUnterschriftBlock
+          ort={siteConfig.operatingArea}
+          ausgestelltAm={new Date().toISOString().slice(0, 10)}
+        />
+      </div>
     </DokumentShell>
   );
 }
@@ -216,10 +222,12 @@ function WiderrufNachweis({ ctx }: { ctx: PatenDokumentContext }) {
         <strong>{siteConfig.url}/widerruf</strong> einsehbar.
       </p>
 
-      <p className="text-xs text-muted">
+      <p className="text-xs text-muted mb-6">
         Dieses Dokument dient der internen Dokumentation und wurde automatisch aus den
         Formulardaten erstellt.
       </p>
+
+      <VereinUnterschriftBlock compact ort={siteConfig.operatingArea} showAusstellungszeile={false} />
     </DokumentShell>
   );
 }
@@ -248,9 +256,11 @@ function DatenschutzNachweis({ ctx }: { ctx: PatenDokumentContext }) {
         />
       </dl>
 
-      <p className="text-sm text-muted">
+      <p className="text-sm text-muted mb-6">
         Datenschutzerklärung: <strong>{siteConfig.url}/datenschutz</strong>
       </p>
+
+      <VereinUnterschriftBlock compact ort={siteConfig.operatingArea} showAusstellungszeile={false} />
     </DokumentShell>
   );
 }
