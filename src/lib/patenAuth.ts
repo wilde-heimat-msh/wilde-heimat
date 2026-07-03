@@ -36,7 +36,16 @@ export function createPatenSessionToken(accessCode: string): string | null {
   const normalized = normalizeAccessCode(accessCode);
   const signature = signSessionPayload(`paten:${normalized}`);
   if (!signature) return null;
-  return `paten.${normalized}.${signature}`;
+  const encoded = Buffer.from(normalized, "utf8").toString("base64url");
+  return `paten.${encoded}.${signature}`;
+}
+
+function decodeAccessCodeFromToken(encoded: string): string | null {
+  try {
+    return Buffer.from(encoded, "base64url").toString("utf8");
+  } catch {
+    return null;
+  }
 }
 
 function verifyLegacyPatenSessionToken(token: string): string | null {
@@ -52,12 +61,24 @@ function verifyLegacyPatenSessionToken(token: string): string | null {
 
 async function resolveAccessCodeFromToken(token: string): Promise<string | null> {
   if (token.startsWith("paten.")) {
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-    const [, normalized, signature] = parts;
-    if (!normalized || !signature) return null;
-    if (!verifySessionSignature(`paten:${normalized}`, signature)) return null;
-    return normalized;
+    const lastDot = token.lastIndexOf(".");
+    if (lastDot <= 5) return null;
+
+    const encoded = token.slice(6, lastDot);
+    const signature = token.slice(lastDot + 1);
+    if (!encoded || !signature) return null;
+
+    const decoded = decodeAccessCodeFromToken(encoded);
+    if (decoded && verifySessionSignature(`paten:${decoded}`, signature)) {
+      return decoded;
+    }
+
+    // Legacy: Klartext-Code im Token (vor base64-Umstellung)
+    if (verifySessionSignature(`paten:${encoded}`, signature)) {
+      return encoded;
+    }
+
+    return null;
   }
 
   const patenId = verifyLegacyPatenSessionToken(token);
