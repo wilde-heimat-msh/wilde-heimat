@@ -5,7 +5,7 @@ update public.waschbaer_gallery g
 set
   waschbaer_id = mausi.id,
   alt = 'Mausi genießt einen Snack in ihrer Hängematte',
-  caption = 'Mausi – die Queen in ihrer Hängematte, mit vollem Genuss und dem Lächeln einer echten Anführerin.',
+  caption = 'Mausi – die Queen in ihrer Hängematte, mit vollem Genuss und einem verschmusten Lächeln.',
   sort_order = 3
 from public.waschbaeren pedro, public.waschbaeren mausi
 where g.waschbaer_id = pedro.id

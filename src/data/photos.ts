@@ -250,7 +250,7 @@ export const staticWaschbaerGalerien: Partial<Record<string, WaschbaerGalerieFot
       height: 1024,
       alt: "Mausi genießt einen Snack in ihrer Hängematte",
       caption:
-        "Mausi – die Queen in ihrer Hängematte, mit vollem Genuss und dem Lächeln einer echten Anführerin.",
+        "Mausi – die Queen in ihrer Hängematte, mit vollem Genuss und einem verschmusten Lächeln.",
       objectPosition: "center 25%",
     },
   ],
