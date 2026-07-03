@@ -39,11 +39,11 @@ export const waschbaeren: Waschbaer[] = [
     name: "Lotti",
     aufgenommen: "Mai 2025",
     eigenschaften: ["verspielt", "aufgeschlossen", "anhänglich", "Süßzahn"],
-    kurztext: "Lotti ist der Süßzahn – anhänglich, verspielt und voller Vertrauen.",
+    kurztext: "Lotti ist anhänglich, verspielt und voller Vertrauen – der Süßzahn der Gruppe.",
     geschichte:
       "Lotti kam im Mai 2025 zu uns und brachte von Anfang an eine besondere Anhänglichkeit mit. Sie suchte Nähe, Vertrauen und Geborgenheit – und fand all das in unserer Pflege. Ihr offenes Wesen macht sie zu einer der herzlichsten Waschbären bei Wilde Heimat.",
     charakter:
-      "Lotti ist der Süßzahn mit dem großen Herzen. Sie ist verspielt, aufgeschlossen gegenüber Neuem und hängt an den Menschen und Tieren, die sie liebt. Wer Lotti kennt, versteht, warum Waschbären so faszinierend sein können.",
+      "Lotti ist der Süßzahn der Gruppe mit dem großen Herzen. Sie ist verspielt, aufgeschlossen gegenüber Neuem und hängt an den Menschen und Tieren, die sie liebt. Wer Lotti kennt, versteht, warum Waschbären so faszinierend sein können.",
     farbe: "from-neutral-600 to-neutral-400",
   },
   {
@@ -51,11 +51,11 @@ export const waschbaeren: Waschbaer[] = [
     name: "Minnie",
     aufgenommen: "Juni 2025",
     eigenschaften: ["verschmust", "kleiner Engel", "Schlafmütze"],
-    kurztext: "Minnie ist der kleine Engel – verschmust und eine echte Schlafmütze.",
+    kurztext: "Minnie ist verschmust und eine echte Schlafmütze – der kleine Engel der Gruppe.",
     geschichte:
       "Minnie kam im Juni 2025 zu uns und überzeugte von Anfang an mit ihrer sanften Art. Sie ist klein, zart und hat eine Vorliebe für lange Nickerchen an den gemütlichsten Plätzen. Ihre ruhige Präsenz wirkt beruhigend auf die ganze Gruppe.",
     charakter:
-      "Minnie ist der kleine Engel. Verschmust, geduldig und mit einem ausgeprägten Schlafbedürfnis. Sie zeigt, dass Waschbären nicht immer laut und wild sein müssen – manchmal reicht ein sanftes Schnurren und ein warmes Plätzchen.",
+      "Minnie ist der kleine Engel der Gruppe. Verschmust, geduldig und mit einem ausgeprägten Schlafbedürfnis. Sie zeigt, dass Waschbären nicht immer laut und wild sein müssen – manchmal reicht ein sanftes Schnurren und ein warmes Plätzchen.",
     farbe: "from-neutral-500 to-neutral-300",
   },
   {
@@ -65,9 +65,9 @@ export const waschbaeren: Waschbaer[] = [
     eigenschaften: ["schreckhaft", "verspielt", "verfressen", "Waffelliebhaber"],
     kurztext: "Mika ist schreckhaft, verspielt – und ein leidenschaftlicher Waffelliebhaber.",
     geschichte:
-      "Mika wurde im Juni 2025 bei uns aufgenommen und brauchte zunächst viel Geduld und Ruhe. Anfangs schreckhaft und zurückhaltend, öffnete er sich mit der Zeit und zeigte sein wahres, verspieltes Wesen. Besonders Waffeln haben es ihm angetan.",
+      "Mika wurde im Juni 2025 bei uns aufgenommen und brauchte zunächst viel Geduld und Ruhe. Anfangs schreckhaft und zurückhaltend, öffnete sie sich mit der Zeit und zeigte ihr wahres, verspieltes Wesen. Besonders Waffeln haben es ihr angetan.",
     charakter:
-      "Mika braucht Zeit, um Vertrauen aufzubauen – aber wer dieses Vertrauen gewinnt, erlebt einen Waschbären voller Lebensfreude. Er ist verspielt, verfressen und hat eine Schwäche für Waffeln, die legendär ist.",
+      "Mika braucht Zeit, um Vertrauen aufzubauen – aber wer dieses Vertrauen gewinnt, erlebt einen Waschbären voller Lebensfreude. Sie ist verspielt, verfressen und hat eine Schwäche für Waffeln, die legendär ist.",
     farbe: "from-neutral-800 to-neutral-500",
   },
   {
@@ -77,9 +77,9 @@ export const waschbaeren: Waschbaer[] = [
     eigenschaften: ["verspielt", "aufmüpfig", "aufgeschlossen", "Sportskanone"],
     kurztext: "Charlie ist die Sportskanone – verspielt, aufmüpfig und voller Energie.",
     geschichte:
-      "Charlie kam im November 2025 zu uns und brachte sofort Action mit. Kein Klettergerüst ist ihm zu hoch, kein Spiel zu wild. Seine Energie steckt die ganze Gruppe an und sorgt für Bewegung und gute Laune.",
+      "Charlie kam im November 2025 zu uns und brachte sofort Action mit. Kein Klettergerüst ist ihr zu hoch, kein Spiel zu wild. Ihre Energie steckt die ganze Gruppe an und sorgt für Bewegung und gute Laune.",
     charakter:
-      "Charlie ist die Sportskanone. Aufmüpfig, verspielt und immer in Bewegung. Er liebt es zu klettern, zu rennen und neue Herausforderungen anzunehmen. Sein offenes Wesen macht ihn zum Mittelpunkt jeder Spielrunde.",
+      "Charlie ist die Sportskanone. Aufmüpfig, verspielt und immer in Bewegung. Sie liebt es zu klettern, zu rennen und neue Herausforderungen anzunehmen. Ihr offenes Wesen macht sie zum Mittelpunkt jeder Spielrunde.",
     farbe: "from-neutral-700 to-neutral-400",
   },
   {

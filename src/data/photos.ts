@@ -209,15 +209,6 @@ export const staticWaschbaerGalerien: Partial<Record<string, WaschbaerGalerieFot
       objectPosition: "center 25%",
     },
     {
-      src: "/photos/waschbaeren/pedro-portrait.jpg",
-      width: 768,
-      height: 1024,
-      alt: "Pedro genießt einen Snack in seiner Hängematte",
-      caption:
-        "Pedro – der Kuschelkönig in seiner Hängematte, mit vollem Genuss und dem Lächeln eines echten Anführers.",
-      objectPosition: "center 25%",
-    },
-    {
       src: "/photos/waschbaeren/pedro-kratzbaum.jpg",
       width: 682,
       height: 1024,
@@ -253,6 +244,15 @@ export const staticWaschbaerGalerien: Partial<Record<string, WaschbaerGalerieFot
       caption: "Selbstbewusst und voller Charme – Mausi regiert mit Herz.",
       objectPosition: "center 30%",
     },
+    {
+      src: "/photos/waschbaeren/pedro-portrait.jpg",
+      width: 768,
+      height: 1024,
+      alt: "Mausi genießt einen Snack in ihrer Hängematte",
+      caption:
+        "Mausi – die Queen in ihrer Hängematte, mit vollem Genuss und dem Lächeln einer echten Anführerin.",
+      objectPosition: "center 25%",
+    },
   ],
   lotti: [
     {
@@ -280,7 +280,7 @@ export const staticWaschbaerGalerien: Partial<Record<string, WaschbaerGalerieFot
       src: "/photos/waschbaeren/charlie-klettergelaende.jpg",
       width: 587,
       height: 1024,
-      alt: "Charlie steht auf dem Klettergerüst in seinem Gehege",
+      alt: "Charlie steht auf dem Klettergerüst in ihrem Gehege",
       caption:
         "Immer in Bewegung – Charlie erobert jedes Klettergerüst mit Schwung.",
       featured: true,

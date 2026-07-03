@@ -17,6 +17,7 @@ import {
   getWaschbaerGalerie,
   listWaschbaeren,
 } from "@/lib/waschbaerStore";
+import { waschbaerBegleitenPhrase } from "@/lib/waschbaerGeschlecht";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { breadcrumbSchema, jsonLdGraph, webPageSchema } from "@/lib/jsonLd";
 
@@ -187,7 +188,7 @@ export default async function WaschbaerDetailPage({ params }: Props) {
             Patenschaft für {waschbaer.name}
           </h2>
           <p className="text-muted text-center mb-8">
-            Werde Pate und begleite {waschbaer.name} auf seinem Weg.
+            Werde Pate und begleite {waschbaer.name} {waschbaerBegleitenPhrase(waschbaer.slug)}.
           </p>
           <Card hover={false} padding="md" className="bg-background/80 backdrop-blur-sm">
             <PatenschaftForm preselectedWaschbaer={waschbaer.slug} />
