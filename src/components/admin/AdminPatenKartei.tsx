@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AdminLogoutButton, AdminNav } from "@/components/admin/AdminLogin";
+import { PatenDokumentVersand, type PatenMailAttachment } from "@/components/admin/PatenDokumentVersand";
 import { PatenDokumentPreviewDialog } from "@/components/admin/PatenDokumentPreviewDialog";
 import { PatenDokumentSheet } from "@/components/admin/PatenDokumentSheet";
 import { PatenschaftUrkunde } from "@/components/PatenschaftUrkunde";
@@ -13,7 +14,14 @@ import {
 } from "@/data/patenDokumente";
 import type { PatenschaftUrkundeDaten } from "@/data/patenschaften";
 import { patenschaftsStufen } from "@/data/site";
-import { exportHtmlToPdf, exportUrkundePdf, urkundePdfFilename } from "@/lib/exportUrkundePdf";
+import {
+  blobToBase64,
+  exportHtmlToPdf,
+  exportUrkundePdf,
+  renderElementToPdfBlob,
+  renderUrkundeToPdfBlob,
+  urkundePdfFilename,
+} from "@/lib/exportUrkundePdf";
 import { formatDateTimeDe, formatFormDateDe } from "@/lib/relativeTime";
 import type { FormSubmissionRecord } from "@/lib/supabase/formSubmissions";
 import type { PatenschaftPate } from "@/types/patenschaftPortal";
@@ -23,6 +31,7 @@ type KarteiData = {
   waschbaer?: { name: string; slug: string };
   submission?: FormSubmissionRecord | null;
   urkunde: PatenschaftUrkundeDaten;
+  mail?: { configured: boolean };
 };
 
 function KarteiField({ label, value }: { label: string; value?: string | null }) {
@@ -98,6 +107,36 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
     } finally {
       setExportingId(null);
     }
+  }
+
+  async function generateMailAttachments(documentIds: PatenDokumentId[]): Promise<PatenMailAttachment[]> {
+    if (!data) return [];
+
+    const attachments: PatenMailAttachment[] = [];
+
+    for (const id of documentIds) {
+      if (id === "urkunde") {
+        const element = urkundePrintRef.current;
+        if (!element) throw new Error("Urkunde nicht bereit");
+        const blob = await renderUrkundeToPdfBlob(element);
+        attachments.push({
+          filename: urkundePdfFilename(data.pate.name, data.urkunde.urkundenNr),
+          contentBase64: await blobToBase64(blob),
+        });
+        continue;
+      }
+
+      const element = docRefs.current[id];
+      if (!element) throw new Error(`Dokument „${id}“ nicht bereit`);
+      const meta = patenDokumente.find((doc) => doc.id === id)!;
+      const blob = await renderElementToPdfBlob(element);
+      attachments.push({
+        filename: patenDokumentFilename(meta.filenamePrefix, data.pate.name, data.pate.urkundenNr),
+        contentBase64: await blobToBase64(blob),
+      });
+    }
+
+    return attachments;
   }
 
   async function exportAllDocuments() {
@@ -303,6 +342,22 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
               </ul>
             </section>
           </div>
+
+          <PatenDokumentVersand
+            pateId={pateId}
+            pate={data.pate}
+            waschbaerName={data.waschbaer?.name ?? data.pate.waschbaerSlug}
+            recipientEmail={data.pate.email ?? data.submission?.replyTo}
+            mailConfigured={data.mail?.configured ?? false}
+            generateAttachments={generateMailAttachments}
+            onSent={(message) => {
+              setError(null);
+              setStatus(message);
+            }}
+            onError={(message) => {
+              if (message) setError(message);
+            }}
+          />
 
           <section className="rounded-2xl border border-border bg-muted-light/20 p-4 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">

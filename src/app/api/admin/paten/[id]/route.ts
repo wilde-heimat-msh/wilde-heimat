@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { buildUrkundeFromPate } from "@/lib/patenschaftFromAnfrage";
 import { getPatenById } from "@/lib/patenschaftStore";
+import { isFormMailConfigured } from "@/lib/formMail";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { apiErrorResponse } from "@/lib/apiError";
 import { getFormSubmissionById } from "@/lib/supabase/formSubmissions";
@@ -46,6 +47,7 @@ export async function GET(_request: Request, context: RouteContext) {
       waschbaer: waschbaerPublic ?? waschbaerRecord,
       submission,
       urkunde,
+      mail: { configured: isFormMailConfigured() },
     });
   } catch (error) {
     return apiErrorResponse(error, "Paten-Kartei konnte nicht geladen werden.");

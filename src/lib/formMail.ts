@@ -131,12 +131,14 @@ export function formatFormFields(fields: Record<string, string | undefined>): st
 }
 
 async function sendViaSmtp({
+  to,
   subject,
   text,
   html,
   replyTo,
   attachments,
 }: {
+  to: string;
   subject: string;
   text: string;
   html: string;
@@ -151,7 +153,7 @@ async function sendViaSmtp({
   try {
     await transporter.sendMail({
       from: getFormMailFrom(),
-      to: getFormMailTo(),
+      to,
       replyTo: replyTo || undefined,
       subject,
       text,
@@ -171,12 +173,14 @@ async function sendViaSmtp({
 }
 
 async function sendViaResend({
+  to,
   subject,
   text,
   html,
   replyTo,
   attachments,
 }: {
+  to: string;
   subject: string;
   text: string;
   html: string;
@@ -190,7 +194,7 @@ async function sendViaResend({
 
   const { error } = await resend.emails.send({
     from: getFormMailFrom(),
-    to: [getFormMailTo()],
+    to: [to],
     replyTo: replyTo || undefined,
     subject,
     text,
@@ -320,10 +324,48 @@ export async function sendFormNotification({
   });
 
   const payload = {
+    to: getFormMailTo(),
     subject,
     text: textWithFooter,
     html,
     replyTo,
+    attachments,
+  };
+
+  if (isSmtpConfigured()) {
+    return sendViaSmtp(payload);
+  }
+
+  return sendViaResend(payload);
+}
+
+export async function sendPatenMail({
+  to,
+  subject,
+  text,
+  html,
+  attachments = [],
+}: {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+  attachments?: FormAttachment[];
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!isFormMailConfigured()) {
+    return {
+      ok: false,
+      error:
+        "E-Mail-Versand ist noch nicht eingerichtet (SMTP- oder RESEND_API_KEY-Konfiguration fehlt).",
+    };
+  }
+
+  const payload = {
+    to,
+    subject,
+    text,
+    html,
+    replyTo: siteConfig.email,
     attachments,
   };
 
