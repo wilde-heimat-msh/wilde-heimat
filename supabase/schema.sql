@@ -11,12 +11,28 @@ create table if not exists public.patenschaft_paten (
   active boolean not null default true,
   email text,
   notiz text,
+  form_submission_id uuid references public.form_submissions (id) on delete set null,
+  anschrift text,
+  telefon text,
+  urkunden_nr text,
+  ausgestellt_am date,
+  is_gift boolean not null default false,
+  beschenkter_name text,
+  beschenkter_anschrift text,
+  grussbotschaft text,
+  widerruf_bestaetigt_at timestamptz,
+  datenschutz_bestaetigt_at timestamptz,
+  patenschaft_start date,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
 create unique index if not exists patenschaft_paten_access_code_idx
   on public.patenschaft_paten (upper(trim(access_code)));
+
+create unique index if not exists patenschaft_paten_form_submission_idx
+  on public.patenschaft_paten (form_submission_id)
+  where form_submission_id is not null;
 
 -- Updates für Paten
 create table if not exists public.patenschaft_updates (

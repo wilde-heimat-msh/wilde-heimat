@@ -300,6 +300,8 @@ export async function POST(request: Request) {
     if (typeRaw === "patenschaft") {
       storedPayload[FORM_WIDERRUF_CONSENT_FIELD] = "ja";
       storedPayload.widerrufsbelehrung_zeitpunkt = consentAt;
+      storedPayload._waschbaer_slug = formData.get("waschbaer")?.toString().trim();
+      storedPayload._stufe_id = formData.get("stufe")?.toString().trim();
     }
 
     if (isSupabaseConfigured()) {

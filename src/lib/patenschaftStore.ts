@@ -43,6 +43,34 @@ export async function getPatenByAccessCode(code: string): Promise<PatenschaftPat
   );
 }
 
+export async function getPatenLinksBySubmissionIds(
+  submissionIds: string[]
+): Promise<Record<string, string>> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseGetPatenLinksBySubmissionIds(submissionIds);
+  }
+  const store = await readStore();
+  const links: Record<string, string> = {};
+  for (const pate of store.paten) {
+    if (pate.formSubmissionId) {
+      links[pate.formSubmissionId] = pate.id;
+    }
+  }
+  return Object.fromEntries(
+    Object.entries(links).filter(([submissionId]) => submissionIds.includes(submissionId))
+  );
+}
+
+export async function getPatenByFormSubmissionId(
+  submissionId: string
+): Promise<PatenschaftPate | null> {
+  if (isSupabaseConfigured()) {
+    return supabaseStore.supabaseGetPatenByFormSubmissionId(submissionId);
+  }
+  const store = await readStore();
+  return store.paten.find((p) => p.formSubmissionId === submissionId) ?? null;
+}
+
 export async function getPatenById(id: string): Promise<PatenschaftPate | null> {
   if (isSupabaseConfigured()) {
     return supabaseStore.supabaseGetPatenById(id);

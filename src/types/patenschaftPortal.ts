@@ -13,6 +13,21 @@ export type PatenschaftPate = {
   /** Nur für Admin-Referenz, nicht öffentlich */
   email?: string;
   notiz?: string;
+  /** Verknüpfung zur ursprünglichen Patenschafts-Anfrage */
+  formSubmissionId?: string;
+  anschrift?: string;
+  telefon?: string;
+  urkundenNr?: string;
+  /** ISO-Datum YYYY-MM-DD */
+  ausgestelltAm?: string;
+  isGift?: boolean;
+  beschenkterName?: string;
+  beschenkterAnschrift?: string;
+  grussbotschaft?: string;
+  widerrufBestaetigtAt?: string;
+  datenschutzBestaetigtAt?: string;
+  /** ISO-Datum YYYY-MM-DD – Start der Patenschaft */
+  patenschaftStart?: string;
   createdAt: string;
   updatedAt: string;
 };

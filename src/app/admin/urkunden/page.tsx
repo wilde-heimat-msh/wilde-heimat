@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { AdminGate } from "@/components/admin/AdminGate";
 import { AdminUrkundenEditor } from "@/components/admin/AdminUrkundenEditor";
 import { adminMetadata } from "@/lib/seo";
@@ -9,7 +10,9 @@ export default function AdminUrkundenPage() {
     <AdminGate>
       <div className="py-8 sm:py-12 px-4 sm:px-6">
         <div className="mx-auto max-w-7xl">
-          <AdminUrkundenEditor />
+          <Suspense fallback={<p className="text-sm text-muted">Lade Urkunden-Editor …</p>}>
+            <AdminUrkundenEditor />
+          </Suspense>
         </div>
       </div>
     </AdminGate>

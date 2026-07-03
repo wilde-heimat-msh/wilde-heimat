@@ -15,6 +15,18 @@ type PateRow = {
   active: boolean;
   email: string | null;
   notiz: string | null;
+  form_submission_id: string | null;
+  anschrift: string | null;
+  telefon: string | null;
+  urkunden_nr: string | null;
+  ausgestellt_am: string | null;
+  is_gift: boolean;
+  beschenkter_name: string | null;
+  beschenkter_anschrift: string | null;
+  grussbotschaft: string | null;
+  widerruf_bestaetigt_at: string | null;
+  datenschutz_bestaetigt_at: string | null;
+  patenschaft_start: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -42,6 +54,18 @@ function mapPate(row: PateRow): PatenschaftPate {
     active: row.active,
     email: row.email ?? undefined,
     notiz: row.notiz ?? undefined,
+    formSubmissionId: row.form_submission_id ?? undefined,
+    anschrift: row.anschrift ?? undefined,
+    telefon: row.telefon ?? undefined,
+    urkundenNr: row.urkunden_nr ?? undefined,
+    ausgestelltAm: row.ausgestellt_am ?? undefined,
+    isGift: row.is_gift ?? undefined,
+    beschenkterName: row.beschenkter_name ?? undefined,
+    beschenkterAnschrift: row.beschenkter_anschrift ?? undefined,
+    grussbotschaft: row.grussbotschaft ?? undefined,
+    widerrufBestaetigtAt: row.widerruf_bestaetigt_at ?? undefined,
+    datenschutzBestaetigtAt: row.datenschutz_bestaetigt_at ?? undefined,
+    patenschaftStart: row.patenschaft_start ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -109,21 +133,113 @@ export async function supabaseIsAccessCodeTaken(
   );
 }
 
+export async function supabaseGetPatenLinksBySubmissionIds(
+  submissionIds: string[]
+): Promise<Record<string, string>> {
+  if (submissionIds.length === 0) return {};
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("patenschaft_paten")
+    .select("id, form_submission_id")
+    .in("form_submission_id", submissionIds);
+
+  if (error) throw new Error(error.message);
+
+  const links: Record<string, string> = {};
+  for (const row of data ?? []) {
+    if (row.form_submission_id) {
+      links[row.form_submission_id] = row.id;
+    }
+  }
+  return links;
+}
+
+export async function supabaseGetPatenByFormSubmissionId(
+  submissionId: string
+): Promise<PatenschaftPate | null> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("patenschaft_paten")
+    .select("*")
+    .eq("form_submission_id", submissionId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data ? mapPate(data as PateRow) : null;
+}
+
+function buildPateInsert(input: Omit<PatenschaftPate, "id" | "createdAt" | "updatedAt">) {
+  return {
+    name: input.name,
+    access_code: normalizeAccessCode(input.accessCode),
+    waschbaer_slug: input.waschbaerSlug,
+    stufe_id: input.stufeId,
+    active: input.active,
+    email: input.email ?? null,
+    notiz: input.notiz ?? null,
+    form_submission_id: input.formSubmissionId ?? null,
+    anschrift: input.anschrift ?? null,
+    telefon: input.telefon ?? null,
+    urkunden_nr: input.urkundenNr ?? null,
+    ausgestellt_am: input.ausgestelltAm ?? null,
+    is_gift: input.isGift ?? false,
+    beschenkter_name: input.beschenkterName ?? null,
+    beschenkter_anschrift: input.beschenkterAnschrift ?? null,
+    grussbotschaft: input.grussbotschaft ?? null,
+    widerruf_bestaetigt_at: input.widerrufBestaetigtAt ?? null,
+    datenschutz_bestaetigt_at: input.datenschutzBestaetigtAt ?? null,
+    patenschaft_start: input.patenschaftStart ?? null,
+  };
+}
+
+function buildPatePatch(input: Partial<Omit<PatenschaftPate, "id" | "createdAt">>) {
+  const patch: Record<string, unknown> = {};
+
+  if (input.name !== undefined) patch.name = input.name;
+  if (input.accessCode !== undefined) {
+    patch.access_code = normalizeAccessCode(input.accessCode);
+  }
+  if (input.waschbaerSlug !== undefined) patch.waschbaer_slug = input.waschbaerSlug;
+  if (input.stufeId !== undefined) patch.stufe_id = input.stufeId;
+  if (input.active !== undefined) patch.active = input.active;
+  if (input.email !== undefined) patch.email = input.email ?? null;
+  if (input.notiz !== undefined) patch.notiz = input.notiz ?? null;
+  if (input.formSubmissionId !== undefined) {
+    patch.form_submission_id = input.formSubmissionId ?? null;
+  }
+  if (input.anschrift !== undefined) patch.anschrift = input.anschrift ?? null;
+  if (input.telefon !== undefined) patch.telefon = input.telefon ?? null;
+  if (input.urkundenNr !== undefined) patch.urkunden_nr = input.urkundenNr ?? null;
+  if (input.ausgestelltAm !== undefined) patch.ausgestellt_am = input.ausgestelltAm ?? null;
+  if (input.isGift !== undefined) patch.is_gift = input.isGift;
+  if (input.beschenkterName !== undefined) {
+    patch.beschenkter_name = input.beschenkterName ?? null;
+  }
+  if (input.beschenkterAnschrift !== undefined) {
+    patch.beschenkter_anschrift = input.beschenkterAnschrift ?? null;
+  }
+  if (input.grussbotschaft !== undefined) patch.grussbotschaft = input.grussbotschaft ?? null;
+  if (input.widerrufBestaetigtAt !== undefined) {
+    patch.widerruf_bestaetigt_at = input.widerrufBestaetigtAt ?? null;
+  }
+  if (input.datenschutzBestaetigtAt !== undefined) {
+    patch.datenschutz_bestaetigt_at = input.datenschutzBestaetigtAt ?? null;
+  }
+  if (input.patenschaftStart !== undefined) {
+    patch.patenschaft_start = input.patenschaftStart ?? null;
+  }
+
+  return patch;
+}
+
 export async function supabaseCreatePaten(
   input: Omit<PatenschaftPate, "id" | "createdAt" | "updatedAt">
 ): Promise<PatenschaftPate> {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("patenschaft_paten")
-    .insert({
-      name: input.name,
-      access_code: normalizeAccessCode(input.accessCode),
-      waschbaer_slug: input.waschbaerSlug,
-      stufe_id: input.stufeId,
-      active: input.active,
-      email: input.email ?? null,
-      notiz: input.notiz ?? null,
-    })
+    .insert(buildPateInsert(input))
     .select("*")
     .single();
 
@@ -136,17 +252,7 @@ export async function supabaseUpdatePaten(
   input: Partial<Omit<PatenschaftPate, "id" | "createdAt">>
 ): Promise<PatenschaftPate | null> {
   const supabase = getSupabaseAdmin();
-  const patch: Record<string, unknown> = {};
-
-  if (input.name !== undefined) patch.name = input.name;
-  if (input.accessCode !== undefined) {
-    patch.access_code = normalizeAccessCode(input.accessCode);
-  }
-  if (input.waschbaerSlug !== undefined) patch.waschbaer_slug = input.waschbaerSlug;
-  if (input.stufeId !== undefined) patch.stufe_id = input.stufeId;
-  if (input.active !== undefined) patch.active = input.active;
-  if (input.email !== undefined) patch.email = input.email ?? null;
-  if (input.notiz !== undefined) patch.notiz = input.notiz ?? null;
+  const patch = buildPatePatch(input);
 
   const { data, error } = await supabase
     .from("patenschaft_paten")

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AdminLogoutButton, AdminNav } from "@/components/admin/AdminLogin";
 import { PatenschaftUrkunde } from "@/components/PatenschaftUrkunde";
 import { FormField } from "@/components/forms/FormFields";
@@ -33,15 +34,33 @@ function saveDraft(data: PatenschaftUrkundeDaten) {
 }
 
 export function AdminUrkundenEditor() {
+  const searchParams = useSearchParams();
+  const pateId = searchParams.get("pateId");
   const { waschbaeren } = useWaschbaeren();
   const [data, setData] = useState<PatenschaftUrkundeDaten>(() => createDefaultUrkundeDaten());
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [loadingPate, setLoadingPate] = useState(Boolean(pateId));
   const printRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    if (pateId) {
+      setLoadingPate(true);
+      fetch(`/api/admin/paten/${encodeURIComponent(pateId)}`, { credentials: "same-origin" })
+        .then((res) => res.json())
+        .then((json: { urkunde?: PatenschaftUrkundeDaten; error?: string }) => {
+          if (json.urkunde) {
+            setData(json.urkunde);
+            saveDraft(json.urkunde);
+            setStatus("Urkunde aus Paten-Kartei geladen.");
+          }
+        })
+        .finally(() => setLoadingPate(false));
+      return;
+    }
+
     setData(loadDraft());
-  }, []);
+  }, [pateId]);
 
   function update(partial: Partial<PatenschaftUrkundeDaten>) {
     setData((prev) => {
@@ -102,6 +121,7 @@ export function AdminUrkundenEditor() {
           <p className="mt-1 text-sm text-muted max-w-2xl">
             Urkunde personalisieren, Vorschau prüfen und als PDF speichern oder drucken (
             {patenschaftUrkundeFormat.label}).
+            {loadingPate ? " Lade Paten-Daten …" : null}
           </p>
         </div>
         <AdminLogoutButton />

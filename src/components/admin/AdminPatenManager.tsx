@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { AdminLogoutButton, AdminNav } from "@/components/admin/AdminLogin";
 import { FormField } from "@/components/forms/FormFields";
@@ -286,6 +287,12 @@ export function AdminPatenManager() {
                         <p className="mt-1 font-mono text-xs text-forest/80">{pate.accessCode}</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
+                        <Link
+                          href={`/admin/paten/${encodeURIComponent(pate.id)}`}
+                          className="min-h-9 inline-flex items-center px-3 text-xs rounded-lg border border-forest/30 bg-forest/5 text-forest hover:bg-forest/10"
+                        >
+                          Kartei
+                        </Link>
                         <button
                           type="button"
                           onClick={() => copyPortalLink(pate.accessCode)}

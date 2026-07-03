@@ -11,6 +11,7 @@ import {
   isFormMailConfigured,
   isFormMailDomainVerified,
 } from "@/lib/formMail";
+import { getPatenLinksBySubmissionIds } from "@/lib/patenschaftStore";
 import { requireAdmin } from "@/lib/requireAdmin";
 
 export async function GET() {
@@ -26,8 +27,14 @@ export async function GET() {
 
   try {
     const submissions = await listFormSubmissions();
+    const patenschaftIds = submissions
+      .filter((item) => item.type === "patenschaft")
+      .map((item) => item.id);
+    const patronBySubmissionId = await getPatenLinksBySubmissionIds(patenschaftIds);
+
     return NextResponse.json({
       submissions,
+      patronBySubmissionId,
       mail: {
         configured: isFormMailConfigured(),
         domainVerified: isFormMailDomainVerified(),

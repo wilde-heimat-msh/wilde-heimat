@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { AdminLogoutButton, AdminNav } from "@/components/admin/AdminLogin";
 import { formatDateTimeDe, formatFormDateDe } from "@/lib/relativeTime";
@@ -29,10 +30,32 @@ function isImageUrl(value: string): boolean {
   );
 }
 
+const payloadKeyLabels: Record<string, string> = {
+  datenschutz_einwilligung: "Datenschutz",
+  datenschutz_einwilligung_zeitpunkt: "Datenschutz bestätigt am",
+  widerrufsbelehrung_kenntnis: "Widerrufsbelehrung",
+  widerrufsbelehrung_zeitpunkt: "Widerrufsbelehrung bestätigt am",
+};
+
+function isIsoDateTime(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value);
+}
+
+function formatPayloadKey(key: string): string {
+  return payloadKeyLabels[key.toLowerCase()] ?? key;
+}
+
 function formatPayloadValue(key: string, value: string): string {
-  if (key.toLowerCase() === "datum") {
+  const keyLower = key.toLowerCase();
+
+  if (keyLower === "datum") {
     return formatFormDateDe(value);
   }
+
+  if (keyLower.endsWith("_zeitpunkt") || isIsoDateTime(value)) {
+    return formatDateTimeDe(value);
+  }
+
   return value;
 }
 
@@ -153,6 +176,8 @@ export function AdminAnfragenManager() {
   const [status, setStatus] = useState<string | null>(null);
   const [testingMail, setTestingMail] = useState(false);
   const [resendingId, setResendingId] = useState<string | null>(null);
+  const [creatingPatenId, setCreatingPatenId] = useState<string | null>(null);
+  const [patronBySubmissionId, setPatronBySubmissionId] = useState<Record<string, string>>({});
 
   const loadSubmissions = useCallback(async () => {
     setLoading(true);
@@ -162,6 +187,7 @@ export function AdminAnfragenManager() {
       const data = (await res.json()) as {
         submissions?: FormSubmissionRecord[];
         mail?: MailStatus;
+        patronBySubmissionId?: Record<string, string>;
         error?: string;
       };
 
@@ -174,6 +200,7 @@ export function AdminAnfragenManager() {
 
       setSubmissions(data.submissions ?? []);
       setMail(data.mail ?? null);
+      setPatronBySubmissionId(data.patronBySubmissionId ?? {});
     } finally {
       setLoading(false);
     }
@@ -222,6 +249,38 @@ export function AdminAnfragenManager() {
       setStatus("E-Mail-Benachrichtigung wurde erneut gesendet.");
     } finally {
       setResendingId(null);
+    }
+  }
+
+  async function handleCreatePaten(submissionId: string) {
+    setCreatingPatenId(submissionId);
+    setError(null);
+    setStatus(null);
+    try {
+      const res = await fetch("/api/admin/paten/from-anfrage", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId }),
+      });
+      const data = (await res.json()) as { error?: string; pate?: { id: string; name: string } };
+
+      if (!res.ok) {
+        if (res.status === 409 && data.pate?.id) {
+          setPatronBySubmissionId((prev) => ({ ...prev, [submissionId]: data.pate!.id }));
+          setError("Für diese Anfrage existiert bereits ein Pate.");
+          return;
+        }
+        setError(data.error ?? "Pate konnte nicht angelegt werden.");
+        return;
+      }
+
+      if (data.pate?.id) {
+        setPatronBySubmissionId((prev) => ({ ...prev, [submissionId]: data.pate!.id }));
+        window.location.href = `/admin/paten/${encodeURIComponent(data.pate.id)}`;
+      }
+    } finally {
+      setCreatingPatenId(null);
     }
   }
 
@@ -306,6 +365,25 @@ export function AdminAnfragenManager() {
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
+                      {item.type === "patenschaft" ? (
+                        patronBySubmissionId[item.id] ? (
+                          <Link
+                            href={`/admin/paten/${encodeURIComponent(patronBySubmissionId[item.id])}`}
+                            className="min-h-9 inline-flex items-center px-3 text-xs rounded-lg border border-green-300 bg-green-50 text-green-900 hover:bg-green-100"
+                          >
+                            Paten-Kartei öffnen
+                          </Link>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleCreatePaten(item.id)}
+                            disabled={creatingPatenId === item.id}
+                            className="min-h-9 inline-flex items-center px-3 text-xs rounded-lg border border-forest/30 bg-forest/5 text-forest hover:bg-forest/10 disabled:opacity-60"
+                          >
+                            {creatingPatenId === item.id ? "Lege an …" : "Als Pate anlegen"}
+                          </button>
+                        )
+                      ) : null}
                       {mail?.configured ? (
                         <button
                           type="button"
@@ -339,11 +417,14 @@ export function AdminAnfragenManager() {
                   <dl className="grid gap-2 text-sm sm:grid-cols-2">
                     {Object.entries(item.payload).map(([key, value]) => {
                       if (!value?.trim()) return null;
+                      if (key.startsWith("_")) return null;
                       if (isPhotoField(key, value)) return null;
 
                       return (
                         <div key={key} className={key === "Nachricht" || key === "Beschreibung" ? "sm:col-span-2" : undefined}>
-                          <dt className="text-xs uppercase tracking-wide text-muted">{key}</dt>
+                          <dt className="text-xs uppercase tracking-wide text-muted">
+                            {formatPayloadKey(key)}
+                          </dt>
                           <dd className="text-foreground whitespace-pre-wrap">
                             {formatPayloadValue(key, value)}
                           </dd>

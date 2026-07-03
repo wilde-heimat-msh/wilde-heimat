@@ -34,6 +34,18 @@ export async function POST(request: Request) {
     email?: string;
     notiz?: string;
     active?: boolean;
+    formSubmissionId?: string;
+    anschrift?: string;
+    telefon?: string;
+    urkundenNr?: string;
+    ausgestelltAm?: string;
+    isGift?: boolean;
+    beschenkterName?: string;
+    beschenkterAnschrift?: string;
+    grussbotschaft?: string;
+    widerrufBestaetigtAt?: string;
+    datenschutzBestaetigtAt?: string;
+    patenschaftStart?: string;
   };
 
   if (!body.name?.trim() || !body.accessCode?.trim() || !body.waschbaerSlug || !body.stufeId) {
@@ -53,6 +65,18 @@ export async function POST(request: Request) {
       email: body.email?.trim() || undefined,
       notiz: body.notiz?.trim() || undefined,
       active: body.active ?? true,
+      formSubmissionId: body.formSubmissionId,
+      anschrift: body.anschrift?.trim(),
+      telefon: body.telefon?.trim(),
+      urkundenNr: body.urkundenNr?.trim(),
+      ausgestelltAm: body.ausgestelltAm,
+      isGift: body.isGift,
+      beschenkterName: body.beschenkterName?.trim(),
+      beschenkterAnschrift: body.beschenkterAnschrift?.trim(),
+      grussbotschaft: body.grussbotschaft?.trim(),
+      widerrufBestaetigtAt: body.widerrufBestaetigtAt,
+      datenschutzBestaetigtAt: body.datenschutzBestaetigtAt,
+      patenschaftStart: body.patenschaftStart,
     });
 
     return NextResponse.json({ pate }, { status: 201 });
@@ -74,6 +98,18 @@ export async function PUT(request: Request) {
     email?: string;
     notiz?: string;
     active?: boolean;
+    formSubmissionId?: string;
+    anschrift?: string;
+    telefon?: string;
+    urkundenNr?: string;
+    ausgestelltAm?: string;
+    isGift?: boolean;
+    beschenkterName?: string;
+    beschenkterAnschrift?: string;
+    grussbotschaft?: string;
+    widerrufBestaetigtAt?: string;
+    datenschutzBestaetigtAt?: string;
+    patenschaftStart?: string;
   };
 
   if (!body.id) {
@@ -93,6 +129,18 @@ export async function PUT(request: Request) {
       email: body.email?.trim(),
       notiz: body.notiz?.trim(),
       active: body.active,
+      formSubmissionId: body.formSubmissionId,
+      anschrift: body.anschrift?.trim(),
+      telefon: body.telefon?.trim(),
+      urkundenNr: body.urkundenNr?.trim(),
+      ausgestelltAm: body.ausgestelltAm,
+      isGift: body.isGift,
+      beschenkterName: body.beschenkterName?.trim(),
+      beschenkterAnschrift: body.beschenkterAnschrift?.trim(),
+      grussbotschaft: body.grussbotschaft?.trim(),
+      widerrufBestaetigtAt: body.widerrufBestaetigtAt,
+      datenschutzBestaetigtAt: body.datenschutzBestaetigtAt,
+      patenschaftStart: body.patenschaftStart,
     });
 
     if (!pate) {
