@@ -22,9 +22,13 @@ export function VereinUnterschriftBlock({
   className = "",
 }: VereinUnterschriftBlockProps) {
   const alignment = align === "center" ? "text-center items-center" : "text-left items-start";
+  const objectPosition = align === "center" ? "object-center" : "object-left";
   const datumText = ausgestelltAm
     ? formatFormDateDe(ausgestelltAm.length > 10 ? ausgestelltAm.slice(0, 10) : ausgestelltAm)
     : formatFormDateDe(new Date().toISOString().slice(0, 10));
+
+  const height = compact ? 40 : 56;
+  const width = Math.round(height * vereinUnterschrift.aspectRatio);
 
   return (
     <div className={`flex flex-col ${alignment} ${className}`}>
@@ -34,13 +38,15 @@ export function VereinUnterschriftBlock({
         </p>
       ) : null}
 
+      {/* SVG mit transparentem Hintergrund */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={vereinUnterschrift.imageSrc}
         alt={`Unterschrift ${vereinUnterschrift.name}`}
-        className={`object-contain object-left invert ${
-          compact ? "h-10 w-44 max-w-full" : "h-14 w-52 max-w-full"
-        }`}
+        width={width}
+        height={height}
+        className={`block max-w-full bg-transparent ${objectPosition}`}
+        style={{ width, height }}
         crossOrigin="anonymous"
       />
 
