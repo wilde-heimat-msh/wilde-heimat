@@ -323,9 +323,19 @@ export async function POST(request: Request) {
         attachments: payload.attachment ? [payload.attachment] : [],
       });
 
-      if (!result.ok && !isSupabaseConfigured()) {
-        return NextResponse.json({ error: result.error }, { status: 503 });
+      if (!result.ok) {
+        console.error(
+          `[forms/submit] E-Mail-Benachrichtigung fehlgeschlagen (${typeRaw}):`,
+          result.error
+        );
+        if (!isSupabaseConfigured()) {
+          return NextResponse.json({ error: result.error }, { status: 503 });
+        }
       }
+    } else {
+      console.warn(
+        `[forms/submit] Anfrage gespeichert (${typeRaw}), aber E-Mail nicht konfiguriert – SMTP oder RESEND_API_KEY in Vercel setzen.`
+      );
     }
 
     return NextResponse.json({ ok: true });

@@ -209,6 +209,87 @@ async function sendViaResend({
   return { ok: true };
 }
 
+export function buildSubmissionMailSubject(
+  type: string,
+  payload: Record<string, string | undefined>
+): string {
+  const name = payload.Name?.trim() || "Unbekannt";
+
+  switch (type) {
+    case "kontakt":
+      return `[Kontakt] ${payload.Betreff?.trim() || "Neue Nachricht"} – ${name}`;
+    case "patenschaft": {
+      const isGift = payload.Geschenk?.toLowerCase() === "ja";
+      return `[Patenschaft] ${isGift ? "Geschenk" : "Anfrage"} – ${name}`;
+    }
+    case "fund":
+      return `[Fundmeldung] ${payload.Fundort?.trim() || "Meldung"} – ${name}`;
+    case "pflegestelle":
+      return `[Pflegestelle] Anmeldung – ${name}`;
+    case "vermittlung":
+      return `[Vermittlung] ${payload.Anliegen?.trim() || "Anfrage"} – ${name}`;
+    default:
+      return `[Anfrage] ${type} – ${name}`;
+  }
+}
+
+export async function sendSubmissionNotification(
+  submission: {
+    type: string;
+    payload: Record<string, string | undefined>;
+    replyTo?: string;
+    attachmentUrl?: string;
+  },
+  options?: { resend?: boolean }
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const prefix = options?.resend ? "[Erneut gesendet] " : "";
+  const subject = `${prefix}${buildSubmissionMailSubject(submission.type, submission.payload)}`;
+  const text = formatFormFields(submission.payload);
+
+  const attachments: FormAttachment[] = [];
+  if (submission.attachmentUrl?.startsWith("http")) {
+    try {
+      const response = await fetch(submission.attachmentUrl);
+      if (response.ok) {
+        const buffer = Buffer.from(await response.arrayBuffer());
+        const contentType = response.headers.get("content-type") || "image/jpeg";
+        const ext = contentType.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
+        attachments.push({
+          filename: `anhang.${ext}`,
+          content: buffer,
+          contentType,
+        });
+      }
+    } catch {
+      // Anhang optional – E-Mail wird trotzdem mit Admin-Link gesendet
+    }
+  }
+
+  return sendFormNotification({
+    subject,
+    text,
+    fields: submission.payload,
+    replyTo: submission.replyTo,
+    attachments,
+  });
+}
+
+export async function sendTestFormMail(): Promise<
+  { ok: true } | { ok: false; error: string }
+> {
+  const adminUrl = getAdminAnfragenUrl();
+  return sendFormNotification({
+    subject: "[Test] E-Mail-Benachrichtigung Wilde Heimat",
+    text: `Dies ist eine Test-E-Mail aus dem Admin-Bereich.\n\nNeue Formular-Anfragen werden künftig automatisch an ${getFormMailTo()} gesendet.`,
+    fields: {
+      Formular: "Test",
+      Status: "E-Mail-Versand funktioniert",
+      Empfänger: getFormMailTo(),
+      "Admin-Bereich": adminUrl,
+    },
+  });
+}
+
 export async function sendFormNotification({
   subject,
   text,

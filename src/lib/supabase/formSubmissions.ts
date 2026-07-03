@@ -55,6 +55,45 @@ export async function listFormSubmissions(limit = 100): Promise<FormSubmissionRe
   );
 }
 
+export async function getFormSubmissionById(
+  id: string
+): Promise<FormSubmissionRecord | null> {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("form_submissions")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const row = data as FormSubmissionRow;
+  let attachmentUrl = row.attachment_url ?? undefined;
+  if (attachmentUrl) {
+    const resolved = await resolveAttachmentPreviewUrl(attachmentUrl);
+    attachmentUrl = resolved ?? undefined;
+  }
+
+  return {
+    id: row.id,
+    type: row.type,
+    payload: row.payload ?? {},
+    replyTo: row.reply_to ?? undefined,
+    attachmentUrl,
+    createdAt: row.created_at,
+  };
+}
+
 export async function deleteFormSubmission(id: string): Promise<boolean> {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
