@@ -118,11 +118,16 @@ function PatenschaftBestaetigung({ ctx }: { ctx: PatenDokumentContext }) {
         in {siteConfig.operatingArea}.
       </p>
 
-      <div className="mt-10">
+      <p className="mt-6 rounded-lg border border-border bg-muted-light/25 px-4 py-3 text-xs text-muted leading-relaxed">
+        Dieses Dokument wurde maschinell erstellt. Es ist ohne handschriftliche Unterschrift gültig
+        und bestätigt die aufgenommene Patenschaft mit den oben genannten Angaben.
+      </p>
+
+      <div className="mt-8">
         <div className="w-48 border-b border-forest/40 pb-1">
           <p className="italic text-forest">{siteConfig.contact.name}</p>
         </div>
-        <p className="text-xs text-muted mt-1">Gründerin, Wilde Heimat</p>
+        <p className="text-xs text-muted mt-1">Gründerin, Wilde Heimat (maschinell ausgestellt)</p>
       </div>
     </DokumentShell>
   );
