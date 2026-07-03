@@ -5,6 +5,7 @@ export type PatenEmailVorlageId =
   | "urkunde-vorab"
   | "zahlungsinfo"
   | "patenschaft-komplett"
+  | "weiteres-patentier"
   | "freitext";
 
 export type PatenEmailPlatzhalter = {
@@ -84,6 +85,25 @@ Dein Zugangscode für Paten-Updates: {{zugangscode}}
 Paten-Bereich: {{portalLink}}
 
 Bei Fragen sind wir für dich da: ${siteConfig.email}
+
+Herzliche Grüße
+Julia Rothmann
+Wilde Heimat`,
+    dokumente: ["urkunde", "patenschaft-bestaetigung", "zahlungsinfo"],
+  },
+  {
+    id: "weiteres-patentier",
+    label: "Weiteres Patentier",
+    description: "Urkunde und Unterlagen für ein zusätzliches Patentier (gleicher Zugangscode).",
+    subject: "Deine zusätzliche Patenschaft für {{waschbaer}} – Wilde Heimat",
+    body: `Liebe/r {{name}},
+
+schön, dass du ein weiteres Patentier bei uns unterstützt! Im Anhang findest du die Unterlagen für deine Patenschaft für {{waschbaer}} ({{stufe}}, {{preis}} €/Monat).
+
+Dein bestehender Zugangscode gilt weiterhin für alle deine Patentiere: {{zugangscode}}
+Paten-Bereich: {{portalLink}}
+
+Bei Fragen erreichst du uns unter ${siteConfig.email}.
 
 Herzliche Grüße
 Julia Rothmann

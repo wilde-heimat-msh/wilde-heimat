@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildUrkundeFromPate } from "@/lib/patenschaftFromAnfrage";
-import { getPatenById } from "@/lib/patenschaftStore";
+import { getPatenById, listPatenschaftenForPatron } from "@/lib/patenschaftStore";
 import { isFormMailConfigured } from "@/lib/formMail";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { apiErrorResponse } from "@/lib/apiError";
@@ -42,11 +42,28 @@ export async function GET(_request: Request, context: RouteContext) {
           : undefined
     );
 
+    const patenschaften = await listPatenschaftenForPatron(id);
+    const waschbaeren = await listWaschbaerenPublic();
+
+    const patenschaftOverview = patenschaften.map((entry) => {
+      const tier = waschbaeren.find((w) => w.slug === entry.waschbaerSlug);
+      return {
+        id: entry.id,
+        waschbaerSlug: entry.waschbaerSlug,
+        waschbaerName: tier?.name ?? entry.waschbaerSlug,
+        stufeId: entry.stufeId,
+        active: entry.active,
+        urkundenNr: entry.urkundenNr,
+        patenschaftStart: entry.patenschaftStart,
+      };
+    });
+
     return NextResponse.json({
       pate,
       waschbaer: waschbaerPublic ?? waschbaerRecord,
       submission,
       urkunde,
+      patenschaften: patenschaftOverview,
       mail: { configured: isFormMailConfigured() },
     });
   } catch (error) {

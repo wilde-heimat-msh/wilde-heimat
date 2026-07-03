@@ -171,3 +171,34 @@ export function buildUrkundeFromPate(
     grussbotschaft: pate.grussbotschaft,
   });
 }
+
+/** Weiteres Patentier für bestehenden Paten (gleicher Zugangscode & Stammdaten). */
+export function buildAdditionalPatenschaftFromPate(
+  source: PatenschaftPate,
+  input: { waschbaerSlug: string; stufeId: PatenschaftStufeId; notiz?: string }
+): Omit<PatenschaftPate, "id" | "createdAt" | "updatedAt"> {
+  const today = new Date().toISOString().slice(0, 10);
+
+  return {
+    name: source.name,
+    accessCode: source.accessCode,
+    waschbaerSlug: input.waschbaerSlug,
+    stufeId: input.stufeId,
+    active: source.active,
+    email: source.email,
+    notiz:
+      input.notiz ??
+      `Zusätzliche Patenschaft angelegt am ${today}${source.notiz ? ` · ${source.notiz}` : ""}`,
+    anschrift: source.anschrift,
+    telefon: source.telefon,
+    urkundenNr: suggestUrkundenNr(),
+    ausgestelltAm: today,
+    isGift: source.isGift,
+    beschenkterName: source.beschenkterName,
+    beschenkterAnschrift: source.beschenkterAnschrift,
+    grussbotschaft: source.grussbotschaft,
+    widerrufBestaetigtAt: source.widerrufBestaetigtAt,
+    datenschutzBestaetigtAt: source.datenschutzBestaetigtAt,
+    patenschaftStart: today,
+  };
+}

@@ -24,6 +24,7 @@ type PatenDokumentVersandProps = {
   waschbaerName: string;
   recipientEmail?: string;
   mailConfigured: boolean;
+  hasMultiplePatentiere?: boolean;
   generateAttachments: (documentIds: PatenDokumentId[]) => Promise<PatenMailAttachment[]>;
   onSent?: (message: string) => void;
   onError?: (message: string | null) => void;
@@ -35,6 +36,7 @@ export function PatenDokumentVersand({
   waschbaerName,
   recipientEmail,
   mailConfigured,
+  hasMultiplePatentiere = false,
   generateAttachments,
   onSent,
   onError,
@@ -126,8 +128,11 @@ export function PatenDokumentVersand({
       <div>
         <h2 className="font-medium text-forest">An Paten senden</h2>
         <p className="mt-1 text-sm text-muted">
-          Dokumente als PDF-Anhang per E-Mail versenden – z. B. Urkunde vorab, bevor die gedruckte
-          Version per Post rausgeht.
+          Dokumente als PDF-Anhang per E-Mail versenden – für{" "}
+          <strong className="font-medium text-forest">{waschbaerName}</strong>
+          {hasMultiplePatentiere
+            ? " (ausgewähltes Patentier oben – bei mehreren Tieren je Patentier eigene Unterlagen senden)."
+            : " – z. B. Urkunde vorab, bevor die gedruckte Version per Post rausgeht."}
         </p>
       </div>
 

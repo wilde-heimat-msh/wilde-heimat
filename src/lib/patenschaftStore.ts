@@ -41,9 +41,20 @@ export async function listPatenByAccessCode(code: string): Promise<PatenschaftPa
   );
 }
 
-export async function getPatenByAccessCode(code: string): Promise<PatenschaftPate | null> {
-  const paten = await listPatenByAccessCode(code);
-  return paten[0] ?? null;
+export async function listPatenschaftenForPatron(pateId: string): Promise<PatenschaftPate[]> {
+  const pate = await getPatenById(pateId);
+  if (!pate) return [];
+  const patenschaften = await listPatenByAccessCode(pate.accessCode);
+  return patenschaften.sort((a, b) => a.waschbaerSlug.localeCompare(b.waschbaerSlug, "de"));
+}
+
+export async function patenschaftenShareAccessCode(
+  pateId: string,
+  otherPateId: string
+): Promise<boolean> {
+  const [a, b] = await Promise.all([getPatenById(pateId), getPatenById(otherPateId)]);
+  if (!a || !b) return false;
+  return normalizeAccessCode(a.accessCode) === normalizeAccessCode(b.accessCode);
 }
 
 export async function getPatenLinksBySubmissionIds(

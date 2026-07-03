@@ -6,6 +6,10 @@ import { AdminLogoutButton, AdminNav } from "@/components/admin/AdminLogin";
 import { PatenDokumentVersand, type PatenMailAttachment } from "@/components/admin/PatenDokumentVersand";
 import { PatenDokumentPreviewDialog } from "@/components/admin/PatenDokumentPreviewDialog";
 import { PatenDokumentSheet } from "@/components/admin/PatenDokumentSheet";
+import {
+  PatenPatenschaftenManager,
+  type PatenschaftOverview,
+} from "@/components/admin/PatenPatenschaftenManager";
 import { PatenschaftUrkunde } from "@/components/PatenschaftUrkunde";
 import {
   patenDokumente,
@@ -29,6 +33,7 @@ import type { PatenschaftPate } from "@/types/patenschaftPortal";
 type KarteiData = {
   pate: PatenschaftPate;
   waschbaer?: { name: string; slug: string };
+  patenschaften?: PatenschaftOverview[];
   submission?: FormSubmissionRecord | null;
   urkunde: PatenschaftUrkundeDaten;
   mail?: { configured: boolean };
@@ -203,6 +208,17 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
 
       {data ? (
         <>
+          {data.patenschaften && data.patenschaften.length > 0 ? (
+            <PatenPatenschaftenManager
+              pateId={pateId}
+              accessCode={data.pate.accessCode}
+              patenschaften={data.patenschaften}
+              onChanged={loadKartei}
+              onStatus={setStatus}
+              onError={setError}
+            />
+          ) : null}
+
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
             <section className="rounded-2xl border border-border bg-background/90 p-5 sm:p-6 shadow-soft space-y-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -349,6 +365,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
             waschbaerName={data.waschbaer?.name ?? data.pate.waschbaerSlug}
             recipientEmail={data.pate.email ?? data.submission?.replyTo}
             mailConfigured={data.mail?.configured ?? false}
+            hasMultiplePatentiere={(data.patenschaften?.length ?? 1) > 1}
             generateAttachments={generateMailAttachments}
             onSent={(message) => {
               setError(null);
