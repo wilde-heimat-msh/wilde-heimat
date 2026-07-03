@@ -141,22 +141,15 @@ export async function supabaseIsPatenschaftSlotTaken(
   );
 }
 
-export async function supabaseFindAccessCodeForPatron(options: {
-  email?: string;
-  name?: string;
-}): Promise<string | null> {
+export async function supabaseFindAccessCodeForPatron(
+  email?: string
+): Promise<string | null> {
+  const normalizedEmail = email?.trim().toLowerCase();
+  if (!normalizedEmail) return null;
+
   const paten = await supabaseListPaten();
-  const email = options.email?.trim().toLowerCase();
-  if (email) {
-    const match = paten.find((p) => p.email?.trim().toLowerCase() === email);
-    if (match) return match.accessCode;
-  }
-  const name = options.name?.trim().toLowerCase();
-  if (name) {
-    const match = paten.find((p) => p.name.trim().toLowerCase() === name);
-    if (match) return match.accessCode;
-  }
-  return null;
+  const match = paten.find((p) => p.email?.trim().toLowerCase() === normalizedEmail);
+  return match?.accessCode ?? null;
 }
 
 export async function supabaseGetPatenLinksBySubmissionIds(

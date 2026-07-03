@@ -118,26 +118,17 @@ export async function isPatenschaftSlotTaken(
   );
 }
 
-/** Vorhandenen Code einer Person wiederverwenden (z. B. zweites Patentier). */
-export async function findAccessCodeForPatron(options: {
-  email?: string;
-  name?: string;
-}): Promise<string | null> {
+/** Vorhandenen Code nur per E-Mail wiederverwenden (zweites Patentier derselben Person). */
+export async function findAccessCodeForPatron(email?: string): Promise<string | null> {
   if (isSupabaseConfigured()) {
-    return supabaseStore.supabaseFindAccessCodeForPatron(options);
+    return supabaseStore.supabaseFindAccessCodeForPatron(email);
   }
+  const normalizedEmail = email?.trim().toLowerCase();
+  if (!normalizedEmail) return null;
+
   const store = await readStore();
-  const email = options.email?.trim().toLowerCase();
-  if (email) {
-    const match = store.paten.find((p) => p.email?.trim().toLowerCase() === email);
-    if (match) return match.accessCode;
-  }
-  const name = options.name?.trim().toLowerCase();
-  if (name) {
-    const match = store.paten.find((p) => p.name.trim().toLowerCase() === name);
-    if (match) return match.accessCode;
-  }
-  return null;
+  const match = store.paten.find((p) => p.email?.trim().toLowerCase() === normalizedEmail);
+  return match?.accessCode ?? null;
 }
 
 export async function createPaten(

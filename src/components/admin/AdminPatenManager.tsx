@@ -80,16 +80,9 @@ export function AdminPatenManager() {
 
   function findExistingCodeForForm(current = form) {
     const email = current.email.trim().toLowerCase();
-    if (email) {
-      const match = paten.find((p) => p.email?.trim().toLowerCase() === email);
-      if (match) return match.accessCode;
-    }
-    const name = current.name.trim().toLowerCase();
-    if (name) {
-      const match = paten.find((p) => p.name.trim().toLowerCase() === name);
-      if (match) return match.accessCode;
-    }
-    return null;
+    if (!email) return null;
+    const match = paten.find((p) => p.email?.trim().toLowerCase() === email);
+    return match?.accessCode ?? null;
   }
 
   function reuseCodeFromExistingPatron() {
@@ -238,7 +231,7 @@ export function AdminPatenManager() {
             label="Zugangscode"
             name="accessCode"
             required
-            hint="Ein Code pro Person. Bei mehreren Patentiere denselben Code erneut verwenden."
+            hint="Ein Code pro Person (nur bei gleicher E-Mail wiederverwenden). Neuer Code enthält das angefragte Patentier."
           >
             <div className="flex gap-2">
               <input

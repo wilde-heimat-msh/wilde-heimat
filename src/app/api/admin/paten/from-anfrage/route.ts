@@ -72,11 +72,8 @@ export async function POST(request: Request) {
 
     let accessCode = body.accessCode?.trim().toUpperCase();
     if (!accessCode) {
-      accessCode =
-        (await findAccessCodeForPatron({
-          email: parsed.email,
-          name: parsed.isGift && parsed.beschenkterName ? parsed.beschenkterName : parsed.name,
-        })) ?? suggestAccessCodeFromAnfrage(parsed);
+      const existingCode = await findAccessCodeForPatron(parsed.email);
+      accessCode = existingCode ?? suggestAccessCodeFromAnfrage(parsed);
     }
 
     if (await isPatenschaftSlotTaken(accessCode, parsed.waschbaerSlug)) {
