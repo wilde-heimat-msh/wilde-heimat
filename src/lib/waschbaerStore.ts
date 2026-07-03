@@ -128,6 +128,13 @@ export async function getWaschbaerWithGallery(
   return staticWithGallery(staticWaschbaeren[index], index);
 }
 
+export async function getWaschbaerWithGalleryById(id: string): Promise<WaschbaerWithGallery | null> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("Waschbär-Verwaltung erfordert Supabase.");
+  }
+  return db.supabaseGetWaschbaerWithGalleryById(id);
+}
+
 export async function listWaschbaerenPublic(): Promise<WaschbaerPublic[]> {
   const list = await listWaschbaeren();
   return Promise.all(

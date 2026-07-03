@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { AdminLogoutButton, AdminNav } from "@/components/admin/AdminLogin";
@@ -100,6 +99,7 @@ export function AdminWaschbaerenManager() {
   const [gallery, setGallery] = useState<GalleryDraft[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [savingGallery, setSavingGallery] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -162,6 +162,47 @@ export function AdminWaschbaerenManager() {
     setGallery([]);
   }
 
+  async function persistGallery(items: GalleryDraft[]): Promise<boolean> {
+    if (!editingId) return true;
+
+    setSavingGallery(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/admin/waschbaeren/gallery", {
+        method: "PUT",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          waschbaerId: editingId,
+          gallery: prepareGalleryForSave(items),
+        }),
+      });
+      const data = (await res.json()) as {
+        waschbaer?: WaschbaerWithGallery;
+        error?: string;
+      };
+
+      if (!res.ok) {
+        setError(data.error ?? "Galerie konnte nicht gespeichert werden.");
+        return false;
+      }
+
+      if (data.waschbaer) {
+        setGallery(toGalleryDraft(data.waschbaer.gallery));
+        setWaschbaeren((list) =>
+          list.map((entry) => (entry.id === data.waschbaer!.id ? data.waschbaer! : entry))
+        );
+      } else {
+        await loadWaschbaeren();
+      }
+
+      return true;
+    } finally {
+      setSavingGallery(false);
+    }
+  }
+
   async function handleImport() {
     if (!confirm("Alle Waschbären und Fotos von der Website in die Datenbank importieren?")) {
       return;
@@ -213,18 +254,28 @@ export function AdminWaschbaerenManager() {
         return;
       }
 
-      setGallery((items) => [
-        ...items,
+      const nextGallery = [
+        ...gallery,
         {
           src: data.url!,
           alt: `${form.name || form.slug} – Foto`,
           width: dimensions.width,
           height: dimensions.height,
           caption: "",
-          featured: items.length === 0,
+          featured: gallery.length === 0,
           objectPosition: "center center",
         },
-      ]);
+      ];
+      setGallery(nextGallery);
+
+      if (editingId) {
+        const ok = await persistGallery(nextGallery);
+        if (!ok) {
+          setGallery(gallery);
+          return;
+        }
+      }
+
       setStatus("Foto hochgeladen.");
     } finally {
       setUploading(false);
@@ -247,12 +298,28 @@ export function AdminWaschbaerenManager() {
         next = [featured, ...next.filter((_, i) => i !== index)];
       }
 
+      if (editingId && patch.featured) {
+        void persistGallery(next);
+      }
+
       return next;
     });
   }
 
-  function removeGalleryItem(index: number) {
-    setGallery((items) => items.filter((_, i) => i !== index));
+  async function removeGalleryItem(index: number) {
+    const previous = gallery;
+    const next = gallery.filter((_, i) => i !== index);
+    setGallery(next);
+
+    if (!editingId) return;
+
+    const ok = await persistGallery(next);
+    if (!ok) {
+      setGallery(previous);
+      return;
+    }
+
+    setStatus("Foto entfernt.");
   }
 
   async function handleSubmit(event: React.FormEvent) {
@@ -519,12 +586,12 @@ export function AdminWaschbaerenManager() {
               </p>
             </div>
             <label className="cursor-pointer rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-muted-light/50">
-              {uploading ? "Wird hochgeladen …" : "Foto hochladen"}
+              {uploading || savingGallery ? "Wird gespeichert …" : "Foto hochladen"}
               <input
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
+                accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
                 className="sr-only"
-                disabled={uploading}
+                disabled={uploading || savingGallery}
                 onChange={handleUpload}
               />
             </label>
@@ -540,7 +607,12 @@ export function AdminWaschbaerenManager() {
                   className="grid gap-4 rounded-xl border border-border p-4 sm:grid-cols-[120px_1fr]"
                 >
                   <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted-light">
-                    <Image src={photo.src} alt={photo.alt} fill className="object-cover" sizes="120px" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photo.src}
+                      alt={photo.alt}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div className="space-y-3">
                     <input
@@ -566,8 +638,9 @@ export function AdminWaschbaerenManager() {
                     </label>
                     <button
                       type="button"
-                      onClick={() => removeGalleryItem(index)}
-                      className="text-sm text-red-700 hover:underline"
+                      onClick={() => void removeGalleryItem(index)}
+                      disabled={savingGallery}
+                      className="text-sm text-red-700 hover:underline disabled:opacity-50"
                     >
                       Foto entfernen
                     </button>
@@ -617,12 +690,11 @@ export function AdminWaschbaerenManager() {
                   <div className="flex items-center gap-4 min-w-0">
                     {featured ? (
                       <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-lg bg-muted-light">
-                        <Image
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
                           src={featured.src}
                           alt={featured.alt}
-                          fill
-                          className="object-cover"
-                          sizes="48px"
+                          className="h-full w-full object-cover"
                         />
                       </div>
                     ) : null}

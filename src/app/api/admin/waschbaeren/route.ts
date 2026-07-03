@@ -14,7 +14,8 @@ import {
 import { isSupabaseConfigured } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { apiErrorResponse } from "@/lib/apiError";
-import type { WaschbaerGalleryInput, WaschbaerInput } from "@/types/waschbaer";
+import { parseWaschbaerGallery } from "@/lib/waschbaerGalleryParse";
+import type { WaschbaerInput } from "@/types/waschbaer";
 
 function revalidateWaschbaerPages(slug?: string) {
   revalidatePath("/waschbaeren");
@@ -60,34 +61,11 @@ function parseWaschbaerInput(body: Record<string, unknown>): WaschbaerInput | { 
         ? body.farbe.trim()
         : "from-neutral-700 to-neutral-500",
     published: body.published !== false,
-    sortOrder: typeof body.sortOrder === "number" ? body.sortOrder : 0,
+    sortOrder:
+      typeof body.sortOrder === "number"
+        ? body.sortOrder
+        : Number(body.sortOrder) || 0,
   };
-}
-
-function parseGallery(photos: unknown): WaschbaerGalleryInput[] | { error: string } {
-  if (!Array.isArray(photos)) return [];
-
-  const parsed: WaschbaerGalleryInput[] = [];
-  for (const [index, item] of photos.entries()) {
-    if (!item || typeof item !== "object") continue;
-    const photo = item as Record<string, unknown>;
-    const src = typeof photo.src === "string" ? photo.src.trim() : "";
-    if (!src) continue;
-
-    parsed.push({
-      src,
-      alt: typeof photo.alt === "string" ? photo.alt.trim() : "",
-      width: typeof photo.width === "number" ? photo.width : 768,
-      height: typeof photo.height === "number" ? photo.height : 1024,
-      caption: typeof photo.caption === "string" ? photo.caption.trim() : undefined,
-      featured: photo.featured === true,
-      objectPosition:
-        typeof photo.objectPosition === "string" ? photo.objectPosition : "center center",
-      sortOrder: typeof photo.sortOrder === "number" ? photo.sortOrder : index,
-    });
-  }
-
-  return parsed;
 }
 
 export async function GET() {
@@ -125,8 +103,8 @@ export async function POST(request: Request) {
 
   try {
     const waschbaer = await createWaschbaer(parsed);
-    const galleryParsed = parseGallery(body.gallery);
-    if (!("error" in galleryParsed) && galleryParsed.length > 0) {
+    const galleryParsed = parseWaschbaerGallery(body.gallery);
+    if (galleryParsed.length > 0) {
       await replaceWaschbaerGallery(waschbaer.id, galleryParsed);
     }
 
@@ -164,10 +142,7 @@ export async function PUT(request: Request) {
     }
 
     if (body.gallery !== undefined) {
-      const galleryParsed = parseGallery(body.gallery);
-      if ("error" in galleryParsed) {
-        return NextResponse.json({ error: galleryParsed.error }, { status: 400 });
-      }
+      const galleryParsed = parseWaschbaerGallery(body.gallery);
       await replaceWaschbaerGallery(waschbaer.id, galleryParsed);
     }
 

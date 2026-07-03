@@ -130,6 +130,16 @@ export async function supabaseListGallery(waschbaerId: string): Promise<Waschbae
   return (data as GalleryRow[]).map(mapGallery);
 }
 
+export async function supabaseGetWaschbaerWithGalleryById(
+  id: string
+): Promise<WaschbaerWithGallery | null> {
+  const waschbaer = await supabaseGetWaschbaerById(id);
+  if (!waschbaer) return null;
+
+  const gallery = await supabaseListGallery(waschbaer.id);
+  return { ...waschbaer, gallery };
+}
+
 export async function supabaseGetWaschbaerWithGallery(
   slug: string,
   includeUnpublished = false
@@ -315,15 +325,22 @@ export async function supabaseReplaceGallery(
     .eq("waschbaer_id", waschbaerId);
 
   if (deleteError) throw new Error(deleteError.message);
+  if (photos.length === 0) return [];
 
-  const results: WaschbaerGalleryItem[] = [];
-  for (const [index, photo] of photos.entries()) {
-    const item = await supabaseAddGalleryPhoto(waschbaerId, {
-      ...photo,
-      sortOrder: photo.sortOrder ?? index,
-    });
-    results.push(item);
-  }
+  const rows = photos.map((photo, index) => ({
+    waschbaer_id: waschbaerId,
+    src: photo.src,
+    alt: photo.alt,
+    width: photo.width,
+    height: photo.height,
+    caption: photo.caption?.trim() ? photo.caption.trim() : null,
+    featured: index === 0,
+    object_position: photo.objectPosition ?? "center center",
+    sort_order: photo.sortOrder ?? index,
+  }));
 
-  return results;
+  const { data, error } = await supabase.from("waschbaer_gallery").insert(rows).select("*");
+  if (error) throw new Error(error.message);
+
+  return (data as GalleryRow[]).map(mapGallery);
 }

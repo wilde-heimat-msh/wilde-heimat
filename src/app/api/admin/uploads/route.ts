@@ -8,6 +8,23 @@ import { requireAdmin } from "@/lib/requireAdmin";
 const MAX_BYTES = 8 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
+function resolveMimeType(file: File): string | null {
+  if (file.type && ALLOWED_TYPES.has(file.type)) {
+    return file.type;
+  }
+
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  const byExt: Record<string, string> = {
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+    gif: "image/gif",
+  };
+
+  return ext ? byExt[ext] ?? null : null;
+}
+
 export async function POST(request: Request) {
   const authError = await requireAdmin();
   if (authError) return authError;
@@ -19,7 +36,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Keine Datei übermittelt." }, { status: 400 });
   }
 
-  if (!ALLOWED_TYPES.has(file.type)) {
+  const mime = resolveMimeType(file);
+  if (!mime) {
     return NextResponse.json(
       { error: "Nur JPG, PNG, WebP oder GIF erlaubt." },
       { status: 400 }
@@ -30,18 +48,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Datei ist zu groß (max. 8 MB)." }, { status: 400 });
   }
 
-  if (isSupabaseStorageEnabled()) {
-    const folder = (formData.get("folder") as string) || "paten-updates";
-    const subfolder = (formData.get("subfolder") as string) || undefined;
-    const allowedFolders = new Set(["paten-updates", "waschbaeren"]);
-    if (!allowedFolders.has(folder)) {
-      return NextResponse.json({ error: "Ungültiger Upload-Ordner." }, { status: 400 });
-    }
+  const folder = (formData.get("folder") as string) || "paten-updates";
+  const subfolder = (formData.get("subfolder") as string) || undefined;
+  const allowedFolders = new Set(["paten-updates", "waschbaeren"]);
+  if (!allowedFolders.has(folder)) {
+    return NextResponse.json({ error: "Ungültiger Upload-Ordner." }, { status: 400 });
+  }
 
+  if (isSupabaseStorageEnabled()) {
     const result = await uploadImage(
       folder as "paten-updates" | "waschbaeren",
       file,
-      subfolder
+      subfolder,
+      mime
     );
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: 400 });
@@ -52,13 +71,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Upload fehlgeschlagen." }, { status: 500 });
   }
 
-  const ext = file.type.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
+  const ext = mime.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
   const filename = `${randomUUID()}.${ext}`;
-  const uploadDir = path.join(process.cwd(), "public/paten-updates");
+  const uploadDir =
+    folder === "waschbaeren" && subfolder
+      ? path.join(process.cwd(), "public", folder, subfolder)
+      : path.join(process.cwd(), "public", folder === "waschbaeren" ? "waschbaeren" : "paten-updates");
   await mkdir(uploadDir, { recursive: true });
 
   const buffer = Buffer.from(await file.arrayBuffer());
   await writeFile(path.join(uploadDir, filename), buffer);
 
-  return NextResponse.json({ url: `/paten-updates/${filename}` });
+  const url =
+    folder === "waschbaeren" && subfolder
+      ? `/${folder}/${subfolder}/${filename}`
+      : folder === "waschbaeren"
+        ? `/waschbaeren/${filename}`
+        : `/paten-updates/${filename}`;
+
+  return NextResponse.json({ url });
 }

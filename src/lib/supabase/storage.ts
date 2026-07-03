@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { getSupabaseAdmin, isSupabaseConfigured, UPLOADS_BUCKET } from "@/lib/supabase/admin";
 
 const MAX_BYTES = 8 * 1024 * 1024;
@@ -11,37 +12,41 @@ export function isSupabaseStorageEnabled(): boolean {
 export function isStoragePath(value: string): boolean {
   return (
     !value.startsWith("http") &&
-    (value.startsWith("form-uploads/") || value.startsWith("paten-updates/"))
+    (value.startsWith("form-uploads/") ||
+      value.startsWith("paten-updates/") ||
+      value.startsWith("waschbaeren/"))
   );
 }
 
 export async function uploadImage(
   folder: "paten-updates" | "form-uploads" | "waschbaeren",
   file: File,
-  subfolder?: string
+  subfolder?: string,
+  contentType?: string
 ): Promise<{ publicUrl: string } | { storagePath: string } | { error: string }> {
-  if (!ALLOWED_TYPES.has(file.type)) {
+  const mime = contentType ?? file.type;
+  if (!ALLOWED_TYPES.has(mime)) {
     return { error: "Nur JPG, PNG, WebP oder GIF erlaubt." };
   }
   if (file.size > MAX_BYTES) {
     return { error: "Datei ist zu groß (max. 8 MB)." };
   }
 
-  const ext = file.type.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
+  const ext = mime.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
   const prefix = subfolder ? `${folder}/${subfolder}` : folder;
-  const path = `${prefix}/${crypto.randomUUID()}.${ext}`;
+  const storagePath = `${prefix}/${randomUUID()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
-  const uploaded = await uploadBuffer(path, buffer, file.type);
+  const uploaded = await uploadBuffer(storagePath, buffer, mime);
   if ("error" in uploaded) {
     return uploaded;
   }
 
   if (folder === "form-uploads") {
-    return { storagePath: path };
+    return { storagePath };
   }
 
-  const { data } = getSupabaseAdmin().storage.from(UPLOADS_BUCKET).getPublicUrl(path);
+  const { data } = getSupabaseAdmin().storage.from(UPLOADS_BUCKET).getPublicUrl(storagePath);
   return { publicUrl: data.publicUrl };
 }
 
