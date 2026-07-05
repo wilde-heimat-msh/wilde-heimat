@@ -112,6 +112,7 @@ export function PatenZahlungenPanel({
   const [mailBody, setMailBody] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [now, setNow] = useState(() => new Date());
+  const [markingPeriod, setMarkingPeriod] = useState<string | null>(null);
 
   const loadZahlungen = useCallback(async () => {
     setLoading(true);
@@ -204,38 +205,83 @@ export function PatenZahlungenPanel({
     onStatus?.("E-Mail-Vorlage wurde zurückgesetzt.");
   }
 
+  async function recordPayment(input: {
+    period: string;
+    amount: number;
+    paidAt: string;
+    note?: string;
+    successMessage?: string;
+  }) {
+    onError?.(null);
+
+    const res = await fetch(`/api/admin/paten/${encodeURIComponent(pateId)}/zahlungen`, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        period: input.period,
+        amount: input.amount,
+        paidAt: input.paidAt,
+        note: input.note,
+      }),
+    });
+    const json = (await res.json()) as { error?: string };
+    if (!res.ok) {
+      onError?.(json.error ?? "Zahlung konnte nicht erfasst werden.");
+      return false;
+    }
+    onStatus?.(input.successMessage ?? "Zahlung erfasst.");
+    await loadZahlungen();
+    return true;
+  }
+
   async function handleRecordPayment(event: React.FormEvent) {
     event.preventDefault();
     setSaving(true);
-    onError?.(null);
 
     try {
-      const res = await fetch(`/api/admin/paten/${encodeURIComponent(pateId)}/zahlungen`, {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          period,
-          amount: Number(amount.replace(",", ".")),
-          paidAt,
-          note: note.trim() || undefined,
-        }),
+      await recordPayment({
+        period,
+        amount: Number(amount.replace(",", ".")),
+        paidAt,
+        note: note.trim() || undefined,
       });
-      const json = (await res.json()) as { error?: string };
-      if (!res.ok) {
-        onError?.(json.error ?? "Zahlung konnte nicht erfasst werden.");
-        return;
-      }
-      onStatus?.("Zahlung erfasst.");
       setNote("");
-      await loadZahlungen();
     } finally {
       setSaving(false);
     }
   }
 
+  async function handleQuickMarkPaid(monat: PatenschaftMonatsStatus) {
+    const amountLabel = monat.expectedAmount.toFixed(2).replace(".", ",");
+    if (
+      !confirm(
+        `Beitrag für ${monat.label} (${amountLabel} €) als erhalten markieren?\n\nDas System speichert den Eingang mit heutigem Datum.`
+      )
+    ) {
+      return;
+    }
+
+    setMarkingPeriod(monat.period);
+    try {
+      await recordPayment({
+        period: monat.period,
+        amount: monat.expectedAmount,
+        paidAt: toLocalDateString(),
+        note: "Schnellerfassung: Beitrag erhalten",
+        successMessage: `${monat.label}: Beitrag als erhalten markiert.`,
+      });
+    } finally {
+      setMarkingPeriod(null);
+    }
+  }
+
+  function canQuickMarkPaid(monat: PatenschaftMonatsStatus) {
+    return monat.status === "offen" || monat.status === "überfällig";
+  }
+
   async function handleDeletePayment(zahlungId: string) {
-    if (!confirm("Diese Zahlung wirklich löschen?")) return;
+    if (!confirm("Erfassung für diesen Monat wirklich zurücksetzen? Der Beitrag gilt dann wieder als offen.")) return;
 
     const res = await fetch(
       `/api/admin/paten/${encodeURIComponent(pateId)}/zahlungen?zahlungId=${encodeURIComponent(zahlungId)}`,
@@ -389,14 +435,34 @@ export function PatenZahlungenPanel({
             <div
               className={`rounded-xl border px-4 py-3 text-sm ${countdownBadge(aktuellerMonat.status)}`}
             >
-              <p className="font-medium">
-                Aktueller Monat ({aktuellerMonat.label}): {aktuellerMonat.countdownLabel}
-              </p>
-              <p className="text-xs mt-1 opacity-90">
-                Fällig am {formatFormDateDe(aktuellerMonat.faelligAm)} ·{" "}
-                {aktuellerMonat.expectedAmount.toFixed(2).replace(".", ",")} € · Status:{" "}
-                {statusLabel(aktuellerMonat.status)}
-              </p>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="font-medium">
+                    Aktueller Monat ({aktuellerMonat.label}): {aktuellerMonat.countdownLabel}
+                  </p>
+                  <p className="text-xs mt-1 opacity-90">
+                    Fällig am {formatFormDateDe(aktuellerMonat.faelligAm)} ·{" "}
+                    {aktuellerMonat.expectedAmount.toFixed(2).replace(".", ",")} € · Status:{" "}
+                    {statusLabel(aktuellerMonat.status)}
+                  </p>
+                </div>
+                {canQuickMarkPaid(aktuellerMonat) ? (
+                  <button
+                    type="button"
+                    onClick={() => handleQuickMarkPaid(aktuellerMonat)}
+                    disabled={markingPeriod === aktuellerMonat.period}
+                    className="shrink-0 min-h-9 px-4 text-xs font-medium rounded-lg bg-green-700 text-white hover:bg-green-800 disabled:opacity-60 print:hidden"
+                  >
+                    {markingPeriod === aktuellerMonat.period
+                      ? "Wird gespeichert …"
+                      : "Beitrag erhalten"}
+                  </button>
+                ) : aktuellerMonat.status === "bezahlt" ? (
+                  <span className="shrink-0 inline-flex min-h-9 items-center px-3 text-xs font-medium rounded-lg border border-green-300 bg-white/70 print:hidden">
+                    ✓ Beglichen
+                  </span>
+                ) : null}
+              </div>
             </div>
           ) : null}
 
@@ -515,7 +581,13 @@ export function PatenZahlungenPanel({
           </div>
 
           <form onSubmit={handleRecordPayment} className="rounded-xl border border-border p-4 space-y-4">
-            <h3 className="text-sm font-medium text-forest">Zahlung erfassen (intern)</h3>
+            <div>
+              <h3 className="text-sm font-medium text-forest">Zahlung erfassen (intern)</h3>
+              <p className="text-xs text-muted mt-1">
+                Schnell: In der Übersicht unten auf „Beitrag erhalten“ klicken – oder hier
+                manuell mit abweichendem Betrag/Datum erfassen.
+              </p>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField label="Abrechnungsmonat" name="zahlung-period" required>
                 <input
@@ -637,15 +709,31 @@ export function PatenZahlungenPanel({
                             </span>
                           </td>
                           <td className="px-3 py-2 print:hidden">
-                            {monat.zahlung ? (
-                              <button
-                                type="button"
-                                onClick={() => handleDeletePayment(monat.zahlung!.id)}
-                                className="text-xs text-red-700 hover:underline"
-                              >
-                                Löschen
-                              </button>
-                            ) : null}
+                            <div className="flex flex-wrap items-center gap-2">
+                              {canQuickMarkPaid(monat) ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleQuickMarkPaid(monat)}
+                                  disabled={markingPeriod === monat.period}
+                                  className="text-xs font-medium text-green-800 hover:underline disabled:opacity-60"
+                                >
+                                  {markingPeriod === monat.period
+                                    ? "Speichern …"
+                                    : "Beitrag erhalten"}
+                                </button>
+                              ) : monat.status === "bezahlt" ? (
+                                <span className="text-xs text-green-800">Beglichen</span>
+                              ) : null}
+                              {monat.zahlung ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeletePayment(monat.zahlung!.id)}
+                                  className="text-xs text-red-700 hover:underline"
+                                >
+                                  Zurücksetzen
+                                </button>
+                              ) : null}
+                            </div>
                           </td>
                         </tr>
                       ))}
