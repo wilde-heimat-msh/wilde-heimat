@@ -4,7 +4,7 @@ import { normalizeAccessCode } from "@/lib/patenschaftTier";
 import type { PatenschaftPate, PatenschaftZahlung } from "@/types/patenschaftPortal";
 import type { PatenschaftStufeId } from "@/data/patenschaften";
 
-/** Beitrag ist am 5. jedes Monats fällig */
+/** Beitrag ist ab dem 5. jedes Monats fällig (Erinnerung wird am 5. versendet) */
 export const PATENSCHAFT_FAELLIGKEIT_TAG = 5;
 
 /** Anzahl kommender Monate in der Übersicht (ab aktuellem Monat) */
@@ -81,10 +81,6 @@ export function toLocalPeriod(date = new Date()): string {
   return `${year}-${month}`;
 }
 
-function getDaysInMonth(year: number, month: number): number {
-  return new Date(year, month, 0).getDate();
-}
-
 function parsePeriod(period: string): { year: number; month: number } {
   const [year, month] = period.split("-").map(Number);
   return { year, month };
@@ -97,27 +93,13 @@ export function getPatenschaftFaelligAm(period: string): string {
   return `${year}-${String(month).padStart(2, "0")}-${day}`;
 }
 
-/**
- * Erwarteter Betrag – im Startmonat anteilig ab Patenschaftsbeginn (Tag).
- * Beispiel: Start am 15.06. → Juni nur noch 16/30 des Monatsbeitrags.
- */
+/** Fester Monatsbeitrag – anteilig nur bei manuell erfassten Abweichungen in der Kartei */
 export function getExpectedAmountForPeriod(
-  period: string,
+  _period: string,
   monthlyTotal: number,
-  patenschaftStart?: string
+  _patenschaftStart?: string
 ): number {
-  if (!patenschaftStart || monthlyTotal <= 0) return monthlyTotal;
-
-  const startPeriod = patenschaftStart.slice(0, 7);
-  if (period !== startPeriod) return monthlyTotal;
-
-  const startDay = Number(patenschaftStart.slice(8, 10)) || 1;
-  if (startDay <= 1) return monthlyTotal;
-
-  const { year, month } = parsePeriod(period);
-  const daysInMonth = getDaysInMonth(year, month);
-  const activeDays = daysInMonth - startDay + 1;
-  return Math.round(((monthlyTotal * activeDays) / daysInMonth) * 100) / 100;
+  return monthlyTotal;
 }
 
 export function getPatenschaftPeriodStatus(input: {

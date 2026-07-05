@@ -102,7 +102,7 @@ Wilde Heimat`,
     subject: "Dein Patenbeitrag für {{monatLabel}} – {{waschbaer}} 🦝",
     body: `Liebe/r {{name}},
 
-nur eine kleine, freundliche Erinnerung von uns: Für {{monatLabel}} ist dein monatlicher Patenbeitrag in Höhe von {{preis}} € fällig – spätestens zum {{faelligAm}} (Beitrag ist jeweils am {{faelligkeitTag}}. des Monats fällig).
+nur eine kleine, freundliche Erinnerung von uns: Für {{monatLabel}} ist dein monatlicher Patenbeitrag in Höhe von {{preis}} € ab dem {{faelligkeitTag}}. des Monats fällig ({{faelligAm}}). Das gilt jeden Monat erneut – wir senden dir die Zahlungsanweisung jeweils am {{faelligkeitTag}}.
 
 Du hilfst damit direkt mit, dass unsere kleinen Waschbären gut versorgt werden. Dafür sagen wir von Herzen Danke! 💚
 

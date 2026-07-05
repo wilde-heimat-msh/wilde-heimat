@@ -191,8 +191,9 @@ function Zahlungsinfo({ ctx }: { ctx: PatenDokumentContext }) {
           genannte Konto.
         </li>
         <li>
-          Der Beitrag ist jeweils am <strong>{PATENSCHAFT_FAELLIGKEIT_TAG}. des Monats</strong>{" "}
-          fällig (aktuell: {faelligAm}).
+          Der Beitrag ist jeweils ab dem <strong>{PATENSCHAFT_FAELLIGKEIT_TAG}. des Monats</strong>{" "}
+          fällig (aktuell: {faelligAm}) – die Erinnerung geht am {PATENSCHAFT_FAELLIGKEIT_TAG}. raus,
+          das gilt für alle Folgemonate gleich.
         </li>
         <li>
           Bitte gib als Verwendungszweck exakt{" "}

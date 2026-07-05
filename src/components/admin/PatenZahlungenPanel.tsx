@@ -282,7 +282,8 @@ export function PatenZahlungenPanel({
           {hasMultiplePatentiere
             ? " – gilt für alle Patentiere mit diesem Zugangscode."
             : ""}{" "}
-          Heute {data?.heute ?? "…"}, fällig jeweils am {PATENSCHAFT_FAELLIGKEIT_TAG}. des Monats.
+          Heute {data?.heute ?? "…"}, fällig ab dem {PATENSCHAFT_FAELLIGKEIT_TAG}. jedes Monats
+          (Erinnerung wird am {PATENSCHAFT_FAELLIGKEIT_TAG}. versendet).
           Die Übersicht enthält automatisch die nächsten {PATENSCHAFT_MONATE_VORAUS} Monate.
         </p>
       </div>
@@ -360,7 +361,8 @@ export function PatenZahlungenPanel({
                 Monatliche Zahlungsanweisung senden
               </h3>
               <p className="text-xs text-muted mt-1">
-                Süße Erinnerung per E-Mail – manuell jeden Monat auslösen.
+                Süße Erinnerung per E-Mail – manuell am {PATENSCHAFT_FAELLIGKEIT_TAG}. jedes Monats
+                auslösen. Der Beitrag ist ab dem {PATENSCHAFT_FAELLIGKEIT_TAG}. fällig.
               </p>
             </div>
 
