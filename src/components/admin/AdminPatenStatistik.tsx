@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { PatenschaftStatistik } from "@/lib/patenschaftPayment";
+import { useEffect, useMemo, useState } from "react";
+import { formatFormDateDe } from "@/lib/relativeTime";
+import {
+  getPatenschaftCountdown,
+  getPatenschaftPeriodStatus,
+  type PatenschaftStatistik,
+} from "@/lib/patenschaftPayment";
 
 export function AdminPatenStatistik() {
   const [statistik, setStatistik] = useState<PatenschaftStatistik | null>(null);
   const [loading, setLoading] = useState(true);
+  const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
     async function load() {
@@ -19,6 +25,43 @@ export function AdminPatenStatistik() {
     }
     void load();
   }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const liveCountdown = useMemo(() => {
+    if (!statistik) return null;
+    const { aktuellerMonat } = statistik;
+    const status = getPatenschaftPeriodStatus({
+      period: aktuellerMonat.period,
+      paidAmount: aktuellerMonat.erhalten,
+      expectedAmount: aktuellerMonat.erwartet,
+      now,
+    });
+    return {
+      status,
+      ...getPatenschaftCountdown({
+        faelligAm: aktuellerMonat.faelligAm,
+        status,
+        now,
+      }),
+    };
+  }, [statistik, now]);
+
+  function countdownBannerClass(status: NonNullable<typeof liveCountdown>["status"]) {
+    switch (status) {
+      case "bezahlt":
+        return "bg-green-100 text-green-900 border-green-200";
+      case "offen":
+        return "bg-amber-100 text-amber-900 border-amber-200";
+      case "überfällig":
+        return "bg-red-100 text-red-900 border-red-200";
+      default:
+        return "bg-sky-100 text-sky-900 border-sky-200";
+    }
+  }
 
   if (loading) {
     return (
@@ -37,8 +80,25 @@ export function AdminPatenStatistik() {
         <p className="text-sm text-muted mt-1">
           Übersicht aller aktiven Patenschaften und monatlicher Beiträge –{" "}
           {statistik.aktuellerMonat.label}
+          {liveCountdown ? ` · ${liveCountdown.countdownLabel}` : ""}
         </p>
       </div>
+
+      {liveCountdown ? (
+        <div
+          className={`rounded-xl border px-4 py-3 text-sm ${countdownBannerClass(liveCountdown.status)}`}
+        >
+          <p className="font-medium">
+            {statistik.aktuellerMonat.label}: {liveCountdown.countdownLabel}
+          </p>
+          <p className="text-xs mt-1 opacity-90">
+            Fällig am {formatFormDateDe(statistik.aktuellerMonat.faelligAm)} ·{" "}
+            {statistik.aktuellerMonat.offenCount} offen ·{" "}
+            {statistik.aktuellerMonat.ueberfaelligCount} überfällig · Countdown aktualisiert sich
+            automatisch
+          </p>
+        </div>
+      ) : null}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -54,7 +114,11 @@ export function AdminPatenStatistik() {
         <StatCard
           label={`Eingegangen (${statistik.aktuellerMonat.label})`}
           value={`${statistik.aktuellerMonat.erhalten.toFixed(2).replace(".", ",")} €`}
-          hint={`${statistik.aktuellerMonat.bezahltCount} vollständig · ${statistik.aktuellerMonat.offenCount} offen · ${statistik.aktuellerMonat.ueberfaelligCount} überfällig`}
+          hint={
+            liveCountdown
+              ? `${liveCountdown.countdownLabel} · ${statistik.aktuellerMonat.bezahltCount} vollständig · ${statistik.aktuellerMonat.offenCount} offen · ${statistik.aktuellerMonat.ueberfaelligCount} überfällig`
+              : `${statistik.aktuellerMonat.bezahltCount} vollständig · ${statistik.aktuellerMonat.offenCount} offen · ${statistik.aktuellerMonat.ueberfaelligCount} überfällig`
+          }
         />
         <StatCard
           label="Gesamt erhalten"

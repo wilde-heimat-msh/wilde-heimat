@@ -63,6 +63,10 @@ export type PatenschaftMonatsStatus = {
   status: "bezahlt" | "offen" | "überfällig" | "zukünftig";
   /** ISO-Datum YYYY-MM-DD – Fälligkeit in diesem Monat */
   faelligAm: string;
+  /** Positiv = Tage bis fällig, 0 = heute, negativ = Tage überfällig */
+  daysUntilDue: number;
+  /** Automatisch berechneter Countdown-Text */
+  countdownLabel: string;
   zahlung?: PatenschaftZahlung;
 };
 
@@ -121,6 +125,69 @@ export function getPatenschaftPeriodStatus(input: {
   if (today > faelligAm) return "überfällig";
 
   return "offen";
+}
+
+function diffLocalDays(fromDate: string, toDate: string): number {
+  const from = new Date(`${fromDate}T12:00:00`);
+  const to = new Date(`${toDate}T12:00:00`);
+  return Math.round((to.getTime() - from.getTime()) / 86_400_000);
+}
+
+/** Countdown-Text und Tage bis/zur Fälligkeit (automatisch aus heutigem Datum) */
+export function getPatenschaftCountdown(input: {
+  faelligAm: string;
+  status: PatenschaftMonatsStatus["status"];
+  now?: Date;
+}): { daysUntilDue: number; countdownLabel: string } {
+  const today = toLocalDateString(input.now);
+  const daysUntilDue = diffLocalDays(today, input.faelligAm);
+
+  if (input.status === "bezahlt") {
+    return { daysUntilDue: 0, countdownLabel: "Bezahlt" };
+  }
+
+  if (daysUntilDue > 0) {
+    return {
+      daysUntilDue,
+      countdownLabel:
+        daysUntilDue === 1 ? "Noch 1 Tag bis fällig" : `Noch ${daysUntilDue} Tage bis fällig`,
+    };
+  }
+
+  if (daysUntilDue === 0) {
+    return { daysUntilDue: 0, countdownLabel: "Heute fällig" };
+  }
+
+  const overdueDays = Math.abs(daysUntilDue);
+  return {
+    daysUntilDue,
+    countdownLabel:
+      overdueDays === 1 ? "1 Tag überfällig" : `${overdueDays} Tage überfällig`,
+  };
+}
+
+export function enrichPatenschaftMonatLive(
+  monat: Omit<PatenschaftMonatsStatus, "status" | "daysUntilDue" | "countdownLabel"> & {
+    status?: PatenschaftMonatsStatus["status"];
+  },
+  now = new Date()
+): PatenschaftMonatsStatus {
+  const status =
+    monat.status ??
+    getPatenschaftPeriodStatus({
+      period: monat.period,
+      paidAmount: monat.paidAmount,
+      expectedAmount: monat.expectedAmount,
+      now,
+    });
+  const countdown = getPatenschaftCountdown({ faelligAm: monat.faelligAm, status, now });
+
+  return {
+    ...monat,
+    status,
+    daysUntilDue: countdown.daysUntilDue,
+    countdownLabel: countdown.countdownLabel,
+  };
 }
 
 function formatPeriodLabel(period: string): string {
@@ -184,6 +251,7 @@ export function listPatenschaftMonate(input: {
       expectedAmount,
       now,
     });
+    const countdown = getPatenschaftCountdown({ faelligAm, status, now });
 
     rows.push({
       period,
@@ -192,6 +260,8 @@ export function listPatenschaftMonate(input: {
       paidAmount,
       status,
       faelligAm,
+      daysUntilDue: countdown.daysUntilDue,
+      countdownLabel: countdown.countdownLabel,
       zahlung,
     });
 
@@ -215,6 +285,9 @@ export type PatenschaftStatistik = {
     bezahltCount: number;
     offenCount: number;
     ueberfaelligCount: number;
+    faelligAm: string;
+    daysUntilDue: number;
+    countdownLabel: string;
   };
   gesamtErhalten: number;
   zahlungenAnzahl: number;
@@ -267,6 +340,18 @@ export function computePatenschaftStatistik(input: {
 
   const erwartet = personStatuses.reduce((sum, item) => sum + item.expected, 0);
   const erhalten = personStatuses.reduce((sum, item) => sum + item.paid, 0);
+  const currentFaelligAm = getPatenschaftFaelligAm(currentPeriod);
+  const aggregateStatus = getPatenschaftPeriodStatus({
+    period: currentPeriod,
+    paidAmount: erhalten,
+    expectedAmount: erwartet,
+    now,
+  });
+  const currentCountdown = getPatenschaftCountdown({
+    faelligAm: currentFaelligAm,
+    status: aggregateStatus,
+    now,
+  });
 
   return {
     activePatenschaften: activePaten.length,
@@ -282,6 +367,9 @@ export function computePatenschaftStatistik(input: {
       bezahltCount: personStatuses.filter((item) => item.status === "bezahlt").length,
       offenCount: personStatuses.filter((item) => item.status === "offen").length,
       ueberfaelligCount: personStatuses.filter((item) => item.status === "überfällig").length,
+      faelligAm: currentFaelligAm,
+      daysUntilDue: currentCountdown.daysUntilDue,
+      countdownLabel: currentCountdown.countdownLabel,
     },
     gesamtErhalten: input.zahlungen.reduce((sum, z) => sum + z.amount, 0),
     zahlungenAnzahl: input.zahlungen.length,

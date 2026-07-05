@@ -12,6 +12,7 @@ import { patenschaftsStufen } from "@/data/site";
 import { formatFormDateDe } from "@/lib/relativeTime";
 import {
   buildMonatlicherVerwendungszweck,
+  enrichPatenschaftMonatLive,
   PATENSCHAFT_FAELLIGKEIT_TAG,
   PATENSCHAFT_MONATE_VORAUS,
   toLocalDateString,
@@ -42,6 +43,19 @@ type PatenZahlungenPanelProps = {
   onStatus?: (message: string | null) => void;
   onError?: (message: string | null) => void;
 };
+
+function countdownBadge(status: PatenschaftMonatsStatus["status"]) {
+  switch (status) {
+    case "bezahlt":
+      return "bg-green-100 text-green-900 border-green-200";
+    case "offen":
+      return "bg-amber-100 text-amber-900 border-amber-200";
+    case "überfällig":
+      return "bg-red-100 text-red-900 border-red-200";
+    default:
+      return "bg-sky-100 text-sky-900 border-sky-200";
+  }
+}
 
 function statusBadge(status: PatenschaftMonatsStatus["status"]) {
   switch (status) {
@@ -97,6 +111,7 @@ export function PatenZahlungenPanel({
   const [mailSubject, setMailSubject] = useState("");
   const [mailBody, setMailBody] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [now, setNow] = useState(() => new Date());
 
   const loadZahlungen = useCallback(async () => {
     setLoading(true);
@@ -123,6 +138,11 @@ export function PatenZahlungenPanel({
   }, [loadZahlungen]);
 
   useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
     setTo(recipientEmail ?? pate.email ?? "");
   }, [recipientEmail, pate.email]);
 
@@ -137,7 +157,16 @@ export function PatenZahlungenPanel({
   }, [period, data]);
 
   const stufe = patenschaftsStufen.find((item) => item.id === pate.stufeId);
-  const currentMonat = data?.monate.find((item) => item.period === period);
+
+  const liveMonate = useMemo(() => {
+    if (!data) return [];
+    return data.monate.map((monat) => enrichPatenschaftMonatLive(monat, now));
+  }, [data, now]);
+
+  const currentMonat = liveMonate.find((item) => item.period === period);
+  const aktuellerMonat = data
+    ? liveMonate.find((item) => item.period === data.currentPeriod)
+    : undefined;
   const reminderAmount = currentMonat?.expectedAmount ?? data?.monatlicherBeitrag ?? 0;
 
   const reminderPlatzhalter = useMemo(() => {
@@ -283,7 +312,8 @@ export function PatenZahlungenPanel({
             ? " – gilt für alle Patentiere mit diesem Zugangscode."
             : ""}{" "}
           Heute {data?.heute ?? "…"}, fällig ab dem {PATENSCHAFT_FAELLIGKEIT_TAG}. jedes Monats
-          (Erinnerung wird am {PATENSCHAFT_FAELLIGKEIT_TAG}. versendet).
+          (Erinnerung wird am {PATENSCHAFT_FAELLIGKEIT_TAG}. versendet). Countdown aktualisiert
+          sich automatisch.
           Die Übersicht enthält automatisch die nächsten {PATENSCHAFT_MONATE_VORAUS} Monate.
         </p>
       </div>
@@ -355,6 +385,21 @@ export function PatenZahlungenPanel({
             </div>
           </div>
 
+          {aktuellerMonat ? (
+            <div
+              className={`rounded-xl border px-4 py-3 text-sm ${countdownBadge(aktuellerMonat.status)}`}
+            >
+              <p className="font-medium">
+                Aktueller Monat ({aktuellerMonat.label}): {aktuellerMonat.countdownLabel}
+              </p>
+              <p className="text-xs mt-1 opacity-90">
+                Fällig am {formatFormDateDe(aktuellerMonat.faelligAm)} ·{" "}
+                {aktuellerMonat.expectedAmount.toFixed(2).replace(".", ",")} € · Status:{" "}
+                {statusLabel(aktuellerMonat.status)}
+              </p>
+            </div>
+          ) : null}
+
           <div className="rounded-xl border border-border p-4 space-y-4">
             <div>
               <h3 className="text-sm font-medium text-forest">
@@ -395,6 +440,15 @@ export function PatenZahlungenPanel({
                 className="w-full min-w-0 px-4 py-3 border border-border bg-background input-base focus:border-foreground focus:outline-none"
               />
             </FormField>
+
+            {currentMonat ? (
+              <p
+                className={`rounded-lg border px-3 py-2 text-sm ${countdownBadge(currentMonat.status)}`}
+              >
+                {currentMonat.label}: {currentMonat.countdownLabel} (fällig am{" "}
+                {formatFormDateDe(currentMonat.faelligAm)})
+              </p>
+            ) : null}
 
             <div className="rounded-xl border border-border overflow-hidden">
               <button
@@ -507,8 +561,7 @@ export function PatenZahlungenPanel({
             {currentMonat ? (
               <p className="text-xs text-muted">
                 Soll für {currentMonat.label}: {currentMonat.expectedAmount.toFixed(2).replace(".", ",")} €
-                · Fällig am {formatFormDateDe(currentMonat.faelligAm)} · Status:{" "}
-                {statusLabel(currentMonat.status)}
+                · {currentMonat.countdownLabel} · Status: {statusLabel(currentMonat.status)}
               </p>
             ) : null}
             <button
@@ -540,7 +593,7 @@ export function PatenZahlungenPanel({
                 </p>
               </div>
 
-              {data.monate.length === 0 ? (
+              {liveMonate.length === 0 ? (
                 <p className="text-sm text-muted">Noch keine Abrechnungsmonate.</p>
               ) : (
                 <div className="overflow-x-auto rounded-xl border border-border">
@@ -549,6 +602,7 @@ export function PatenZahlungenPanel({
                       <tr>
                         <th className="px-3 py-2 font-medium">Monat</th>
                         <th className="px-3 py-2 font-medium">Fällig am</th>
+                        <th className="px-3 py-2 font-medium">Countdown</th>
                         <th className="px-3 py-2 font-medium">Soll</th>
                         <th className="px-3 py-2 font-medium">Ist</th>
                         <th className="px-3 py-2 font-medium">Status</th>
@@ -556,10 +610,17 @@ export function PatenZahlungenPanel({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {data.monate.map((monat) => (
+                      {liveMonate.map((monat) => (
                         <tr key={monat.period}>
                           <td className="px-3 py-2">{monat.label}</td>
                           <td className="px-3 py-2">{formatFormDateDe(monat.faelligAm)}</td>
+                          <td className="px-3 py-2">
+                            <span
+                              className={`inline-flex px-2 py-0.5 rounded-full text-xs border ${countdownBadge(monat.status)}`}
+                            >
+                              {monat.countdownLabel}
+                            </span>
+                          </td>
                           <td className="px-3 py-2">
                             {monat.expectedAmount.toFixed(2).replace(".", ",")} €
                           </td>
