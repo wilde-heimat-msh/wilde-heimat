@@ -6,10 +6,10 @@ import { AdminLogoutButton, AdminNav } from "@/components/admin/AdminLogin";
 import { PatenDokumentVersand, type PatenMailAttachment } from "@/components/admin/PatenDokumentVersand";
 import { PatenDokumentPreviewDialog } from "@/components/admin/PatenDokumentPreviewDialog";
 import { PatenDokumentSheet } from "@/components/admin/PatenDokumentSheet";
-import {
-  PatenPatenschaftenManager,
+import { PatenPatenschaftenManager,
   type PatenschaftOverview,
 } from "@/components/admin/PatenPatenschaftenManager";
+import { PatenZahlungenPanel } from "@/components/admin/PatenZahlungenPanel";
 import { PatenschaftUrkunde } from "@/components/PatenschaftUrkunde";
 import {
   patenDokumente,
@@ -358,6 +358,17 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
               </ul>
             </section>
           </div>
+
+          <PatenZahlungenPanel
+            pateId={pateId}
+            pate={data.pate}
+            waschbaerName={data.waschbaer?.name ?? data.pate.waschbaerSlug}
+            recipientEmail={data.pate.email ?? data.submission?.replyTo}
+            mailConfigured={data.mail?.configured ?? false}
+            hasMultiplePatentiere={(data.patenschaften?.length ?? 1) > 1}
+            onStatus={setStatus}
+            onError={setError}
+          />
 
           <PatenDokumentVersand
             pateId={pateId}

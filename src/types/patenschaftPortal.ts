@@ -32,6 +32,19 @@ export type PatenschaftPate = {
   updatedAt: string;
 };
 
+/** Erfasste Patenschafts-Zahlung (pro Person / access_code und Monat) */
+export type PatenschaftZahlung = {
+  id: string;
+  accessCode: string;
+  /** Abrechnungsmonat YYYY-MM */
+  period: string;
+  amount: number;
+  /** ISO-Datum YYYY-MM-DD – Eingang auf dem Konto */
+  paidAt: string;
+  note?: string;
+  createdAt: string;
+};
+
 /** Update zu einem Patentier – sichtbar je nach Stufe */
 export type PatenschaftUpdate = {
   id: string;

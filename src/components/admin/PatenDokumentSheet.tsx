@@ -1,12 +1,19 @@
 import { Logo } from "@/components/Logo";
 import { VereinUnterschriftBlock } from "@/components/VereinUnterschriftBlock";
+import { patenschaftBank } from "@/data/patenschaftBank";
 import { getPatenschaftStufe, type PatenschaftUrkundeDaten } from "@/data/patenschaften";
 import { getWiderrufContactBlock } from "@/data/legal";
-import { paypalDonation } from "@/data/paypal";
 import type { PatenDokumentId } from "@/data/patenDokumente";
 import { siteConfig, patenschaftHinweis } from "@/data/site";
 import { formatContactAddressLines } from "@/lib/contact";
 import { formatDateTimeDe, formatFormDateDe } from "@/lib/relativeTime";
+import {
+  buildMonatlicherVerwendungszweck,
+  buildPatenschaftVerwendungszweck,
+  getPatenschaftFaelligAm,
+  PATENSCHAFT_FAELLIGKEIT_TAG,
+  toLocalPeriod,
+} from "@/lib/patenschaftPayment";
 import {
   URKUNDE_PREVIEW_SCALE,
   URKUNDE_PREVIEW_WIDTH_PX,
@@ -134,6 +141,13 @@ function PatenschaftBestaetigung({ ctx }: { ctx: PatenDokumentContext }) {
 
 function Zahlungsinfo({ ctx }: { ctx: PatenDokumentContext }) {
   const stufe = getPatenschaftStufe(ctx.pate.stufeId);
+  const verwendungszweck = buildPatenschaftVerwendungszweck(ctx.pate.accessCode);
+  const currentPeriod = toLocalPeriod();
+  const monatlicherVerwendungszweck = buildMonatlicherVerwendungszweck(
+    ctx.pate.accessCode,
+    currentPeriod
+  );
+  const faelligAm = formatFormDateDe(getPatenschaftFaelligAm(currentPeriod));
 
   return (
     <DokumentShell
@@ -142,39 +156,59 @@ function Zahlungsinfo({ ctx }: { ctx: PatenDokumentContext }) {
     >
       <p className="mb-4">
         Vielen Dank für deine Patenschaft! Nachfolgend die Informationen zur monatlichen
-        Unterstützung.
+        Unterstützung per Banküberweisung.
       </p>
 
       <dl className="mb-6">
         <InfoRow label="Monatlicher Beitrag" value={`${stufe.preis} €`} />
         <InfoRow label="Patenschaftsstufe" value={stufe.name} />
         <InfoRow label="Patentier" value={ctx.waschbaerName} />
-        <InfoRow label="Zahlungsart" value="PayPal (monatlich)" />
+        <InfoRow label="Zahlungsart" value={patenschaftBank.paymentMethodLabel} />
       </dl>
 
-      <h2 className="text-sm font-medium text-forest mb-2">So richtest du die Zahlung ein</h2>
+      <h2 className="text-sm font-medium text-forest mb-2">Bankverbindung</h2>
+      <dl className="mb-6 rounded-lg border border-border bg-muted-light/20 p-4">
+        <InfoRow label="Kontoinhaber" value={patenschaftBank.accountHolder} />
+        <InfoRow label="IBAN" value={patenschaftBank.iban} />
+        <InfoRow label="BIC" value={patenschaftBank.bic} />
+        <InfoRow label="Bank" value={patenschaftBank.bankName} />
+        <InfoRow label="Verwendungszweck" value={verwendungszweck} />
+        <InfoRow
+          label={`Verwendungszweck (${currentPeriod.slice(5)}/${currentPeriod.slice(0, 4)})`}
+          value={monatlicherVerwendungszweck}
+        />
+      </dl>
+
+      <h2 className="text-sm font-medium text-forest mb-2">So überweist du den Beitrag</h2>
       <ol className="list-decimal pl-5 space-y-2 text-sm mb-6">
         <li>
-          Wir senden dir nach Bestätigung der Patenschaft einen persönlichen PayPal-Link für den
-          monatlichen Beitrag von <strong>{stufe.preis} €</strong>.
+          Überweise den monatlichen Beitrag von <strong>{stufe.preis} €</strong> auf das oben
+          genannte Konto.
         </li>
         <li>
-          Alternativ kannst du uns unter{" "}
-          <strong>{siteConfig.email}</strong> kontaktieren, falls PayPal für dich keine Option ist.
+          Der Beitrag ist jeweils am <strong>{PATENSCHAFT_FAELLIGKEIT_TAG}. des Monats</strong>{" "}
+          fällig (aktuell: {faelligAm}).
         </li>
         <li>
-          Einmalspenden sind jederzeit über unseren PayPal-Pool möglich:{" "}
-          <span className="break-all text-xs">{paypalDonation.donateUrl}</span>
+          Bitte gib als Verwendungszweck exakt{" "}
+          <strong>{monatlicherVerwendungszweck}</strong> an (Monat kann variieren).
+        </li>
+        <li>
+          Bei mehreren Patentiere unter einem Zugangscode wird der Gesamtbeitrag in einer
+          Überweisung geleistet.
         </li>
       </ol>
 
       <div className="rounded-lg border border-border bg-muted-light/20 p-4 text-sm mb-6">
         <p className="font-medium text-forest mb-1">Wichtige Hinweise</p>
         <ul className="list-disc pl-5 space-y-1 text-muted">
+          <li>{patenschaftBank.legalNote}</li>
           <li>Die Patenschaft ist monatlich kündbar – ohne Mindestlaufzeit.</li>
           <li>Bereits geleistete Beiträge sind freiwillige Unterstützungen.</li>
-          <li>Bei Kündigung bitte zusätzlich laufende PayPal-Zahlungen bei PayPal beenden.</li>
-          <li>{paypalDonation.patenschaftNote}</li>
+          <li>
+            Bei Kündigung der Patenschaft entfällt die Verpflichtung zu weiteren monatlichen
+            Beiträgen ab dem Folgemonat.
+          </li>
         </ul>
       </div>
 

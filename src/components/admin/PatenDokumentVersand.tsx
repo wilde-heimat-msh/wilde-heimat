@@ -85,7 +85,7 @@ export function PatenDokumentVersand({
       return;
     }
 
-    if (selectedDocs.length === 0) {
+    if (selectedDocs.length === 0 && getPatenEmailVorlage(vorlageId).dokumente.length > 0) {
       onError?.("Bitte mindestens ein Dokument als Anhang auswählen.");
       return;
     }
@@ -94,7 +94,8 @@ export function PatenDokumentVersand({
     onError?.(null);
 
     try {
-      const attachments = await generateAttachments(selectedDocs);
+      const attachments =
+        selectedDocs.length > 0 ? await generateAttachments(selectedDocs) : [];
       const res = await fetch(`/api/admin/paten/${encodeURIComponent(pateId)}/send-mail`, {
         method: "POST",
         credentials: "same-origin",
@@ -114,7 +115,9 @@ export function PatenDokumentVersand({
       }
 
       onSent?.(
-        `E-Mail mit ${attachments.length} Anhang/Anhängen wurde an ${json.sentTo ?? to} gesendet.`
+        attachments.length > 0
+          ? `E-Mail mit ${attachments.length} Anhang/Anhängen wurde an ${json.sentTo ?? to} gesendet.`
+          : `E-Mail wurde an ${json.sentTo ?? to} gesendet.`
       );
     } catch {
       onError?.("E-Mail konnte nicht gesendet werden.");
@@ -221,10 +224,21 @@ export function PatenDokumentVersand({
       <button
         type="button"
         onClick={handleSend}
-        disabled={sending || !mailConfigured || selectedDocs.length === 0}
+        disabled={
+          sending ||
+          !mailConfigured ||
+          (selectedDocs.length === 0 &&
+            getPatenEmailVorlage(vorlageId).dokumente.length > 0)
+        }
         className="min-h-11 w-full sm:w-auto px-5 py-3 text-sm font-medium rounded-xl bg-foreground text-background hover:bg-accent disabled:opacity-60"
       >
-        {sending ? "PDFs werden erstellt und gesendet …" : "E-Mail mit PDFs senden"}
+        {sending
+          ? selectedDocs.length > 0
+            ? "PDFs werden erstellt und gesendet …"
+            : "E-Mail wird gesendet …"
+          : selectedDocs.length > 0
+            ? "E-Mail mit PDFs senden"
+            : "E-Mail senden"}
       </button>
     </section>
   );

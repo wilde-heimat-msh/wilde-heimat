@@ -1,9 +1,19 @@
 import type { PatenDokumentId } from "@/data/patenDokumente";
+import { patenschaftBank } from "@/data/patenschaftBank";
 import { siteConfig } from "@/data/site";
+import {
+  buildMonatlicherVerwendungszweck,
+  buildPatenschaftVerwendungszweck,
+  getPatenschaftFaelligAm,
+  PATENSCHAFT_FAELLIGKEIT_TAG,
+  toLocalPeriod,
+} from "@/lib/patenschaftPayment";
+import { formatFormDateDe } from "@/lib/relativeTime";
 
 export type PatenEmailVorlageId =
   | "urkunde-vorab"
   | "zahlungsinfo"
+  | "monatliche-zahlungserinnerung"
   | "patenschaft-komplett"
   | "weiteres-patentier"
   | "freitext";
@@ -16,6 +26,15 @@ export type PatenEmailPlatzhalter = {
   zugangscode: string;
   urkundenNr: string;
   portalLink: string;
+  verwendungszweck: string;
+  monatlicherVerwendungszweck: string;
+  monatLabel: string;
+  iban: string;
+  bic: string;
+  kontoinhaber: string;
+  bankName: string;
+  faelligAm: string;
+  faelligkeitTag: string;
 };
 
 export type PatenEmailVorlage = {
@@ -52,13 +71,22 @@ Wilde Heimat`,
   {
     id: "zahlungsinfo",
     label: "Zahlungsinformationen",
-    description: "PayPal-Hinweise und monatlicher Beitrag.",
+    description: "Banküberweisung, monatlicher Beitrag und Verwendungszweck.",
     subject: "Zahlungsinformationen zu deiner Patenschaft – {{waschbaer}}",
     body: `Liebe/r {{name}},
 
 vielen Dank für deine Patenschaft für {{waschbaer}}!
 
-Im Anhang findest du die Zahlungsinformationen zu deiner {{stufe}}-Patenschaft ({{preis}} €/Monat). Wir senden dir in Kürze den persönlichen PayPal-Link für die monatliche Unterstützung.
+Im Anhang findest du die Zahlungsinformationen zu deiner {{stufe}}-Patenschaft ({{preis}} €/Monat). Der monatliche Beitrag wird per Banküberweisung geleistet.
+
+Kurzüberblick:
+Kontoinhaber: {{kontoinhaber}}
+IBAN: {{iban}}
+BIC: {{bic}}
+Bank: {{bankName}}
+Verwendungszweck: {{verwendungszweck}}
+
+Bitte gib den Verwendungszweck exakt so an, damit wir deine Zahlung zuordnen können.
 
 Bei Fragen: ${siteConfig.email}
 
@@ -66,6 +94,35 @@ Herzliche Grüße
 Julia Rothmann
 Wilde Heimat`,
     dokumente: ["zahlungsinfo"],
+  },
+  {
+    id: "monatliche-zahlungserinnerung",
+    label: "Monatliche Zahlungsanweisung",
+    description: "Freundliche Erinnerung an den fälligen Patenbeitrag per Banküberweisung.",
+    subject: "Dein Patenbeitrag für {{monatLabel}} – {{waschbaer}} 🦝",
+    body: `Liebe/r {{name}},
+
+nur eine kleine, freundliche Erinnerung von uns: Für {{monatLabel}} ist dein monatlicher Patenbeitrag in Höhe von {{preis}} € fällig – spätestens zum {{faelligAm}} (Beitrag ist jeweils am {{faelligkeitTag}}. des Monats fällig).
+
+Du hilfst damit direkt mit, dass unsere kleinen Waschbären gut versorgt werden. Dafür sagen wir von Herzen Danke! 💚
+
+Bitte überweise den Betrag auf folgendes Konto:
+
+Kontoinhaber: {{kontoinhaber}}
+IBAN: {{iban}}
+BIC: {{bic}}
+Bank: {{bankName}}
+Betrag: {{preis}} €
+Verwendungszweck: {{monatlicherVerwendungszweck}}
+
+Bitte gib den Verwendungszweck exakt so an – dann können wir deine Zahlung schnell zuordnen.
+
+Falls du den Beitrag bereits überwiesen hast, kannst du diese Nachricht einfach ignorieren. Bei Fragen sind wir jederzeit für dich da: ${siteConfig.email}
+
+Herzliche Grüße und vielen Dank für deine Treue
+Julia Rothmann
+Wilde Heimat`,
+    dokumente: [],
   },
   {
     id: "patenschaft-komplett",
@@ -79,7 +136,7 @@ willkommen in der Wilde-Heimat-Familie! Wir freuen uns sehr über deine Patensch
 Im Anhang findest du:
 • deine Patenschaftsurkunde (PDF – die gedruckte Version folgt per Post)
 • die Patenschaftsbestätigung
-• die Zahlungsinformationen
+• die Zahlungsinformationen zur monatlichen Banküberweisung
 
 Dein Zugangscode für Paten-Updates: {{zugangscode}}
 Paten-Bereich: {{portalLink}}
@@ -145,7 +202,16 @@ export function fillPatenEmailTemplate(
     .replace(/\{\{preis\}\}/g, vars.preis)
     .replace(/\{\{zugangscode\}\}/g, vars.zugangscode)
     .replace(/\{\{urkundenNr\}\}/g, vars.urkundenNr)
-    .replace(/\{\{portalLink\}\}/g, vars.portalLink);
+    .replace(/\{\{portalLink\}\}/g, vars.portalLink)
+    .replace(/\{\{verwendungszweck\}\}/g, vars.verwendungszweck)
+    .replace(/\{\{monatlicherVerwendungszweck\}\}/g, vars.monatlicherVerwendungszweck)
+    .replace(/\{\{monatLabel\}\}/g, vars.monatLabel)
+    .replace(/\{\{iban\}\}/g, vars.iban)
+    .replace(/\{\{bic\}\}/g, vars.bic)
+    .replace(/\{\{kontoinhaber\}\}/g, vars.kontoinhaber)
+    .replace(/\{\{bankName\}\}/g, vars.bankName)
+    .replace(/\{\{faelligAm\}\}/g, vars.faelligAm)
+    .replace(/\{\{faelligkeitTag\}\}/g, vars.faelligkeitTag);
 }
 
 export function buildPatenEmailPlatzhalter(input: {
@@ -156,7 +222,20 @@ export function buildPatenEmailPlatzhalter(input: {
   accessCode: string;
   urkundenNr?: string;
   siteOrigin: string;
+  monatLabel?: string;
+  monatlicherVerwendungszweck?: string;
+  period?: string;
 }): PatenEmailPlatzhalter {
+  const currentPeriod = input.period ?? toLocalPeriod();
+  const monatLabel =
+    input.monatLabel ??
+    new Date(`${currentPeriod}-01T12:00:00`).toLocaleDateString("de-DE", {
+      month: "long",
+      year: "numeric",
+    });
+  const faelligAmRaw = getPatenschaftFaelligAm(currentPeriod);
+  const faelligAm = formatFormDateDe(faelligAmRaw);
+
   return {
     name: input.pateName,
     waschbaer: input.waschbaerName,
@@ -165,6 +244,17 @@ export function buildPatenEmailPlatzhalter(input: {
     zugangscode: input.accessCode,
     urkundenNr: input.urkundenNr ?? "",
     portalLink: `${input.siteOrigin}/paten/zugang/${encodeURIComponent(input.accessCode)}`,
+    verwendungszweck: buildPatenschaftVerwendungszweck(input.accessCode),
+    monatlicherVerwendungszweck:
+      input.monatlicherVerwendungszweck ??
+      buildMonatlicherVerwendungszweck(input.accessCode, currentPeriod),
+    monatLabel,
+    iban: patenschaftBank.iban,
+    bic: patenschaftBank.bic,
+    kontoinhaber: patenschaftBank.accountHolder,
+    bankName: patenschaftBank.bankName,
+    faelligAm,
+    faelligkeitTag: String(PATENSCHAFT_FAELLIGKEIT_TAG),
   };
 }
 

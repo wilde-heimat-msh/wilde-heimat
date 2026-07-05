@@ -29,7 +29,7 @@ export const patenDokumente: PatenDokumentMeta[] = [
   {
     id: "zahlungsinfo",
     title: "Zahlungsinformationen",
-    description: "Monatlicher Beitrag, PayPal-Hinweise und Kontaktdaten für Rückfragen.",
+    description: "Monatlicher Beitrag, Banküberweisung und persönlicher Verwendungszweck.",
     filenamePrefix: "Zahlungsinformationen",
   },
   {

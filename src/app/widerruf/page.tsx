@@ -100,12 +100,13 @@ export default function WiderrufPage() {
 
               <Block title="Besondere Hinweise zur Patenschaft">
                 <p>
-                  Die Patenschaft umfasst eine monatliche freiwillige Unterstützung über PayPal sowie
-                  ggf. physische Leistungen (z. B. personalisierte Urkunde, Tasse). Nach Beginn der
-                  Ausführung des Vertrags kann das Widerrufsrecht gemäß § 356 Abs. 5 BGB erlöschen,
-                  wenn du ausdrücklich zugestimmt hast, dass wir vor Ende der Widerrufsfrist mit der
-                  Ausführung beginnen und du deine Kenntnis davon bestätigt hast, dass du durch
-                  deine Zustimmung mit Beginn der Ausführung dein Widerrufsrecht verlierst.
+                  Die Patenschaft umfasst eine monatliche freiwillige Unterstützung per
+                  Banküberweisung sowie ggf. physische Leistungen (z. B. personalisierte Urkunde,
+                  Tasse). Nach Beginn der Ausführung des Vertrags kann das Widerrufsrecht gemäß §
+                  356 Abs. 5 BGB erlöschen, wenn du ausdrücklich zugestimmt hast, dass wir vor Ende
+                  der Widerrufsfrist mit der Ausführung beginnen und du deine Kenntnis davon
+                  bestätigt hast, dass du durch deine Zustimmung mit Beginn der Ausführung dein
+                  Widerrufsrecht verlierst.
                 </p>
                 <p>
                   <strong className="text-foreground">Personalisierte Urkunden:</strong> Bei
@@ -115,10 +116,9 @@ export default function WiderrufPage() {
                   Personalisierung begonnen hat.
                 </p>
                 <p>
-                  <strong className="text-foreground">Laufende Zahlungen:</strong> Eine bereits
-                  eingerichtete PayPal-Dauerauftragung oder Abo-Zahlung musst du zusätzlich direkt
-                  bei PayPal kündigen, sofern du keine weiteren monatlichen Beiträge leisten
-                  möchtest.
+                  <strong className="text-foreground">Laufende Zahlungen:</strong> Nach Kündigung
+                  der Patenschaft entfällt die Verpflichtung zu weiteren monatlichen Beiträgen ab
+                  dem Folgemonat. Bereits geleistete Beiträge sind freiwillige Unterstützungen.
                 </p>
               </Block>
 

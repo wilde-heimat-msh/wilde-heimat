@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AdminLogoutButton, AdminNav } from "@/components/admin/AdminLogin";
+import { AdminPatenStatistik } from "@/components/admin/AdminPatenStatistik";
 import { FormField } from "@/components/forms/FormFields";
 import type { PatenschaftStufeId } from "@/data/patenschaften";
 import { patenschaftsStufen } from "@/data/site";
@@ -196,6 +197,8 @@ export function AdminPatenManager() {
       </div>
 
       <AdminNav />
+
+      <AdminPatenStatistik />
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,22rem)_1fr] xl:items-start">
         <form

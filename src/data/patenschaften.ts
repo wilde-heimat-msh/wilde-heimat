@@ -213,8 +213,8 @@ export const patenschaftFaq = [
   },
   {
     id: "zahlung",
-    question: "Geht auch Überweisung statt PayPal?",
+    question: "Wie zahle ich den monatlichen Beitrag?",
     answer:
-      "Standardweg ist PayPal – du erhältst nach deiner Anfrage einen persönlichen Link für die monatliche Unterstützung. Wenn PayPal für dich keine Option ist, melde dich bei uns: Wir finden gemeinsam eine Lösung.",
+      "Der monatliche Patenbeitrag wird per Banküberweisung auf unser Vereinskonto geleistet. Du erhältst nach Bestätigung deiner Patenschaft die Bankverbindung und deinen persönlichen Verwendungszweck – bitte exakt so angeben, damit wir deine Zahlung zuordnen können.",
   },
 ] as const;

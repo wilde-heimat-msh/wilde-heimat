@@ -60,10 +60,6 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const rawAttachments = body.attachments ?? [];
-  if (rawAttachments.length === 0) {
-    return NextResponse.json({ error: "Mindestens ein PDF-Anhang ist erforderlich." }, { status: 400 });
-  }
-
   if (rawAttachments.length > MAX_ATTACHMENTS) {
     return NextResponse.json(
       { error: `Maximal ${MAX_ATTACHMENTS} Anhänge pro E-Mail.` },
