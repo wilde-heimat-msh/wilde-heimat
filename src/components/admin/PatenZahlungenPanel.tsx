@@ -324,6 +324,7 @@ export function PatenZahlungenPanel({
           subject: mailSubject.trim(),
           text: mailBody.trim(),
           attachments: [],
+          zahlungserinnerungPeriod: period,
         }),
       });
       const json = (await res.json()) as { error?: string; sentTo?: string };

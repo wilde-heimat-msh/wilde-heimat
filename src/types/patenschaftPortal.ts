@@ -45,6 +45,22 @@ export type PatenschaftZahlung = {
   createdAt: string;
 };
 
+/** Versandprotokoll für monatliche Zahlungserinnerungen */
+export type PatenschaftZahlungserinnerung = {
+  id: string;
+  accessCode: string;
+  pateId?: string;
+  period: string;
+  recipientEmail: string;
+  recipientName: string;
+  subject: string;
+  status: "sent" | "failed" | "skipped";
+  trigger: "auto" | "manual";
+  errorMessage?: string;
+  sentAt?: string;
+  createdAt: string;
+};
+
 /** Update zu einem Patentier – sichtbar je nach Stufe */
 export type PatenschaftUpdate = {
   id: string;

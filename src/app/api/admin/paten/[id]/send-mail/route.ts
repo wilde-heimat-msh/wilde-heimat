@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { textToPatenEmailHtml } from "@/data/patenEmailVorlagen";
+import { logManualPatenschaftZahlungserinnerung } from "@/lib/patenschaftErinnerungService";
 import { isFormMailConfigured, sendPatenMail, type FormAttachment } from "@/lib/formMail";
 import { getPatenById } from "@/lib/patenschaftStore";
 import { requireAdmin } from "@/lib/requireAdmin";
@@ -36,6 +37,7 @@ export async function POST(request: Request, context: RouteContext) {
     subject?: string;
     text?: string;
     attachments?: { filename: string; contentBase64: string }[];
+    zahlungserinnerungPeriod?: string;
   };
 
   try {
@@ -115,10 +117,35 @@ export async function POST(request: Request, context: RouteContext) {
       text,
       html: textToPatenEmailHtml(text),
       attachments,
+      bccCopy: true,
     });
 
     if (!result.ok) {
+      if (body.zahlungserinnerungPeriod?.trim()) {
+        await logManualPatenschaftZahlungserinnerung({
+          accessCode: pate.accessCode,
+          pateId: pate.id,
+          period: body.zahlungserinnerungPeriod.trim(),
+          recipientEmail: to,
+          recipientName: pate.name,
+          subject,
+          status: "failed",
+          errorMessage: result.error,
+        });
+      }
       return NextResponse.json({ error: result.error }, { status: 503 });
+    }
+
+    if (body.zahlungserinnerungPeriod?.trim()) {
+      await logManualPatenschaftZahlungserinnerung({
+        accessCode: pate.accessCode,
+        pateId: pate.id,
+        period: body.zahlungserinnerungPeriod.trim(),
+        recipientEmail: to,
+        recipientName: pate.name,
+        subject,
+        status: "sent",
+      });
     }
 
     return NextResponse.json({

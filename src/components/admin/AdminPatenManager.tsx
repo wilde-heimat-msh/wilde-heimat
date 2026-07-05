@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AdminLogoutButton, AdminNav } from "@/components/admin/AdminLogin";
 import { AdminPatenStatistik } from "@/components/admin/AdminPatenStatistik";
+import { AdminPatenZahlungserinnerungen } from "@/components/admin/AdminPatenZahlungserinnerungen";
 import { FormField } from "@/components/forms/FormFields";
 import type { PatenschaftStufeId } from "@/data/patenschaften";
 import { patenschaftsStufen } from "@/data/site";
@@ -199,6 +200,7 @@ export function AdminPatenManager() {
       <AdminNav />
 
       <AdminPatenStatistik />
+      <AdminPatenZahlungserinnerungen />
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,22rem)_1fr] xl:items-start">
         <form

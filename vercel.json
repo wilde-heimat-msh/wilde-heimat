@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/patenschaft-zahlungserinnerungen",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}

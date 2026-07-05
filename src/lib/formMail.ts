@@ -136,6 +136,7 @@ async function sendViaSmtp({
   text,
   html,
   replyTo,
+  bcc,
   attachments,
 }: {
   to: string;
@@ -143,6 +144,7 @@ async function sendViaSmtp({
   text: string;
   html: string;
   replyTo?: string;
+  bcc?: string | string[];
   attachments: FormAttachment[];
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const transporter = getSmtpTransporter();
@@ -154,6 +156,7 @@ async function sendViaSmtp({
     await transporter.sendMail({
       from: getFormMailFrom(),
       to,
+      bcc: bcc || undefined,
       replyTo: replyTo || undefined,
       subject,
       text,
@@ -178,6 +181,7 @@ async function sendViaResend({
   text,
   html,
   replyTo,
+  bcc,
   attachments,
 }: {
   to: string;
@@ -185,6 +189,7 @@ async function sendViaResend({
   text: string;
   html: string;
   replyTo?: string;
+  bcc?: string | string[];
   attachments: FormAttachment[];
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const resend = getResendClient();
@@ -192,9 +197,12 @@ async function sendViaResend({
     return { ok: false, error: "Resend ist nicht konfiguriert." };
   }
 
+  const bccList = bcc ? (Array.isArray(bcc) ? bcc : [bcc]) : undefined;
+
   const { error } = await resend.emails.send({
     from: getFormMailFrom(),
     to: [to],
+    bcc: bccList,
     replyTo: replyTo || undefined,
     subject,
     text,
@@ -345,12 +353,15 @@ export async function sendPatenMail({
   text,
   html,
   attachments = [],
+  bccCopy = true,
 }: {
   to: string;
   subject: string;
   text: string;
   html: string;
   attachments?: FormAttachment[];
+  /** Kopie an kontakt@ Postfach (BCC) */
+  bccCopy?: boolean;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   if (!isFormMailConfigured()) {
     return {
@@ -366,6 +377,7 @@ export async function sendPatenMail({
     text,
     html,
     replyTo: siteConfig.email,
+    bcc: bccCopy ? getFormMailTo() : undefined,
     attachments,
   };
 

@@ -73,6 +73,34 @@ Nach dem Speichern der Variablen in Vercel ein **Redeploy** auslösen.
 - **Falsches Passwort:** Postfach-Passwort im Checkdomain-Kundenbereich zurücksetzen.
 - **Foto fehlt in E-Mail:** Fundmeldung erneut testen; Anhang max. 8 MB (JPG, PNG, WebP, GIF).
 
+## Patenschafts-Zahlungserinnerungen (automatisch)
+
+Monatliche Paten-Erinnerungen werden **am 5. jedes Monats** automatisch versendet (Vercel Cron, ca. 7:00 MESZ).
+
+### Einrichtung
+
+1. SQL-Migration ausführen: `supabase/migration-paten-zahlungserinnerungen.sql`
+2. In Vercel eine Umgebungsvariable setzen:
+   ```
+   CRON_SECRET=<langer-zufälliger-string>
+   ```
+3. Nach Deploy: Admin → **Paten** → Abschnitt **Automatische Zahlungserinnerungen**
+
+### Kopie im Postfach
+
+Jede Paten-E-Mail wird per **BCC** an `FORM_MAIL_TO` (Standard: `kontakt@wilde-heimat-msh.de`) geschickt. Die Kopie landet im **Posteingang**, nicht im Ordner „Gesendet“.
+
+### Versandstatus
+
+Im Admin siehst du pro Pate/Patin:
+
+- **Versendet** – SMTP-Server hat die Mail angenommen
+- **Fehlgeschlagen** – mit Fehlermeldung, manuell erneut senden
+- **Ausstehend** – noch nicht versendet (z. B. vor dem 5.)
+- **Keine E-Mail** – E-Mail-Adresse in der Kartei ergänzen
+
+Manueller Versand aus der Kartei oder über „Jetzt senden“ in der Übersicht ist jederzeit möglich.
+
 ## Alternative: Resend (optional)
 
 Falls SMTP nicht funktionieren soll, kann alternativ `RESEND_API_KEY` gesetzt werden. SMTP hat Vorrang, wenn beides konfiguriert ist.
