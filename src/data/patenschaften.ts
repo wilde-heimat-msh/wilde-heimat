@@ -170,7 +170,7 @@ export const patenschaftBelohnungTassen = [
 export const patenschaftGeschenk = {
   title: "Patenschaft verschenken",
   subtitle: "Ein besonderes Geschenk für Tierliebhaber – zum Geburtstag, zu Weihnachten oder einfach so.",
-  text: "Du kannst eine Patenschaft auch für jemand anderen anfragen. Wir richten die Urkunde auf den Namen des Beschenkten aus und senden sie an die von dir angegebene Adresse. Die monatliche Unterstützung läuft über dein PayPal-Konto – der Beschenkte erhält Updates und Extras je nach Stufe.",
+  text: "Du kannst eine Patenschaft auch für jemand anderen anfragen. Wir richten die Urkunde auf den Namen des Beschenkten aus und senden sie an die von dir angegebene Adresse. Die monatliche Unterstützung läuft per Banküberweisung über dein Konto – der Beschenkte erhält Updates und Extras je nach Stufe.",
   hinweise: [
     "Urkunde mit Name des Beschenkten",
     "Versand an eine separate Geschenkadresse möglich",
@@ -185,7 +185,13 @@ export const patenschaftFaq = [
     id: "bedeutung",
     question: "Was bedeutet Patenschaft – und was nicht?",
     answer:
-      "Eine Patenschaft ist eine freiwillige monatliche Unterstützung für das Projekt Wilde Heimat. Du wählst einen Waschbären, der dir am Herzen liegt – ohne Eigentums- oder Besitzrechte am Tier. Es gibt keinen garantierten Besuch, keine Mitbestimmung bei tierärztlichen Entscheidungen und keine Freilassungsgarantie. Dein Beitrag fließt in Futter, Pflege, Tierarzt und Gehege – transparent und projektbezogen.",
+      "Eine Patenschaft ist eine freiwillige monatliche Unterstützung für das Projekt Wilde Heimat. Du wählst einen Waschbären, der dir am Herzen liegt – ohne Eigentums- oder Besitzrechte am Tier. Andere Menschen können denselben Waschbären ebenfalls unterstützen; deine Patenschaft ist persönlich, aber nicht allein oder exklusiv. Es gibt keinen garantierten Besuch, keine Mitbestimmung bei tierärztlichen Entscheidungen und keine Freilassungsgarantie. Dein Beitrag fließt in Futter, Pflege, Tierarzt und Gehege – transparent und projektbezogen.",
+  },
+  {
+    id: "mehrere-paten",
+    question: "Können mehrere Personen denselben Waschbären unterstützen?",
+    answer:
+      "Ja. Jeder Waschbär kann von vielen Paten und Patinnen gleichzeitig unterstützt werden – wie bei einem Spendenprojekt mit persönlicher Note. Deine Urkunde, dein Zugangscode und deine Updates bleiben individuell; du teilst dir den Waschbären nicht mit anderen, sondern tragt gemeinsam zu seiner Versorgung bei.",
   },
   {
     id: "kuendigung",

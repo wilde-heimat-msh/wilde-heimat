@@ -84,6 +84,7 @@ function PatenschaftBestaetigung({ ctx }: { ctx: PatenDokumentContext }) {
   const stufe = getPatenschaftStufe(ctx.pate.stufeId);
   const displayName = ctx.pate.name;
   const payerName = ctx.pate.isGift ? ctx.pate.notiz : undefined;
+  const verwendungszweck = buildPatenschaftVerwendungszweck(ctx.pate.accessCode);
 
   return (
     <DokumentShell
@@ -92,13 +93,17 @@ function PatenschaftBestaetigung({ ctx }: { ctx: PatenDokumentContext }) {
     >
       <p className="mb-4">
         Hiermit bestätigen wir die Aufnahme der folgenden Patenschaft bei der privaten Initiative{" "}
-        <strong>Wilde Heimat</strong>.
+        <strong>Wilde Heimat</strong>. Die Patenschaft ist persönlich und begründet kein
+        Eigentums- oder Besitzverhältnis am Tier; mehrere Paten und Patinnen können denselben
+        Waschbären parallel unterstützen.
       </p>
 
       <dl className="mb-6">
         <InfoRow label="Pate/Patin" value={displayName} />
         <InfoRow label="Waschbär" value={ctx.waschbaerName} />
         <InfoRow label="Stufe" value={`${stufe.name} (${stufe.preis} €/Monat)`} />
+        <InfoRow label="Zahlungsart" value={patenschaftBank.paymentMethodLabel} />
+        <InfoRow label="Verwendungszweck" value={verwendungszweck} />
         <InfoRow label="Start" value={ctx.pate.patenschaftStart ? formatFormDateDe(ctx.pate.patenschaftStart) : undefined} />
         <InfoRow label="Anschrift" value={ctx.pate.anschrift} />
         <InfoRow label="E-Mail" value={ctx.pate.email} />

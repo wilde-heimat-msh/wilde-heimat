@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { InfoBox } from "@/components/ui/InfoBox";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { getWiderrufContactBlock, widerrufMetadata } from "@/data/legal";
+import { patenschaftBank } from "@/data/patenschaftBank";
 import { siteConfig } from "@/data/site";
 import { pagePhotos } from "@/data/pagePhotos";
 import { createMetadata } from "@/lib/seo";
@@ -43,8 +44,10 @@ export default function WiderrufPage() {
               <InfoBox className="text-muted">
                 <strong className="text-foreground">Gilt für:</strong> Patenschaften und damit
                 verbundene Leistungen (z. B. personalisierte Urkunde, Tasse), die du über diese
-                Website anfragst oder abschließt. Freiwillige Spenden ohne Gegenleistung (z. B.
-                über GoFundMe) sind davon nicht betroffen.
+                Website anfragst oder abschließt. Eine Patenschaft ist persönlich, aber nicht
+                exklusiv – mehrere Personen können denselben Waschbären parallel unterstützen.
+                Freiwillige Spenden ohne Gegenleistung (z. B. über GoFundMe) sind davon nicht
+                betroffen.
               </InfoBox>
 
               <Block title="Widerrufsrecht">
@@ -86,8 +89,11 @@ export default function WiderrufPage() {
                 </p>
                 <p>
                   Für diese Rückzahlung verwenden wir dasselbe Zahlungsmittel, das du bei der
-                  ursprünglichen Transaktion eingesetzt hast, es sei denn, mit dir wurde ausdrücklich
-                  etwas anderes vereinbart. Dir entstehen durch die Rückzahlung keine Entgelte.
+                  ursprünglichen Transaktion eingesetzt hast – bei Patenschaften in der Regel eine{" "}
+                  <strong className="text-foreground">Banküberweisung</strong> auf unser Konto (
+                  {patenschaftBank.accountHolder}). Erstattungen erfolgen auf das Bankkonto, von dem
+                  die Zahlung ursprünglich eingegangen ist, sofern uns keine abweichende
+                  Vereinbarung vorliegt. Dir entstehen durch die Rückzahlung keine Entgelte.
                 </p>
                 <p>
                   Hast du verlangt, dass die Leistungen während der Widerrufsfrist beginnen sollen,
@@ -118,7 +124,9 @@ export default function WiderrufPage() {
                 <p>
                   <strong className="text-foreground">Laufende Zahlungen:</strong> Nach Kündigung
                   der Patenschaft entfällt die Verpflichtung zu weiteren monatlichen Beiträgen ab
-                  dem Folgemonat. Bereits geleistete Beiträge sind freiwillige Unterstützungen.
+                  dem Folgemonat. Es sind keine Daueraufträge oder Lastschriften eingerichtet – du
+                  überweist den Beitrag monatlich selbstständig. Bereits geleistete Beiträge sind
+                  freiwillige Unterstützungen.
                 </p>
               </Block>
 

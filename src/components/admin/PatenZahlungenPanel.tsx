@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FormField } from "@/components/forms/FormFields";
 import { patenschaftBank } from "@/data/patenschaftBank";
 import {
@@ -94,6 +94,9 @@ export function PatenZahlungenPanel({
   const [paidAt, setPaidAt] = useState(toLocalDateString());
   const [note, setNote] = useState("");
   const [to, setTo] = useState(recipientEmail ?? pate.email ?? "");
+  const [mailSubject, setMailSubject] = useState("");
+  const [mailBody, setMailBody] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const loadZahlungen = useCallback(async () => {
     setLoading(true);
@@ -132,6 +135,45 @@ export function PatenZahlungenPanel({
       setAmount(String(data.monatlicherBeitrag));
     }
   }, [period, data]);
+
+  const stufe = patenschaftsStufen.find((item) => item.id === pate.stufeId);
+  const currentMonat = data?.monate.find((item) => item.period === period);
+  const reminderAmount = currentMonat?.expectedAmount ?? data?.monatlicherBeitrag ?? 0;
+
+  const reminderPlatzhalter = useMemo(() => {
+    if (!data) return null;
+    const monatLabel = new Date(`${period}-01T12:00:00`).toLocaleDateString("de-DE", {
+      month: "long",
+      year: "numeric",
+    });
+    return buildPatenEmailPlatzhalter({
+      pateName: pate.name,
+      waschbaerName,
+      stufeName: stufe?.name ?? pate.stufeId,
+      stufePreis: reminderAmount,
+      accessCode: pate.accessCode,
+      urkundenNr: pate.urkundenNr,
+      siteOrigin: typeof window !== "undefined" ? window.location.origin : "",
+      monatLabel,
+      monatlicherVerwendungszweck: buildMonatlicherVerwendungszweck(pate.accessCode, period),
+      period,
+    });
+  }, [data, pate, waschbaerName, stufe, period, reminderAmount]);
+
+  useEffect(() => {
+    if (!reminderPlatzhalter) return;
+    const vorlage = getPatenEmailVorlage("monatliche-zahlungserinnerung");
+    setMailSubject(fillPatenEmailTemplate(vorlage.subject, reminderPlatzhalter));
+    setMailBody(fillPatenEmailTemplate(vorlage.body, reminderPlatzhalter));
+  }, [reminderPlatzhalter]);
+
+  function resetReminderTemplate() {
+    if (!reminderPlatzhalter) return;
+    const vorlage = getPatenEmailVorlage("monatliche-zahlungserinnerung");
+    setMailSubject(fillPatenEmailTemplate(vorlage.subject, reminderPlatzhalter));
+    setMailBody(fillPatenEmailTemplate(vorlage.body, reminderPlatzhalter));
+    onStatus?.("E-Mail-Vorlage wurde zurückgesetzt.");
+  }
 
   async function handleRecordPayment(event: React.FormEvent) {
     event.preventDefault();
@@ -189,35 +231,13 @@ export function PatenZahlungenPanel({
       return;
     }
     if (!data) return;
+    if (!mailSubject.trim() || !mailBody.trim()) {
+      onError?.("Bitte Betreff und E-Mail-Text ausfüllen.");
+      return;
+    }
 
     setSending(true);
     onError?.(null);
-
-    const stufe = patenschaftsStufen.find((item) => item.id === pate.stufeId);
-    const monatLabel = new Date(`${period}-01T12:00:00`).toLocaleDateString("de-DE", {
-      month: "long",
-      year: "numeric",
-    });
-    const monatlicherVerwendungszweck = buildMonatlicherVerwendungszweck(
-      pate.accessCode,
-      period
-    );
-    const platzhalter = buildPatenEmailPlatzhalter({
-      pateName: pate.name,
-      waschbaerName,
-      stufeName: stufe?.name ?? pate.stufeId,
-      stufePreis: data.monatlicherBeitrag,
-      accessCode: pate.accessCode,
-      urkundenNr: pate.urkundenNr,
-      siteOrigin: window.location.origin,
-      monatLabel,
-      monatlicherVerwendungszweck,
-      period,
-    });
-
-    const vorlage = getPatenEmailVorlage("monatliche-zahlungserinnerung");
-    const subject = fillPatenEmailTemplate(vorlage.subject, platzhalter);
-    const text = fillPatenEmailTemplate(vorlage.body, platzhalter);
 
     try {
       const res = await fetch(`/api/admin/paten/${encodeURIComponent(pateId)}/send-mail`, {
@@ -226,8 +246,8 @@ export function PatenZahlungenPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           to: to.trim(),
-          subject,
-          text,
+          subject: mailSubject.trim(),
+          text: mailBody.trim(),
           attachments: [],
         }),
       });
@@ -244,10 +264,13 @@ export function PatenZahlungenPanel({
     }
   }
 
-  const currentMonat = data?.monate.find((item) => item.period === period);
   const periodVerwendungszweck = data
     ? buildMonatlicherVerwendungszweck(data.accessCode, period)
     : "";
+  const reminderMonatLabel = new Date(`${period}-01T12:00:00`).toLocaleDateString("de-DE", {
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <section className="rounded-2xl border border-border bg-background/90 p-5 sm:p-6 shadow-soft space-y-6">
@@ -357,10 +380,78 @@ export function PatenZahlungenPanel({
               />
             </FormField>
 
+            <FormField
+              label="Abrechnungsmonat für die Erinnerung"
+              name="zahlung-reminder-period"
+              hint="Verwendungszweck und Betrag in der E-Mail beziehen sich auf diesen Monat"
+            >
+              <input
+                id="zahlung-reminder-period"
+                type="month"
+                value={period}
+                onChange={(event) => setPeriod(event.target.value)}
+                className="w-full min-w-0 px-4 py-3 border border-border bg-background input-base focus:border-foreground focus:outline-none"
+              />
+            </FormField>
+
+            <div className="rounded-xl border border-border overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setPreviewOpen((open) => !open)}
+                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-medium text-forest hover:bg-muted-light/30"
+                aria-expanded={previewOpen}
+              >
+                <span>E-Mail-Vorschau & Text bearbeiten</span>
+                <span className="text-muted text-xs shrink-0">
+                  {previewOpen ? "▲ einklappen" : "▼ aufklappen"}
+                </span>
+              </button>
+
+              {previewOpen ? (
+                <div className="border-t border-border p-4 space-y-4 bg-muted-light/10">
+                  <p className="text-xs text-muted">
+                    Vorlage für <strong className="text-forest">{reminderMonatLabel}</strong> ·{" "}
+                    {reminderAmount.toFixed(2).replace(".", ",")} € · Verwendungszweck:{" "}
+                    <span className="font-mono">{periodVerwendungszweck}</span>
+                  </p>
+
+                  <FormField label="Betreff" name="zahlung-mail-subject" required>
+                    <input
+                      id="zahlung-mail-subject"
+                      type="text"
+                      required
+                      value={mailSubject}
+                      onChange={(event) => setMailSubject(event.target.value)}
+                      className="w-full min-w-0 px-4 py-3 border border-border bg-background input-base focus:border-foreground focus:outline-none"
+                    />
+                  </FormField>
+
+                  <FormField label="E-Mail-Text" name="zahlung-mail-body" required>
+                    <textarea
+                      id="zahlung-mail-body"
+                      required
+                      rows={14}
+                      value={mailBody}
+                      onChange={(event) => setMailBody(event.target.value)}
+                      className="w-full px-4 py-3 border border-border bg-background input-base focus:border-foreground focus:outline-none resize-y font-mono text-sm"
+                    />
+                  </FormField>
+
+                  <button
+                    type="button"
+                    onClick={resetReminderTemplate}
+                    className="min-h-9 px-3 text-xs rounded-lg border border-border hover:bg-muted-light/60"
+                  >
+                    Vorlage zurücksetzen
+                  </button>
+                </div>
+              ) : null}
+            </div>
+
             <button
               type="button"
               onClick={handleSendReminder}
-              disabled={sending || !mailConfigured}
+              disabled={sending || !mailConfigured || !mailSubject.trim() || !mailBody.trim()}
               className="min-h-11 px-5 py-3 text-sm font-medium rounded-xl bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-60"
             >
               {sending ? "Wird gesendet …" : "Monatliche Zahlungsanweisung senden"}

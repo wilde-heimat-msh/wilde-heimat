@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { SectionHeader } from "@/components/ui/Section";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { PatenschaftForm } from "@/components/forms/PatenschaftForm";
+import { patenschaftBank } from "@/data/patenschaftBank";
 
 function PatenschaftAnfrageInner() {
   const searchParams = useSearchParams();
@@ -30,7 +31,7 @@ export function PatenschaftAnfrageSection() {
     <FadeIn className="max-w-2xl mx-auto">
       <SectionHeader
         title="Schritt 3: Patenschaft anfragen"
-        subtitle="Fülle das Formular aus – wir melden uns persönlich bei dir und schicken dir den PayPal-Link für deine monatliche Unterstützung."
+        subtitle={`Fülle das Formular aus – ${patenschaftBank.afterAnfrageNote}`}
         centered
       />
       <Card hover={false} padding="md" className="bg-muted-light/20">

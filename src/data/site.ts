@@ -77,7 +77,7 @@ export const unterstuetzungHinweis =
 
 /** Hinweis zu Patenschaften */
 export const patenschaftHinweis =
-  "Patenschaften sind freiwillige Unterstützungsprogramme und begründen kein Eigentums- oder Besitzverhältnis am Tier. Sie dienen ausschließlich der Unterstützung des Projekts Wilde Heimat.";
+  "Patenschaften sind freiwillige Unterstützungsprogramme und begründen kein Eigentums- oder Besitzverhältnis am Tier. Mehrere Personen können denselben Waschbären parallel unterstützen – jede Patenschaft ist persönlich, aber nicht exklusiv. Sie dienen ausschließlich der Unterstützung des Projekts Wilde Heimat.";
 
 /** Hinweis Hilfe & Vermittlung */
 export const vermittlungHinweis =
@@ -154,7 +154,7 @@ export const patenschaftAblauf = [
   {
     nr: "4",
     title: "Bestätigung erhalten",
-    text: "Wir melden uns persönlich und schicken dir den PayPal-Link für deine monatliche Unterstützung.",
+    text: "Wir melden uns persönlich und senden dir die Zahlungsinformationen zur monatlichen Banküberweisung.",
   },
   {
     nr: "5",

@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { InfoBox } from "@/components/ui/InfoBox";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { CONSENT_STORAGE_KEY } from "@/data/privacy";
+import { patenschaftBank } from "@/data/patenschaftBank";
 import { siteConfig } from "@/data/site";
 import { formatContactAddressLines } from "@/lib/contact";
 import { PATEN_SESSION_COOKIE } from "@/lib/patenAuth";
@@ -259,8 +260,14 @@ export default function DatenschutzPage() {
                 </p>
                 <ul className="mt-4 space-y-3 list-disc list-inside">
                   <li>
-                    <strong className="text-foreground">PayPal</strong> – für Patenschaften und
-                    Spenden (Zahlungsabwicklung durch PayPal)
+                    <strong className="text-foreground">PayPal</strong> – für einmalige Spenden
+                    (Zahlungsabwicklung durch PayPal)
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Banküberweisung</strong> – für monatliche
+                    Patenschaftsbeiträge (Zahlung direkt auf unser Konto bei{" "}
+                    {patenschaftBank.bankName}; Kontoinhaber {patenschaftBank.accountHolder}).
+                    Bankdaten und Verwendungszweck erhältst du nach Bestätigung deiner Patenschaft.
                   </li>
                   <li>
                     <strong className="text-foreground">GoFundMe</strong> – für Spendenkampagnen
@@ -288,8 +295,9 @@ export default function DatenschutzPage() {
               <SectionBlock id="widerruf" title="9. Widerrufsrecht bei Patenschaften">
                 <p>
                   Für entgeltliche Patenschaften und damit verbundene Leistungen (z. B. Urkunde,
-                  Tasse) gelten die Regelungen zum Widerrufsrecht bei Fernabsatzverträgen. Die
-                  vollständige Widerrufsbelehrung inkl. Muster-Widerrufsformular findest du unter{" "}
+                  Tasse) gelten die Regelungen zum Widerrufsrecht bei Fernabsatzverträgen. Der
+                  monatliche Patenbeitrag wird per Banküberweisung geleistet. Die vollständige
+                  Widerrufsbelehrung inkl. Muster-Widerrufsformular findest du unter{" "}
                   <a href="/widerruf" className="underline hover:no-underline">
                     Widerrufsbelehrung
                   </a>

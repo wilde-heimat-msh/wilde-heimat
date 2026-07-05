@@ -20,7 +20,7 @@ export const paypalDonation = {
   /** Vorgeschlagene Beträge (Hinweis für Spender – Auswahl erfolgt bei PayPal) */
   suggestedAmounts: [5, 10, 15, 25, 50] as const,
   patenschaftNote:
-    "Für monatliche Patenschaften (10 / 20 / 50 €) schicken wir dir nach deiner Anfrage den passenden PayPal-Link – persönlich und unkompliziert.",
+    "Für einmalige Spenden nutze unseren PayPal-Pool. Monatliche Patenschaften werden separat per Banküberweisung abgewickelt – siehe Patenschaften.",
 } as const;
 
 export function isPayPalConfigured(): boolean {

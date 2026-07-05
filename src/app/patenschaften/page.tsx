@@ -16,8 +16,8 @@ import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { DesignPhotoStrip } from "@/components/PhotoStrip";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/FadeIn";
 import { pagePhotos } from "@/data/pagePhotos";
-import { paypalDonation } from "@/data/paypal";
 import { patenschaftAblauf, patenschaftHinweis } from "@/data/site";
+import { patenschaftBank } from "@/data/patenschaftBank";
 import { patenschaftFaq } from "@/data/patenschaften";
 import { createMetadata } from "@/lib/seo";
 import { listWaschbaerenPublic } from "@/lib/waschbaerStore";
@@ -164,7 +164,7 @@ export default async function PatenschaftenPage() {
       <Section>
         <FadeIn className="max-w-3xl mx-auto space-y-4">
           <InfoBox className="text-muted">{patenschaftHinweis}</InfoBox>
-          <InfoBox className="text-muted">{paypalDonation.patenschaftNote}</InfoBox>
+          <InfoBox className="text-muted">{patenschaftBank.publicNote}</InfoBox>
         </FadeIn>
       </Section>
 

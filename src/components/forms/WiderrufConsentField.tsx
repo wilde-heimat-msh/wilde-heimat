@@ -35,9 +35,9 @@ export function WiderrufConsentField({ onConsentChange }: WiderrufConsentFieldPr
             zur Kenntnis genommen. <span className="text-foreground">*</span>
           </label>
           <p className="mt-2">
-            Die Patenschaft ist ein entgeltliches Angebot mit monatlicher Unterstützung und
-            ggf. personalisierter Urkunde. Details zum Widerrufsrecht findest du in der
-            Widerrufsbelehrung.
+            Die Patenschaft ist ein entgeltliches Angebot mit monatlicher Unterstützung per
+            Banküberweisung und ggf. personalisierter Urkunde. Details zum Widerrufsrecht findest
+            du in der Widerrufsbelehrung.
           </p>
         </div>
       </div>

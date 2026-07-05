@@ -14,6 +14,7 @@ import {
 } from "./FormFields";
 import { WiderrufConsentField } from "./WiderrufConsentField";
 import { submitPublicForm } from "@/lib/submitPublicForm";
+import { patenschaftBank } from "@/data/patenschaftBank";
 
 function resolveWaschbaer(slug: string | undefined, slugs: string[]) {
   if (!slug) return undefined;
@@ -83,9 +84,8 @@ export function PatenschaftForm({
       <div className="p-6 sm:p-8 rounded-2xl border border-border bg-muted-light/30 shadow-soft text-center">
         <p className="text-lg font-medium">Vielen Dank für dein Interesse!</p>
         <p className="mt-2 text-muted leading-relaxed">
-          Wir melden uns in Kürze bei dir, schicken den PayPal-Link für die monatliche
-          Unterstützung und starten dann
-          {isGift ? " die Geschenk-Patenschaft" : " deine Patenschaft"}.
+          {patenschaftBank.afterAnfrageNote}
+          {isGift ? " Anschließend richten wir die Geschenk-Patenschaft ein." : " Anschließend starten wir deine Patenschaft."}
         </p>
       </div>
     );
