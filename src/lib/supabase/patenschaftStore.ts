@@ -27,6 +27,7 @@ type PateRow = {
   widerruf_bestaetigt_at: string | null;
   datenschutz_bestaetigt_at: string | null;
   patenschaft_start: string | null;
+  zahlungsziel_tag: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -66,6 +67,7 @@ function mapPate(row: PateRow): PatenschaftPate {
     widerrufBestaetigtAt: row.widerruf_bestaetigt_at ?? undefined,
     datenschutzBestaetigtAt: row.datenschutz_bestaetigt_at ?? undefined,
     patenschaftStart: row.patenschaft_start ?? undefined,
+    zahlungszielTag: row.zahlungsziel_tag ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -209,6 +211,7 @@ function buildPateInsert(input: Omit<PatenschaftPate, "id" | "createdAt" | "upda
     widerruf_bestaetigt_at: input.widerrufBestaetigtAt ?? null,
     datenschutz_bestaetigt_at: input.datenschutzBestaetigtAt ?? null,
     patenschaft_start: input.patenschaftStart ?? null,
+    zahlungsziel_tag: input.zahlungszielTag ?? null,
   };
 }
 
@@ -248,6 +251,9 @@ function buildPatePatch(input: Partial<Omit<PatenschaftPate, "id" | "createdAt">
   if (input.patenschaftStart !== undefined) {
     patch.patenschaft_start = input.patenschaftStart ?? null;
   }
+  if (input.zahlungszielTag !== undefined) {
+    patch.zahlungsziel_tag = input.zahlungszielTag ?? null;
+  }
 
   return patch;
 }
@@ -282,6 +288,32 @@ export async function supabaseUpdatePaten(
 
   if (error) throw new Error(error.message);
   return data ? mapPate(data as PateRow) : null;
+}
+
+export async function supabaseUpdateZahlungszielForAccessCode(
+  accessCode: string,
+  zahlungszielTag: number
+): Promise<void> {
+  const supabase = getSupabaseAdmin();
+  const normalized = normalizeAccessCode(accessCode);
+  const { data: paten, error: loadError } = await supabase
+    .from("patenschaft_paten")
+    .select("id, access_code");
+
+  if (loadError) throw new Error(loadError.message);
+
+  const ids = (paten as { id: string; access_code: string }[])
+    .filter((pate) => normalizeAccessCode(pate.access_code) === normalized)
+    .map((pate) => pate.id);
+
+  if (ids.length === 0) return;
+
+  const { error } = await supabase
+    .from("patenschaft_paten")
+    .update({ zahlungsziel_tag: zahlungszielTag })
+    .in("id", ids);
+
+  if (error) throw new Error(error.message);
 }
 
 export async function supabaseDeletePaten(id: string): Promise<boolean> {

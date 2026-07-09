@@ -144,8 +144,8 @@ export function AdminPatenZahlungserinnerungen() {
         <div>
           <h2 className="font-medium text-forest">Automatische Zahlungserinnerungen</h2>
           <p className="text-sm text-muted mt-1">
-            Am 5. jedes Monats um ca. 7:00 Uhr (MESZ) werden Erinnerungen automatisch versendet.
-            Eine Kopie jeder Paten-Mail geht per BCC an{" "}
+            Am individuellen Zahlungsziel-Tag jedes Paten (Standard: 5.) werden Erinnerungen
+            automatisch versendet (täglicher Cron). Eine Kopie jeder Paten-Mail geht per BCC an{" "}
             <strong className="font-medium text-forest">
               {overview?.bccCopyTo ?? "kontakt@wilde-heimat-msh.de"}
             </strong>
@@ -216,6 +216,7 @@ export function AdminPatenZahlungserinnerungen() {
               <tr>
                 <th className="px-3 py-2 font-medium">Pate/Patin</th>
                 <th className="px-3 py-2 font-medium">E-Mail</th>
+                <th className="px-3 py-2 font-medium">Zahlungsziel</th>
                 <th className="px-3 py-2 font-medium">Beitrag</th>
                 <th className="px-3 py-2 font-medium">Zahlung</th>
                 <th className="px-3 py-2 font-medium">Erinnerung</th>
@@ -236,6 +237,7 @@ export function AdminPatenZahlungserinnerungen() {
                     <p className="text-xs text-muted">{recipient.waschbaerLabel}</p>
                   </td>
                   <td className="px-3 py-2">{recipient.email ?? "–"}</td>
+                  <td className="px-3 py-2">{recipient.zahlungszielTag}.</td>
                   <td className="px-3 py-2">
                     {recipient.monthlyAmount.toFixed(2).replace(".", ",")} €
                   </td>

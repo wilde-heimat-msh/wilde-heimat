@@ -34,6 +34,7 @@ type KarteiData = {
   pate: PatenschaftPate;
   waschbaer?: { name: string; slug: string };
   patenschaften?: PatenschaftOverview[];
+  zahlungszielTag?: number;
   submission?: FormSubmissionRecord | null;
   urkunde: PatenschaftUrkundeDaten;
   mail?: { configured: boolean };
@@ -169,6 +170,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
         pate: data.pate,
         waschbaerName: data.waschbaer?.name ?? data.pate.waschbaerSlug,
         urkunde: data.urkunde,
+        zahlungszielTag: data.zahlungszielTag ?? 5,
       }
     : null;
 
@@ -377,6 +379,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
             recipientEmail={data.pate.email ?? data.submission?.replyTo}
             mailConfigured={data.mail?.configured ?? false}
             hasMultiplePatentiere={(data.patenschaften?.length ?? 1) > 1}
+            zahlungszielTag={data.zahlungszielTag ?? 5}
             generateAttachments={generateMailAttachments}
             onSent={(message) => {
               setError(null);

@@ -28,6 +28,8 @@ export type PatenschaftPate = {
   datenschutzBestaetigtAt?: string;
   /** ISO-Datum YYYY-MM-DD – Start der Patenschaft */
   patenschaftStart?: string;
+  /** Tag im Monat (1–28) für Fälligkeit und Erinnerung – Standard: 5 */
+  zahlungszielTag?: number;
   createdAt: string;
   updatedAt: string;
 };

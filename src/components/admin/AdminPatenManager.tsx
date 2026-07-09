@@ -21,6 +21,7 @@ const emptyForm = {
   email: "",
   notiz: "",
   active: true,
+  zahlungszielTag: "5",
 };
 
 function copyText(value: string, onDone: (message: string) => void) {
@@ -90,9 +91,11 @@ export function AdminPatenManager() {
   function reuseCodeFromExistingPatron() {
     const existingCode = findExistingCodeForForm();
     if (!existingCode) return;
+    const match = paten.find((p) => p.accessCode === existingCode);
     setForm((current) => ({
       ...current,
       accessCode: existingCode,
+      zahlungszielTag: String(match?.zahlungszielTag ?? current.zahlungszielTag ?? 5),
     }));
     setStatus("Bestehender Zugangscode übernommen.");
   }
@@ -107,6 +110,7 @@ export function AdminPatenManager() {
       email: pate.email ?? "",
       notiz: pate.notiz ?? "",
       active: pate.active,
+      zahlungszielTag: String(pate.zahlungszielTag ?? 5),
     });
     setError(null);
     setStatus(null);
@@ -139,6 +143,7 @@ export function AdminPatenManager() {
       ...form,
       name: form.name.trim(),
       accessCode: form.accessCode.trim().toUpperCase(),
+      zahlungszielTag: Number(form.zahlungszielTag),
     };
 
     const res = await fetch("/api/admin/paten", {
@@ -300,6 +305,22 @@ export function AdminPatenManager() {
                 </option>
               ))}
             </select>
+          </FormField>
+
+          <FormField
+            label="Zahlungsziel (Tag im Monat)"
+            name="zahlungszielTag"
+            hint="Ab welchem Tag der monatliche Beitrag fällig ist (Standard: 5). Gilt pro Zugangscode."
+          >
+            <input
+              id="zahlungszielTag"
+              type="number"
+              min={1}
+              max={28}
+              value={form.zahlungszielTag}
+              onChange={(e) => setForm((f) => ({ ...f, zahlungszielTag: e.target.value }))}
+              className="w-full min-w-0 px-4 py-3 border border-border bg-background input-base focus:border-foreground focus:outline-none"
+            />
           </FormField>
 
           <FormField label="E-Mail (intern)" name="email">

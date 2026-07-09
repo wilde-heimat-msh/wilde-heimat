@@ -25,6 +25,7 @@ type PatenDokumentVersandProps = {
   recipientEmail?: string;
   mailConfigured: boolean;
   hasMultiplePatentiere?: boolean;
+  zahlungszielTag?: number;
   generateAttachments: (documentIds: PatenDokumentId[]) => Promise<PatenMailAttachment[]>;
   onSent?: (message: string) => void;
   onError?: (message: string | null) => void;
@@ -37,6 +38,7 @@ export function PatenDokumentVersand({
   recipientEmail,
   mailConfigured,
   hasMultiplePatentiere = false,
+  zahlungszielTag = 5,
   generateAttachments,
   onSent,
   onError,
@@ -58,8 +60,9 @@ export function PatenDokumentVersand({
       accessCode: pate.accessCode,
       urkundenNr: pate.urkundenNr,
       siteOrigin: typeof window !== "undefined" ? window.location.origin : "",
+      zahlungszielTag,
     });
-  }, [pate, stufe, waschbaerName]);
+  }, [pate, stufe, waschbaerName, zahlungszielTag]);
 
   useEffect(() => {
     const vorlage = getPatenEmailVorlage(vorlageId);

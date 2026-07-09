@@ -4,6 +4,7 @@ import {
   buildPatenschaftVerwendungszweck,
   getMonthlyPatenschaftTotal,
   getPatenschaftFaelligAm,
+  getPatenschaftZahlungszielTag,
   listPatenschaftMonate,
   toLocalPeriod,
 } from "@/lib/patenschaftPayment";
@@ -12,7 +13,11 @@ import {
   deletePatenschaftZahlung,
   listZahlungenByAccessCode,
 } from "@/lib/patenschaftZahlungenStore";
-import { getPatenById, listPatenschaftenForPatron } from "@/lib/patenschaftStore";
+import {
+  getPatenById,
+  listPatenschaftenForPatron,
+  updateZahlungszielForPatron,
+} from "@/lib/patenschaftStore";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { apiErrorResponse } from "@/lib/apiError";
 
@@ -32,19 +37,21 @@ export async function GET(_request: Request, context: RouteContext) {
 
     const patenschaften = await listPatenschaftenForPatron(id);
     const zahlungen = await listZahlungenByAccessCode(pate.accessCode);
+    const zahlungszielTag = getPatenschaftZahlungszielTag(patenschaften);
     const monate = listPatenschaftMonate({ paten: patenschaften, zahlungen });
     const currentPeriod = toLocalPeriod();
 
     return NextResponse.json({
       accessCode: pate.accessCode,
       monatlicherBeitrag: getMonthlyPatenschaftTotal(patenschaften),
+      zahlungszielTag,
       verwendungszweck: buildPatenschaftVerwendungszweck(pate.accessCode),
       monatlicherVerwendungszweck: buildMonatlicherVerwendungszweck(
         pate.accessCode,
         currentPeriod
       ),
       currentPeriod,
-      faelligAm: getPatenschaftFaelligAm(currentPeriod),
+      faelligAm: getPatenschaftFaelligAm(currentPeriod, zahlungszielTag),
       heute: new Date().toLocaleDateString("de-DE", {
         day: "numeric",
         month: "long",
@@ -137,5 +144,41 @@ export async function DELETE(request: Request, context: RouteContext) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     return apiErrorResponse(error, "Zahlung konnte nicht gelöscht werden.");
+  }
+}
+
+export async function PATCH(request: Request, context: RouteContext) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
+
+  const { id } = await context.params;
+
+  let body: { zahlungszielTag?: number };
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    return NextResponse.json({ error: "Ungültige Anfrage." }, { status: 400 });
+  }
+
+  if (body.zahlungszielTag === undefined || Number.isNaN(body.zahlungszielTag)) {
+    return NextResponse.json({ error: "zahlungszielTag fehlt." }, { status: 400 });
+  }
+
+  try {
+    const pate = await updateZahlungszielForPatron(id, body.zahlungszielTag);
+    if (!pate) {
+      return NextResponse.json({ error: "Pate nicht gefunden." }, { status: 404 });
+    }
+
+    const patenschaften = await listPatenschaftenForPatron(id);
+    const zahlungszielTag = getPatenschaftZahlungszielTag(patenschaften);
+
+    return NextResponse.json({
+      ok: true,
+      zahlungszielTag,
+      message: `Zahlungsziel auf den ${zahlungszielTag}. jedes Monats gesetzt (gilt für alle Patentiere mit diesem Zugangscode).`,
+    });
+  } catch (error) {
+    return apiErrorResponse(error, "Zahlungsziel konnte nicht gespeichert werden.");
   }
 }

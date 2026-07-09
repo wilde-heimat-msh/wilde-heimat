@@ -4,8 +4,32 @@ import { normalizeAccessCode } from "@/lib/patenschaftTier";
 import type { PatenschaftPate, PatenschaftZahlung } from "@/types/patenschaftPortal";
 import type { PatenschaftStufeId } from "@/data/patenschaften";
 
-/** Beitrag ist ab dem 5. jedes Monats fällig (Erinnerung wird am 5. versendet) */
+/** Standard-Zahlungsziel, wenn nichts individuell gesetzt ist */
 export const PATENSCHAFT_FAELLIGKEIT_TAG = 5;
+
+/** Max. Tag (Februar-sicher) */
+export const PATENSCHAFT_ZAHLUNGSZIEL_MAX = 28;
+
+/** Normalisiert den Zahlungsziel-Tag (1–28, Standard 5) */
+export function normalizeZahlungszielTag(tag?: number | null): number {
+  if (tag === undefined || tag === null || Number.isNaN(tag)) {
+    return PATENSCHAFT_FAELLIGKEIT_TAG;
+  }
+  return Math.min(PATENSCHAFT_ZAHLUNGSZIEL_MAX, Math.max(1, Math.round(tag)));
+}
+
+/** Zahlungsziel für eine Person (alle Patentiere mit gleichem Zugangscode) */
+export function getPatenschaftZahlungszielTag(paten: PatenschaftPate[]): number {
+  const sorted = [...paten].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+  for (const pate of sorted) {
+    if (pate.zahlungszielTag !== undefined) {
+      return normalizeZahlungszielTag(pate.zahlungszielTag);
+    }
+  }
+  return PATENSCHAFT_FAELLIGKEIT_TAG;
+}
 
 /** Anzahl kommender Monate in der Übersicht (ab aktuellem Monat) */
 export const PATENSCHAFT_MONATE_VORAUS = 3;
@@ -63,6 +87,8 @@ export type PatenschaftMonatsStatus = {
   status: "bezahlt" | "offen" | "überfällig" | "zukünftig";
   /** ISO-Datum YYYY-MM-DD – Fälligkeit in diesem Monat */
   faelligAm: string;
+  /** Tag im Monat für dieses Zahlungsziel */
+  zahlungszielTag: number;
   /** Positiv = Tage bis fällig, 0 = heute, negativ = Tage überfällig */
   daysUntilDue: number;
   /** Automatisch berechneter Countdown-Text */
@@ -90,11 +116,16 @@ function parsePeriod(period: string): { year: number; month: number } {
   return { year, month };
 }
 
-/** Fälligkeitsdatum für einen Abrechnungsmonat (immer der 5.) */
-export function getPatenschaftFaelligAm(period: string): string {
+/** Fälligkeitsdatum für einen Abrechnungsmonat */
+export function getPatenschaftFaelligAm(
+  period: string,
+  zahlungszielTag: number = PATENSCHAFT_FAELLIGKEIT_TAG
+): string {
   const { year, month } = parsePeriod(period);
-  const day = String(PATENSCHAFT_FAELLIGKEIT_TAG).padStart(2, "0");
-  return `${year}-${String(month).padStart(2, "0")}-${day}`;
+  const normalizedTag = normalizeZahlungszielTag(zahlungszielTag);
+  const lastDayOfMonth = new Date(year, month, 0).getDate();
+  const day = Math.min(normalizedTag, lastDayOfMonth);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 /** Fester Monatsbeitrag – anteilig nur bei manuell erfassten Abweichungen in der Kartei */
@@ -111,6 +142,7 @@ export function getPatenschaftPeriodStatus(input: {
   paidAmount: number;
   expectedAmount: number;
   now?: Date;
+  zahlungszielTag?: number;
 }): PatenschaftMonatsStatus["status"] {
   const now = input.now ?? new Date();
   const currentPeriod = toLocalPeriod(now);
@@ -120,7 +152,10 @@ export function getPatenschaftPeriodStatus(input: {
 
   if (input.period < currentPeriod) return "überfällig";
 
-  const faelligAm = getPatenschaftFaelligAm(input.period);
+  const faelligAm = getPatenschaftFaelligAm(
+    input.period,
+    input.zahlungszielTag ?? PATENSCHAFT_FAELLIGKEIT_TAG
+  );
   const today = toLocalDateString(now);
   if (today > faelligAm) return "überfällig";
 
@@ -179,6 +214,7 @@ export function enrichPatenschaftMonatLive(
       paidAmount: monat.paidAmount,
       expectedAmount: monat.expectedAmount,
       now,
+      zahlungszielTag: monat.zahlungszielTag,
     });
   const countdown = getPatenschaftCountdown({ faelligAm: monat.faelligAm, status, now });
 
@@ -227,6 +263,7 @@ export function listPatenschaftMonate(input: {
   const endPeriod = toPeriod(endDate);
   const monthlyTotal = getMonthlyPatenschaftTotal(activePaten);
   const patenschaftStart = getPatenschaftStartDate(activePaten);
+  const zahlungszielTag = getPatenschaftZahlungszielTag(activePaten);
 
   const zahlungenByPeriod = new Map(
     input.zahlungen.map((zahlung) => [zahlung.period, zahlung])
@@ -244,12 +281,13 @@ export function listPatenschaftMonate(input: {
       monthlyTotal,
       patenschaftStart
     );
-    const faelligAm = getPatenschaftFaelligAm(period);
+    const faelligAm = getPatenschaftFaelligAm(period, zahlungszielTag);
     const status = getPatenschaftPeriodStatus({
       period,
       paidAmount,
       expectedAmount,
       now,
+      zahlungszielTag,
     });
     const countdown = getPatenschaftCountdown({ faelligAm, status, now });
 
@@ -260,6 +298,7 @@ export function listPatenschaftMonate(input: {
       paidAmount,
       status,
       faelligAm,
+      zahlungszielTag,
       daysUntilDue: countdown.daysUntilDue,
       countdownLabel: countdown.countdownLabel,
       zahlung,
@@ -331,21 +370,33 @@ export function computePatenschaftStatistik(input: {
       now,
     });
     const current = monate.find((item) => item.period === currentPeriod);
+    const groupZahlungszielTag = getPatenschaftZahlungszielTag(group);
     return {
       expected: current?.expectedAmount ?? getMonthlyPatenschaftTotal(group),
       paid: current?.paidAmount ?? 0,
       status: current?.status ?? "offen",
+      faelligAm: getPatenschaftFaelligAm(currentPeriod, groupZahlungszielTag),
     };
   });
 
   const erwartet = personStatuses.reduce((sum, item) => sum + item.expected, 0);
   const erhalten = personStatuses.reduce((sum, item) => sum + item.paid, 0);
-  const currentFaelligAm = getPatenschaftFaelligAm(currentPeriod);
+
+  const openFaelligDates = personStatuses
+    .filter((item) => item.status !== "bezahlt")
+    .map((item) => item.faelligAm)
+    .sort();
+  const currentFaelligAm =
+    openFaelligDates[0] ?? getPatenschaftFaelligAm(currentPeriod, PATENSCHAFT_FAELLIGKEIT_TAG);
+
   const aggregateStatus = getPatenschaftPeriodStatus({
     period: currentPeriod,
     paidAmount: erhalten,
     expectedAmount: erwartet,
     now,
+    zahlungszielTag: normalizeZahlungszielTag(
+      Number(currentFaelligAm.slice(8, 10))
+    ),
   });
   const currentCountdown = getPatenschaftCountdown({
     faelligAm: currentFaelligAm,

@@ -4,8 +4,13 @@ import {
   deletePaten,
   isPatenschaftSlotTaken,
   listPaten,
+  listPatenByAccessCode,
   updatePaten,
 } from "@/lib/patenschaftStore";
+import {
+  getPatenschaftZahlungszielTag,
+  normalizeZahlungszielTag,
+} from "@/lib/patenschaftPayment";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { apiErrorResponse } from "@/lib/apiError";
 import type { PatenschaftStufeId } from "@/data/patenschaften";
@@ -46,6 +51,7 @@ export async function POST(request: Request) {
     widerrufBestaetigtAt?: string;
     datenschutzBestaetigtAt?: string;
     patenschaftStart?: string;
+    zahlungszielTag?: number;
   };
 
   if (!body.name?.trim() || !body.accessCode?.trim() || !body.waschbaerSlug || !body.stufeId) {
@@ -60,6 +66,14 @@ export async function POST(request: Request) {
   }
 
   try {
+    const existing = await listPatenByAccessCode(body.accessCode);
+    const zahlungszielTag =
+      body.zahlungszielTag !== undefined
+        ? normalizeZahlungszielTag(body.zahlungszielTag)
+        : existing.length > 0
+          ? getPatenschaftZahlungszielTag(existing)
+          : normalizeZahlungszielTag(undefined);
+
     const pate = await createPaten({
       name: body.name.trim(),
       accessCode: body.accessCode.trim(),
@@ -80,6 +94,7 @@ export async function POST(request: Request) {
       widerrufBestaetigtAt: body.widerrufBestaetigtAt,
       datenschutzBestaetigtAt: body.datenschutzBestaetigtAt,
       patenschaftStart: body.patenschaftStart,
+      zahlungszielTag,
     });
 
     return NextResponse.json({ pate }, { status: 201 });
@@ -113,6 +128,7 @@ export async function PUT(request: Request) {
     widerrufBestaetigtAt?: string;
     datenschutzBestaetigtAt?: string;
     patenschaftStart?: string;
+    zahlungszielTag?: number;
   };
 
   if (!body.id) {
@@ -151,6 +167,10 @@ export async function PUT(request: Request) {
       widerrufBestaetigtAt: body.widerrufBestaetigtAt,
       datenschutzBestaetigtAt: body.datenschutzBestaetigtAt,
       patenschaftStart: body.patenschaftStart,
+      zahlungszielTag:
+        body.zahlungszielTag !== undefined
+          ? normalizeZahlungszielTag(body.zahlungszielTag)
+          : undefined,
     });
 
     if (!pate) {

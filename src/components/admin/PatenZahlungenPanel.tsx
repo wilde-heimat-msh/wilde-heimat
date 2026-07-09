@@ -13,8 +13,8 @@ import { formatFormDateDe } from "@/lib/relativeTime";
 import {
   buildMonatlicherVerwendungszweck,
   enrichPatenschaftMonatLive,
-  PATENSCHAFT_FAELLIGKEIT_TAG,
   PATENSCHAFT_MONATE_VORAUS,
+  PATENSCHAFT_ZAHLUNGSZIEL_MAX,
   toLocalDateString,
   toLocalPeriod,
   type PatenschaftMonatsStatus,
@@ -28,6 +28,7 @@ type ZahlungenData = {
   monatlicherVerwendungszweck: string;
   currentPeriod: string;
   faelligAm: string;
+  zahlungszielTag: number;
   heute: string;
   zahlungen: PatenschaftZahlung[];
   monate: PatenschaftMonatsStatus[];
@@ -113,6 +114,8 @@ export function PatenZahlungenPanel({
   const [previewOpen, setPreviewOpen] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const [markingPeriod, setMarkingPeriod] = useState<string | null>(null);
+  const [zahlungszielTag, setZahlungszielTag] = useState("5");
+  const [savingZahlungsziel, setSavingZahlungsziel] = useState(false);
 
   const loadZahlungen = useCallback(async () => {
     setLoading(true);
@@ -126,6 +129,7 @@ export function PatenZahlungenPanel({
         return;
       }
       setData(json);
+      setZahlungszielTag(String(json.zahlungszielTag ?? 5));
       setPeriod(json.currentPeriod);
       const currentMonat = json.monate.find((item) => item.period === json.currentPeriod);
       setAmount(String(currentMonat?.expectedAmount ?? json.monatlicherBeitrag));
@@ -169,6 +173,7 @@ export function PatenZahlungenPanel({
     ? liveMonate.find((item) => item.period === data.currentPeriod)
     : undefined;
   const reminderAmount = currentMonat?.expectedAmount ?? data?.monatlicherBeitrag ?? 0;
+  const activeZahlungszielTag = data?.zahlungszielTag ?? (Number(zahlungszielTag) || 5);
 
   const reminderPlatzhalter = useMemo(() => {
     if (!data) return null;
@@ -187,8 +192,9 @@ export function PatenZahlungenPanel({
       monatLabel,
       monatlicherVerwendungszweck: buildMonatlicherVerwendungszweck(pate.accessCode, period),
       period,
+      zahlungszielTag: activeZahlungszielTag,
     });
-  }, [data, pate, waschbaerName, stufe, period, reminderAmount]);
+  }, [data, pate, waschbaerName, stufe, period, reminderAmount, activeZahlungszielTag]);
 
   useEffect(() => {
     if (!reminderPlatzhalter) return;
@@ -233,6 +239,37 @@ export function PatenZahlungenPanel({
     onStatus?.(input.successMessage ?? "Zahlung erfasst.");
     await loadZahlungen();
     return true;
+  }
+
+  async function handleSaveZahlungsziel() {
+    const tag = Number(zahlungszielTag);
+    if (!Number.isInteger(tag) || tag < 1 || tag > PATENSCHAFT_ZAHLUNGSZIEL_MAX) {
+      onError?.(`Bitte einen Tag zwischen 1 und ${PATENSCHAFT_ZAHLUNGSZIEL_MAX} eingeben.`);
+      return;
+    }
+
+    setSavingZahlungsziel(true);
+    onError?.(null);
+    try {
+      const res = await fetch(
+        `/api/admin/paten/${encodeURIComponent(pateId)}/zahlungen`,
+        {
+          method: "PATCH",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ zahlungszielTag: tag }),
+        }
+      );
+      const json = (await res.json()) as { error?: string; message?: string };
+      if (!res.ok) {
+        onError?.(json.error ?? "Zahlungsziel konnte nicht gespeichert werden.");
+        return;
+      }
+      onStatus?.(json.message ?? "Zahlungsziel gespeichert.");
+      await loadZahlungen();
+    } finally {
+      setSavingZahlungsziel(false);
+    }
   }
 
   async function handleRecordPayment(event: React.FormEvent) {
@@ -358,8 +395,8 @@ export function PatenZahlungenPanel({
           {hasMultiplePatentiere
             ? " – gilt für alle Patentiere mit diesem Zugangscode."
             : ""}{" "}
-          Heute {data?.heute ?? "…"}, fällig ab dem {PATENSCHAFT_FAELLIGKEIT_TAG}. jedes Monats
-          (Erinnerung wird am {PATENSCHAFT_FAELLIGKEIT_TAG}. versendet). Countdown aktualisiert
+          Heute {data?.heute ?? "…"}, fällig ab dem {activeZahlungszielTag}. jedes Monats
+          (Erinnerung wird am {activeZahlungszielTag}. versendet). Countdown aktualisiert
           sich automatisch.
           Die Übersicht enthält automatisch die nächsten {PATENSCHAFT_MONATE_VORAUS} Monate.
         </p>
@@ -432,6 +469,41 @@ export function PatenZahlungenPanel({
             </div>
           </div>
 
+          <div className="rounded-xl border border-border bg-muted-light/20 p-4 space-y-3">
+            <div>
+              <h3 className="text-sm font-medium text-forest">Zahlungsziel (Tag im Monat)</h3>
+              <p className="text-xs text-muted mt-1">
+                Ab welchem Tag im Monat der Beitrag fällig ist und die Erinnerung rausgeht. Gilt für
+                alle Patentiere mit diesem Zugangscode – jederzeit änderbar.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-end gap-3">
+              <FormField
+                label="Fällig am … jeden Monat"
+                name="zahlungsziel-tag"
+                hint={`1–${PATENSCHAFT_ZAHLUNGSZIEL_MAX} (Standard: 5)`}
+              >
+                <input
+                  id="zahlungsziel-tag"
+                  type="number"
+                  min={1}
+                  max={PATENSCHAFT_ZAHLUNGSZIEL_MAX}
+                  value={zahlungszielTag}
+                  onChange={(event) => setZahlungszielTag(event.target.value)}
+                  className="w-28 min-w-0 px-4 py-3 border border-border bg-background input-base focus:border-foreground focus:outline-none"
+                />
+              </FormField>
+              <button
+                type="button"
+                onClick={handleSaveZahlungsziel}
+                disabled={savingZahlungsziel}
+                className="min-h-11 px-4 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-accent disabled:opacity-60"
+              >
+                {savingZahlungsziel ? "Speichern …" : "Zahlungsziel speichern"}
+              </button>
+            </div>
+          </div>
+
           {aktuellerMonat ? (
             <div
               className={`rounded-xl border px-4 py-3 text-sm ${countdownBadge(aktuellerMonat.status)}`}
@@ -473,8 +545,8 @@ export function PatenZahlungenPanel({
                 Monatliche Zahlungsanweisung senden
               </h3>
               <p className="text-xs text-muted mt-1">
-                Süße Erinnerung per E-Mail – manuell am {PATENSCHAFT_FAELLIGKEIT_TAG}. jedes Monats
-                auslösen. Der Beitrag ist ab dem {PATENSCHAFT_FAELLIGKEIT_TAG}. fällig.
+                Süße Erinnerung per E-Mail – manuell am {activeZahlungszielTag}. jedes Monats
+                auslösen. Der Beitrag ist ab dem {activeZahlungszielTag}. fällig.
               </p>
             </div>
 

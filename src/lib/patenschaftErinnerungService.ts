@@ -18,6 +18,7 @@ import {
 import {
   getMonthlyPatenschaftTotal,
   getPatenschaftPeriodStatus,
+  getPatenschaftZahlungszielTag,
   listPatenschaftMonate,
   PATENSCHAFT_FAELLIGKEIT_TAG,
   toLocalDateString,
@@ -38,6 +39,7 @@ export type PatenschaftErinnerungRecipient = {
   waschbaerLabel: string;
   monthlyAmount: number;
   stufeId: PatenschaftPate["stufeId"];
+  zahlungszielTag: number;
   paymentStatus: "bezahlt" | "offen" | "überfällig" | "zukünftig";
   reminderStatus: "sent" | "failed" | "skipped" | "pending" | "no_email";
   lastErinnerung?: PatenschaftZahlungserinnerung;
@@ -66,8 +68,8 @@ export type PatenschaftErinnerungRunResult =
       }[];
     };
 
-function isReminderDay(now = new Date()): boolean {
-  return now.getDate() === PATENSCHAFT_FAELLIGKEIT_TAG;
+function isReminderDayForPatron(paten: PatenschaftPate[], now = new Date()): boolean {
+  return now.getDate() === getPatenschaftZahlungszielTag(paten);
 }
 
 function pickPrimaryPate(patenschaften: PatenschaftPate[]): PatenschaftPate {
@@ -184,6 +186,7 @@ export async function buildPatenschaftErinnerungOverview(input?: {
       waschbaerLabel: buildWaschbaerLabel(group.patenschaften, waschbaerNames),
       monthlyAmount: getMonthlyPatenschaftTotal(group.patenschaften),
       stufeId: group.primary.stufeId,
+      zahlungszielTag: getPatenschaftZahlungszielTag(group.patenschaften),
       paymentStatus,
       reminderStatus,
       lastErinnerung,
@@ -196,7 +199,7 @@ export async function buildPatenschaftErinnerungOverview(input?: {
   return {
     period,
     periodLabel,
-    isReminderDay: isReminderDay(now),
+    isReminderDay: groups.some((group) => isReminderDayForPatron(group.patenschaften, now)),
     mailConfigured: isFormMailConfigured(),
     bccCopyTo: getFormMailTo(),
     recipients,
@@ -214,12 +217,14 @@ export async function buildPatenschaftErinnerungOverview(input?: {
 
 async function buildReminderMail(input: {
   primary: PatenschaftPate;
+  patenschaften: PatenschaftPate[];
   waschbaerLabel: string;
   period: string;
   monthlyAmount: number;
   siteOrigin: string;
 }) {
   const stufe = patenschaftsStufen.find((item) => item.id === input.primary.stufeId);
+  const zahlungszielTag = getPatenschaftZahlungszielTag(input.patenschaften);
   const monatLabel = new Date(`${input.period}-01T12:00:00`).toLocaleDateString("de-DE", {
     month: "long",
     year: "numeric",
@@ -234,6 +239,7 @@ async function buildReminderMail(input: {
     siteOrigin: input.siteOrigin,
     monatLabel,
     period: input.period,
+    zahlungszielTag,
   });
   const vorlage = getPatenEmailVorlage("monatliche-zahlungserinnerung");
   const subject = fillPatenEmailTemplate(vorlage.subject, platzhalter);
@@ -291,6 +297,7 @@ export async function sendPatenschaftZahlungserinnerungForGroup(input: {
     paidAmount:
       zahlungen.find((zahlung) => zahlung.period === input.period)?.amount ?? 0,
     expectedAmount: monthlyAmount,
+    zahlungszielTag: getPatenschaftZahlungszielTag(patenschaften),
   });
   if (paymentStatus === "bezahlt") {
     const erinnerung = await createPatenschaftZahlungserinnerung({
@@ -357,6 +364,7 @@ export async function sendPatenschaftZahlungserinnerungForGroup(input: {
 
   const mail = await buildReminderMail({
     primary,
+    patenschaften,
     waschbaerLabel,
     period: input.period,
     monthlyAmount,
@@ -422,15 +430,26 @@ export async function runPatenschaftZahlungserinnerungen(input: {
   const now = input.now ?? new Date();
   const period = input.period ?? toLocalPeriod(now);
 
-  if (input.trigger === "auto" && !isReminderDay(now)) {
-    return {
-      run: false,
-      reason: `Heute ist der ${toLocalDateString(now).slice(8, 10)}. – automatische Erinnerungen nur am ${PATENSCHAFT_FAELLIGKEIT_TAG}. des Monats.`,
-    };
-  }
-
   const overview = await buildPatenschaftErinnerungOverview({ period, now });
   let targets = overview.recipients;
+
+  if (input.trigger === "auto") {
+    const groups = await groupActivePatenByAccessCode();
+    const patenschaftenByCode = new Map(
+      groups.map((group) => [group.accessCode, group.patenschaften])
+    );
+    targets = targets.filter((recipient) => {
+      const patenschaften = patenschaftenByCode.get(recipient.accessCode) ?? [];
+      return isReminderDayForPatron(patenschaften, now);
+    });
+
+    if (targets.length === 0) {
+      return {
+        run: false,
+        reason: `Heute (${toLocalDateString(now)}) ist für keine aktive Patenschaft der individuelle Erinnerungstag.`,
+      };
+    }
+  }
 
   if (input.pateId) {
     targets = targets.filter((item) => item.pateId === input.pateId);

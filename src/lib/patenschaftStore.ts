@@ -10,6 +10,7 @@ import type {
   PatenschaftUpdate,
 } from "@/types/patenschaftPortal";
 import { normalizeAccessCode, stufeMeetsMinimum } from "@/lib/patenschaftTier";
+import { normalizeZahlungszielTag } from "@/lib/patenschaftPayment";
 
 async function readStore(): Promise<PatenschaftStore> {
   return loadPatenschaftStore();
@@ -166,8 +167,19 @@ export async function updatePaten(
   id: string,
   input: Partial<Omit<PatenschaftPate, "id" | "createdAt">>
 ): Promise<PatenschaftPate | null> {
+  let patch = { ...input };
+
+  if (patch.zahlungszielTag !== undefined) {
+    await updateZahlungszielForPatron(id, patch.zahlungszielTag);
+    const { zahlungszielTag: _removed, ...rest } = patch;
+    patch = rest;
+    if (Object.keys(patch).length === 0) {
+      return getPatenById(id);
+    }
+  }
+
   if (isSupabaseConfigured()) {
-    return supabaseStore.supabaseUpdatePaten(id, input);
+    return supabaseStore.supabaseUpdatePaten(id, patch);
   }
   const store = await readStore();
   const index = store.paten.findIndex((p) => p.id === id);
@@ -176,15 +188,42 @@ export async function updatePaten(
   const current = store.paten[index];
   const updated: PatenschaftPate = {
     ...current,
-    ...input,
-    accessCode: input.accessCode
-      ? normalizeAccessCode(input.accessCode)
+    ...patch,
+    accessCode: patch.accessCode
+      ? normalizeAccessCode(patch.accessCode)
       : current.accessCode,
     updatedAt: new Date().toISOString(),
   };
   store.paten[index] = updated;
   await writeStore(store);
   return updated;
+}
+
+export async function updateZahlungszielForPatron(
+  pateId: string,
+  zahlungszielTag: number
+): Promise<PatenschaftPate | null> {
+  const pate = await getPatenById(pateId);
+  if (!pate) return null;
+
+  const tag = normalizeZahlungszielTag(zahlungszielTag);
+  const accessCode = normalizeAccessCode(pate.accessCode);
+
+  if (isSupabaseConfigured()) {
+    await supabaseStore.supabaseUpdateZahlungszielForAccessCode(accessCode, tag);
+    return getPatenById(pateId);
+  }
+
+  const store = await readStore();
+  const now = new Date().toISOString();
+  for (const entry of store.paten) {
+    if (normalizeAccessCode(entry.accessCode) === accessCode) {
+      entry.zahlungszielTag = tag;
+      entry.updatedAt = now;
+    }
+  }
+  await writeStore(store);
+  return getPatenById(pateId);
 }
 
 export async function deletePaten(id: string): Promise<boolean> {

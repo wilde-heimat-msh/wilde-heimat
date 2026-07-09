@@ -11,7 +11,6 @@ import {
   buildMonatlicherVerwendungszweck,
   buildPatenschaftVerwendungszweck,
   getPatenschaftFaelligAm,
-  PATENSCHAFT_FAELLIGKEIT_TAG,
   toLocalPeriod,
 } from "@/lib/patenschaftPayment";
 import {
@@ -26,6 +25,7 @@ export type PatenDokumentContext = {
   pate: PatenschaftPate;
   waschbaerName: string;
   urkunde?: PatenschaftUrkundeDaten;
+  zahlungszielTag: number;
 };
 
 function DokumentShell({
@@ -152,7 +152,9 @@ function Zahlungsinfo({ ctx }: { ctx: PatenDokumentContext }) {
     ctx.pate.accessCode,
     currentPeriod
   );
-  const faelligAm = formatFormDateDe(getPatenschaftFaelligAm(currentPeriod));
+  const faelligAm = formatFormDateDe(
+    getPatenschaftFaelligAm(currentPeriod, ctx.zahlungszielTag)
+  );
 
   return (
     <DokumentShell
@@ -191,9 +193,9 @@ function Zahlungsinfo({ ctx }: { ctx: PatenDokumentContext }) {
           genannte Konto.
         </li>
         <li>
-          Der Beitrag ist jeweils ab dem <strong>{PATENSCHAFT_FAELLIGKEIT_TAG}. des Monats</strong>{" "}
-          fällig (aktuell: {faelligAm}) – die Erinnerung geht am {PATENSCHAFT_FAELLIGKEIT_TAG}. raus,
-          das gilt für alle Folgemonate gleich.
+          Der Beitrag ist jeweils ab dem <strong>{ctx.zahlungszielTag}. des Monats</strong> fällig
+          (aktuell: {faelligAm}) – die Erinnerung geht am {ctx.zahlungszielTag}. raus, das gilt für
+          alle Folgemonate gleich.
         </li>
         <li>
           Bitte gib als Verwendungszweck exakt{" "}

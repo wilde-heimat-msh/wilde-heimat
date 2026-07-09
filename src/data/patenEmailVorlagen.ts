@@ -225,15 +225,17 @@ export function buildPatenEmailPlatzhalter(input: {
   monatLabel?: string;
   monatlicherVerwendungszweck?: string;
   period?: string;
+  zahlungszielTag?: number;
 }): PatenEmailPlatzhalter {
   const currentPeriod = input.period ?? toLocalPeriod();
+  const zahlungszielTag = input.zahlungszielTag ?? PATENSCHAFT_FAELLIGKEIT_TAG;
   const monatLabel =
     input.monatLabel ??
     new Date(`${currentPeriod}-01T12:00:00`).toLocaleDateString("de-DE", {
       month: "long",
       year: "numeric",
     });
-  const faelligAmRaw = getPatenschaftFaelligAm(currentPeriod);
+  const faelligAmRaw = getPatenschaftFaelligAm(currentPeriod, zahlungszielTag);
   const faelligAm = formatFormDateDe(faelligAmRaw);
 
   return {
@@ -254,7 +256,7 @@ export function buildPatenEmailPlatzhalter(input: {
     kontoinhaber: patenschaftBank.accountHolder,
     bankName: patenschaftBank.bankName,
     faelligAm,
-    faelligkeitTag: String(PATENSCHAFT_FAELLIGKEIT_TAG),
+    faelligkeitTag: String(zahlungszielTag),
   };
 }
 

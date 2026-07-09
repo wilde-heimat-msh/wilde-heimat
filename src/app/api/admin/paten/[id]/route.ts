@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildUrkundeFromPate } from "@/lib/patenschaftFromAnfrage";
+import { getPatenschaftZahlungszielTag } from "@/lib/patenschaftPayment";
 import { getPatenById, listPatenschaftenForPatron } from "@/lib/patenschaftStore";
 import { isFormMailConfigured } from "@/lib/formMail";
 import { requireAdmin } from "@/lib/requireAdmin";
@@ -64,6 +65,7 @@ export async function GET(_request: Request, context: RouteContext) {
       submission,
       urkunde,
       patenschaften: patenschaftOverview,
+      zahlungszielTag: getPatenschaftZahlungszielTag(patenschaften),
       mail: { configured: isFormMailConfigured() },
     });
   } catch (error) {
