@@ -11,15 +11,16 @@ import {
 } from "@/data/patenEmailVorlagen";
 import { patenschaftsStufen } from "@/data/site";
 import type { PatenschaftPate } from "@/types/patenschaftPortal";
+import {
+  uploadPatenMailPdfs,
+  type PatenMailPdfBlob,
+} from "@/lib/uploadPatenMailPdf";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-export type PatenMailAttachment = {
-  filename: string;
-  contentBase64: string;
-};
+export type PatenMailAttachment = PatenMailPdfBlob;
 
-/** Entspricht dem Server-Limit (20 MB Anhänge gesamt). */
-const MAX_MAIL_ATTACHMENTS_BYTES = 18 * 1024 * 1024;
+/** Entspricht dem Server-Limit für E-Mail-Anhänge gesamt. */
+const MAX_MAIL_ATTACHMENTS_BYTES = 60 * 1024 * 1024;
 
 type SendFeedback = {
   type: "success" | "error" | "info";
@@ -70,11 +71,8 @@ export function PatenDokumentVersand({
     }
   }
 
-  function attachmentBytes(attachments: PatenMailAttachment[]): number {
-    return attachments.reduce((sum, file) => {
-      const padding = file.contentBase64.endsWith("==") ? 2 : file.contentBase64.endsWith("=") ? 1 : 0;
-      return sum + Math.floor((file.contentBase64.length * 3) / 4) - padding;
-    }, 0);
+  function attachmentBytes(attachments: PatenMailPdfBlob[]): number {
+    return attachments.reduce((sum, file) => sum + file.blob.size, 0);
   }
 
   async function parseSendMailResponse(res: Response): Promise<{ error?: string; sentTo?: string }> {
@@ -83,7 +81,7 @@ export function PatenDokumentVersand({
       if (res.status === 413) {
         return {
           error:
-            "Die PDF-Anhänge sind zu groß. Bitte weniger Dokumente auswählen oder einzeln per E-Mail senden.",
+            "Die PDF-Anhänge sind zu groß für den direkten Versand. Bitte Seite neu laden und erneut versuchen.",
         };
       }
       return { error: `Serverfehler (${res.status}). Bitte erneut versuchen.` };
@@ -94,7 +92,7 @@ export function PatenDokumentVersand({
       return {
         error:
           res.status === 413
-            ? "Die PDF-Anhänge sind zu groß. Bitte weniger Dokumente auswählen oder einzeln per E-Mail senden."
+            ? "Die PDF-Anhänge sind zu groß für den direkten Versand. Bitte Seite neu laden und erneut versuchen."
             : `Unerwartete Server-Antwort (${res.status}). Bitte erneut versuchen.`,
       };
     }
@@ -168,18 +166,34 @@ export function PatenDokumentVersand({
         return;
       }
 
+      showFeedback({ type: "info", message: "PDFs werden hochgeladen …" });
+
+      const attachmentStoragePaths =
+        attachments.length > 0 ? await uploadPatenMailPdfs(pateId, attachments) : [];
+
       showFeedback({ type: "info", message: "E-Mail wird versendet …" });
+
+      const mailPayload: {
+        to: string;
+        subject: string;
+        text: string;
+        attachments?: { filename: string; contentBase64: string }[];
+        attachmentStoragePaths?: { storagePath: string; filename: string }[];
+      } = {
+        to: to.trim(),
+        subject: subject.trim(),
+        text: body.trim(),
+      };
+
+      if (attachmentStoragePaths.length > 0) {
+        mailPayload.attachmentStoragePaths = attachmentStoragePaths;
+      }
 
       const res = await fetch(`/api/admin/paten/${encodeURIComponent(pateId)}/send-mail`, {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: to.trim(),
-          subject: subject.trim(),
-          text: body.trim(),
-          attachments,
-        }),
+        body: JSON.stringify(mailPayload),
       });
 
       const json = await parseSendMailResponse(res);

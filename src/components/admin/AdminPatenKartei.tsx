@@ -19,7 +19,6 @@ import {
 import type { PatenschaftUrkundeDaten } from "@/data/patenschaften";
 import { patenschaftsStufen } from "@/data/site";
 import {
-  blobToBase64,
   exportHtmlToPdf,
   exportUrkundePdf,
   renderElementToPdfBlob,
@@ -127,7 +126,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
         const blob = await renderUrkundeToPdfBlob(element);
         attachments.push({
           filename: urkundePdfFilename(data.pate.name, data.urkunde.urkundenNr),
-          contentBase64: await blobToBase64(blob),
+          blob,
         });
         continue;
       }
@@ -138,7 +137,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
       const blob = await renderElementToPdfBlob(element);
       attachments.push({
         filename: patenDokumentFilename(meta.filenamePrefix, data.pate.name, data.pate.urkundenNr),
-        contentBase64: await blobToBase64(blob),
+        blob,
       });
     }
 
