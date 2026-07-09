@@ -156,6 +156,53 @@ export const patenschaftUrkundeStufeRender: Record<
   },
 };
 
+/** SVG-Medaille – zuverlässig in PDF/Druck (html2canvas rendert CSS-Gradienten auf divs oft nicht). */
+export const patenschaftUrkundeMedallionSvg: Record<
+  PatenschaftStufeId,
+  {
+    gradientStops: { offset: string; color: string }[];
+    ringColor: string;
+    borderColor: string;
+    highlightColor: string;
+    textColor: string;
+  }
+> = {
+  bronze: {
+    gradientStops: [
+      { offset: "0%", color: "#b45309" },
+      { offset: "45%", color: "#d97706" },
+      { offset: "100%", color: "#451a03" },
+    ],
+    ringColor: "#f5ede0",
+    borderColor: "#92400e",
+    highlightColor: "rgba(255,255,255,0.18)",
+    textColor: "#fffbeb",
+  },
+  silber: {
+    gradientStops: [
+      { offset: "0%", color: "#a8a29e" },
+      { offset: "38%", color: "#e7e5e4" },
+      { offset: "62%", color: "#fafaf9" },
+      { offset: "100%", color: "#78716c" },
+    ],
+    ringColor: "#f5ede0",
+    borderColor: "#a8a29e",
+    highlightColor: "rgba(255,255,255,0.55)",
+    textColor: "#292524",
+  },
+  gold: {
+    gradientStops: [
+      { offset: "0%", color: "#facc15" },
+      { offset: "50%", color: "#fde047" },
+      { offset: "100%", color: "#ca8a04" },
+    ],
+    ringColor: "#f5ede0",
+    borderColor: "#eab308",
+    highlightColor: "rgba(255,255,255,0.35)",
+    textColor: "#451a03",
+  },
+};
+
 /** Inhalte einer personalisierten Patenschaftsurkunde */
 export type PatenschaftUrkundeDaten = {
   pate: string;

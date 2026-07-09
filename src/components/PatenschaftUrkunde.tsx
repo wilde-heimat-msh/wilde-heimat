@@ -3,6 +3,7 @@
 import { Logo } from "@/components/Logo";
 import {
   getPatenschaftStufe,
+  patenschaftUrkundeMedallionSvg,
   patenschaftUrkundeStufeRender,
   type PatenschaftStufeId,
   type PatenschaftUrkundeDaten,
@@ -15,7 +16,100 @@ import {
   URKUNDE_PREVIEW_SCALE,
   URKUNDE_PREVIEW_WIDTH_PX,
 } from "@/lib/urkundeScale";
-import { forwardRef, type CSSProperties } from "react";
+import { forwardRef, useId, type CSSProperties } from "react";
+
+function UrkundeStufeMedallion({
+  stufeId,
+  label,
+}: {
+  stufeId: PatenschaftStufeId;
+  label: string;
+}) {
+  const reactId = useId().replace(/:/g, "");
+  const spec = patenschaftUrkundeMedallionSvg[stufeId];
+  const gradientId = `urkunde-medallion-${stufeId}-${reactId}`;
+
+  return (
+    <svg
+      viewBox="0 0 56 56"
+      width={56}
+      height={56}
+      className="h-14 w-14 shrink-0"
+      role="img"
+      aria-label={`Stufe ${label}`}
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="8%" y1="8%" x2="92%" y2="92%">
+          {spec.gradientStops.map((stop) => (
+            <stop key={stop.offset} offset={stop.offset} stopColor={stop.color} />
+          ))}
+        </linearGradient>
+      </defs>
+      <circle cx="28" cy="28" r="27" fill={spec.ringColor} />
+      <circle
+        cx="28"
+        cy="28"
+        r="24"
+        fill={`url(#${gradientId})`}
+        stroke={spec.borderColor}
+        strokeWidth="2"
+      />
+      <ellipse cx="22" cy="18" rx="10" ry="6" fill={spec.highlightColor} />
+      <text
+        x="28"
+        y="32"
+        textAnchor="middle"
+        fontSize="11"
+        fontWeight="700"
+        fill={spec.textColor}
+        fontFamily="var(--font-geist-sans), system-ui, sans-serif"
+      >
+        {label}
+      </text>
+    </svg>
+  );
+}
+
+function UrkundeStufeBand({ stufeId }: { stufeId: PatenschaftStufeId }) {
+  const reactId = useId().replace(/:/g, "");
+  const gradientId = `urkunde-band-${stufeId}-${reactId}`;
+
+  const bandStops: Record<PatenschaftStufeId, { offset: string; color: string }[]> = {
+    bronze: [
+      { offset: "0%", color: "#78350f" },
+      { offset: "50%", color: "#b45309" },
+      { offset: "100%", color: "#78350f" },
+    ],
+    silber: [
+      { offset: "0%", color: "#78716c" },
+      { offset: "50%", color: "#d6d3d1" },
+      { offset: "100%", color: "#78716c" },
+    ],
+    gold: [
+      { offset: "0%", color: "#d97706" },
+      { offset: "50%", color: "#facc15" },
+      { offset: "100%", color: "#d97706" },
+    ],
+  };
+
+  return (
+    <svg
+      viewBox="0 0 800 8"
+      preserveAspectRatio="none"
+      className="h-2 w-full shrink-0 block"
+      aria-hidden
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+          {bandStops[stufeId].map((stop) => (
+            <stop key={stop.offset} offset={stop.offset} stopColor={stop.color} />
+          ))}
+        </linearGradient>
+      </defs>
+      <rect width="800" height="8" fill={`url(#${gradientId})`} />
+    </svg>
+  );
+}
 
 function CornerOrnament({
   className,
@@ -72,12 +166,7 @@ function UrkundeHauptblock({
             Patenschaftsstufe
           </p>
           <div className="mt-2.5 flex items-center gap-3">
-            <div
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
-              style={render.medallion}
-            >
-              <span className="text-[12px] font-bold">{stufe.name}</span>
-            </div>
+            <UrkundeStufeMedallion stufeId={stufeId} label={stufe.name} />
             <div className="min-w-0">
               <p
                 className="text-xl font-semibold leading-none"
@@ -173,7 +262,7 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
         }}
         aria-label={`Patenschaftsurkunde für ${pate}, Stufe ${stufe.name}, ${patenschaftUrkundeFormat.label}`}
       >
-        <div className="h-2 w-full shrink-0" style={render.band} aria-hidden />
+        <UrkundeStufeBand stufeId={stufeId} />
 
         <div
           className="absolute inset-2.5 top-3.5 bottom-2.5 border-[1.5px] pointer-events-none"
