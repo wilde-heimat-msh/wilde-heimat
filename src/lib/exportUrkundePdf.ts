@@ -1,4 +1,4 @@
-import html2canvas from "html2canvas";
+import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
 
 type PdfRenderOptions = {
@@ -7,154 +7,12 @@ type PdfRenderOptions = {
   forMail?: boolean;
 };
 
-/**
- * html2canvas 1.x kann Tailwind-4-Farben (oklab/oklch) in Stylesheets nicht parsen.
- * Vor dem Rendern Stylesheets im Clone entfernen und berechnete RGB-Werte inline setzen.
- */
-const HTML2CANVAS_INLINE_PROPS = [
-  "display",
-  "position",
-  "top",
-  "right",
-  "bottom",
-  "left",
-  "z-index",
-  "width",
-  "height",
-  "min-width",
-  "min-height",
-  "max-width",
-  "max-height",
-  "margin",
-  "padding",
-  "border",
-  "border-width",
-  "border-style",
-  "border-color",
-  "border-radius",
-  "border-top",
-  "border-right",
-  "border-bottom",
-  "border-left",
-  "background",
-  "background-color",
-  "background-image",
-  "background-size",
-  "background-position",
-  "background-repeat",
-  "color",
-  "font-family",
-  "font-size",
-  "font-weight",
-  "font-style",
-  "line-height",
-  "letter-spacing",
-  "text-align",
-  "text-transform",
-  "text-decoration",
-  "white-space",
-  "word-break",
-  "flex",
-  "flex-direction",
-  "flex-wrap",
-  "flex-grow",
-  "flex-shrink",
-  "align-items",
-  "align-self",
-  "justify-content",
-  "justify-self",
-  "gap",
-  "grid-template-columns",
-  "grid-column",
-  "grid-row",
-  "object-fit",
-  "object-position",
-  "opacity",
-  "box-shadow",
-  "overflow",
-  "overflow-wrap",
-  "transform",
-  "transform-origin",
-  "vertical-align",
-  "list-style",
-  "list-style-type",
-  "border-collapse",
-  "table-layout",
-  "fill",
-  "stroke",
-  "stroke-width",
-] as const;
-
-const MODERN_COLOR_RE = /oklab|oklch|color-mix|lab\(|lch\(/i;
-
-let colorProbe: HTMLSpanElement | null = null;
-
-function resolveModernColor(value: string, property: "color" | "background-color" | "border-color"): string {
-  if (!MODERN_COLOR_RE.test(value)) return value;
-  if (typeof document === "undefined") return value;
-
-  if (!colorProbe) {
-    colorProbe = document.createElement("span");
-    colorProbe.style.position = "absolute";
-    colorProbe.style.visibility = "hidden";
-    colorProbe.style.pointerEvents = "none";
-    document.body.appendChild(colorProbe);
-  }
-
-  colorProbe.style.cssText = "position:absolute;visibility:hidden;pointer-events:none;";
-  colorProbe.style.setProperty(property, value);
-  const resolved = window.getComputedStyle(colorProbe).getPropertyValue(property).trim();
-  return resolved && !MODERN_COLOR_RE.test(resolved) ? resolved : value;
-}
-
-function stripUnsupportedStylesheets(clonedDoc: Document) {
-  clonedDoc.querySelectorAll("style, link[rel='stylesheet']").forEach((node) => {
-    node.parentNode?.removeChild(node);
-  });
-}
-
-function inlineResolvedStyles(source: Element, target: HTMLElement) {
-  const computed = window.getComputedStyle(source);
-
-  for (const prop of HTML2CANVAS_INLINE_PROPS) {
-    let value = computed.getPropertyValue(prop).trim();
-    if (!value) continue;
-
-    if (prop === "color" || prop === "background-color" || prop === "border-color") {
-      value = resolveModernColor(value, prop);
-    } else if (MODERN_COLOR_RE.test(value)) {
-      continue;
-    }
-
-    target.style.setProperty(prop, value);
-  }
-}
-
-function prepareHtml2CanvasClone(
-  originalRoot: HTMLElement,
-  clonedRoot: HTMLElement,
-  clonedDoc: Document
-) {
-  stripUnsupportedStylesheets(clonedDoc);
-
-  const originals = [originalRoot, ...originalRoot.querySelectorAll("*")];
-  const clones = [clonedRoot, ...clonedRoot.querySelectorAll("*")];
-  const count = Math.min(originals.length, clones.length);
-
-  for (let index = 0; index < count; index += 1) {
-    inlineResolvedStyles(originals[index], clones[index] as HTMLElement);
-  }
-}
-
 async function renderCanvas(element: HTMLElement, backgroundColor: string, scale = 2) {
   return html2canvas(element, {
     scale,
     useCORS: true,
     backgroundColor,
     logging: false,
-    onclone: (clonedDoc, clonedElement) => {
-      prepareHtml2CanvasClone(element, clonedElement, clonedDoc);
-    },
   });
 }
 
