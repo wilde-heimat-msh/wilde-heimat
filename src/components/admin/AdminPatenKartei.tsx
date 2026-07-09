@@ -124,7 +124,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
       if (id === "urkunde") {
         const element = urkundePrintRef.current;
         if (!element) throw new Error("Urkunde nicht bereit");
-        const blob = await renderUrkundeToPdfBlob(element, { forMail: true });
+        const blob = await renderUrkundeToPdfBlob(element);
         attachments.push({
           filename: urkundePdfFilename(data.pate.name, data.urkunde.urkundenNr),
           contentBase64: await blobToBase64(blob),
@@ -135,7 +135,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
       const element = docRefs.current[id];
       if (!element) throw new Error(`Dokument „${id}“ nicht bereit`);
       const meta = patenDokumente.find((doc) => doc.id === id)!;
-      const blob = await renderElementToPdfBlob(element, { forMail: true });
+      const blob = await renderElementToPdfBlob(element);
       attachments.push({
         filename: patenDokumentFilename(meta.filenamePrefix, data.pate.name, data.pate.urkundenNr),
         contentBase64: await blobToBase64(blob),

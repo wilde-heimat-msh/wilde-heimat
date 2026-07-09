@@ -71,6 +71,91 @@ export const patenschaftUrkundeStufeStyles: Record<
   },
 };
 
+/**
+ * Explizite Farben/Verläufe für PDF-Export und Druck.
+ * html2canvas rendert Tailwind-Gradienten und Ring-Utilities oft nicht zuverlässig.
+ */
+export const patenschaftUrkundeStufeRender: Record<
+  PatenschaftStufeId,
+  {
+    band: { background: string };
+    medallion: {
+      background: string;
+      color: string;
+      boxShadow: string;
+      border: string;
+      outline: string;
+      outlineOffset: string;
+    };
+    panel: { backgroundColor: string; borderColor: string };
+    fotoRahmen: { borderColor: string };
+    nameColor: string;
+    priceColor: string;
+    perkDot: { backgroundColor: string };
+    articleBorder: string;
+    innerBorder: string;
+    cornerBorder: string;
+  }
+> = {
+  bronze: {
+    band: { background: "linear-gradient(to right, #78350f, #b45309, #78350f)" },
+    medallion: {
+      background: "linear-gradient(to bottom right, #92400e, #b45309, #451a03)",
+      color: "#fffbeb",
+      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15)",
+      border: "2px solid rgba(217, 119, 6, 0.45)",
+      outline: "2px solid #f5ede0",
+      outlineOffset: "2px",
+    },
+    panel: { backgroundColor: "rgba(120, 53, 15, 0.06)", borderColor: "rgba(146, 64, 14, 0.25)" },
+    fotoRahmen: { borderColor: "rgba(146, 64, 14, 0.35)" },
+    nameColor: "#451a03",
+    priceColor: "#78350f",
+    perkDot: { backgroundColor: "#b45309" },
+    articleBorder: "rgba(120, 53, 15, 0.35)",
+    innerBorder: "rgba(146, 64, 14, 0.15)",
+    cornerBorder: "rgba(146, 64, 14, 0.25)",
+  },
+  silber: {
+    band: { background: "linear-gradient(to right, #78716c, #d6d3d1, #78716c)" },
+    medallion: {
+      background: "linear-gradient(to bottom right, #e7e5e4, #ffffff, #a8a29e)",
+      color: "#292524",
+      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)",
+      border: "2px solid rgba(168, 162, 158, 0.55)",
+      outline: "2px solid #f5ede0",
+      outlineOffset: "2px",
+    },
+    panel: { backgroundColor: "rgba(120, 113, 108, 0.08)", borderColor: "rgba(168, 162, 158, 0.35)" },
+    fotoRahmen: { borderColor: "rgba(120, 113, 108, 0.45)" },
+    nameColor: "#292524",
+    priceColor: "#44403c",
+    perkDot: { backgroundColor: "#78716c" },
+    articleBorder: "rgba(168, 162, 158, 0.55)",
+    innerBorder: "rgba(168, 162, 158, 0.2)",
+    cornerBorder: "rgba(168, 162, 158, 0.35)",
+  },
+  gold: {
+    band: { background: "linear-gradient(to right, #d97706, #facc15, #d97706)" },
+    medallion: {
+      background: "linear-gradient(to bottom right, #fde047, #fbbf24, #ca8a04)",
+      color: "#451a03",
+      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35)",
+      border: "2px solid rgba(234, 179, 8, 0.5)",
+      outline: "2px solid #f5ede0",
+      outlineOffset: "2px",
+    },
+    panel: { backgroundColor: "rgba(234, 179, 8, 0.1)", borderColor: "rgba(202, 138, 4, 0.3)" },
+    fotoRahmen: { borderColor: "rgba(202, 138, 4, 0.4)" },
+    nameColor: "#451a03",
+    priceColor: "#92400e",
+    perkDot: { backgroundColor: "#ca8a04" },
+    articleBorder: "rgba(217, 119, 6, 0.45)",
+    innerBorder: "rgba(202, 138, 4, 0.2)",
+    cornerBorder: "rgba(202, 138, 4, 0.3)",
+  },
+};
+
 /** Inhalte einer personalisierten Patenschaftsurkunde */
 export type PatenschaftUrkundeDaten = {
   pate: string;

@@ -18,8 +18,8 @@ export type PatenMailAttachment = {
   contentBase64: string;
 };
 
-/** Sicher unter Vercel-Request-Limit (~4,5 MB) inkl. JSON-Overhead. */
-const MAX_MAIL_ATTACHMENTS_BYTES = 3.2 * 1024 * 1024;
+/** Entspricht dem Server-Limit (20 MB Anhänge gesamt). */
+const MAX_MAIL_ATTACHMENTS_BYTES = 18 * 1024 * 1024;
 
 type SendFeedback = {
   type: "success" | "error" | "info";

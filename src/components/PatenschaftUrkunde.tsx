@@ -3,7 +3,7 @@
 import { Logo } from "@/components/Logo";
 import {
   getPatenschaftStufe,
-  patenschaftUrkundeStufeStyles,
+  patenschaftUrkundeStufeRender,
   type PatenschaftStufeId,
   type PatenschaftUrkundeDaten,
 } from "@/data/patenschaften";
@@ -15,10 +15,16 @@ import {
   URKUNDE_PREVIEW_SCALE,
   URKUNDE_PREVIEW_WIDTH_PX,
 } from "@/lib/urkundeScale";
-import { forwardRef } from "react";
+import { forwardRef, type CSSProperties } from "react";
 
-function CornerOrnament({ className }: { className: string }) {
-  return <span className={`absolute h-6 w-6 ${className}`} aria-hidden />;
+function CornerOrnament({
+  className,
+  style,
+}: {
+  className: string;
+  style?: CSSProperties;
+}) {
+  return <span className={`absolute h-6 w-6 ${className}`} style={style} aria-hidden />;
 }
 
 function UrkundeHauptblock({
@@ -31,7 +37,7 @@ function UrkundeHauptblock({
   waschbaerFoto: string;
 }) {
   const stufe = getPatenschaftStufe(stufeId);
-  const styles = patenschaftUrkundeStufeStyles[stufeId];
+  const render = patenschaftUrkundeStufeRender[stufeId];
   const manyLeistungen = stufe.leistungen.length >= 4;
 
   return (
@@ -39,7 +45,8 @@ function UrkundeHauptblock({
       <div className="grid grid-cols-[10.5rem_1fr] gap-5 items-start">
         <figure className="text-center">
           <div
-            className={`relative aspect-[3/4] w-full overflow-hidden rounded-lg border-[3px] shadow-md bg-neutral-200 ${styles.fotoRahmen}`}
+            className="relative aspect-[3/4] w-full overflow-hidden rounded-lg border-[3px] shadow-md bg-neutral-200"
+            style={{ borderColor: render.fotoRahmen.borderColor }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -55,23 +62,32 @@ function UrkundeHauptblock({
         </figure>
 
         <div
-          className={`rounded-lg border-[2px] px-4 py-4 text-left ${styles.panel}`}
+          className="rounded-lg border-[2px] px-4 py-4 text-left"
+          style={{
+            backgroundColor: render.panel.backgroundColor,
+            borderColor: render.panel.borderColor,
+          }}
         >
           <p className="text-[12px] uppercase tracking-[0.16em] text-muted font-medium">
             Patenschaftsstufe
           </p>
           <div className="mt-2.5 flex items-center gap-3">
             <div
-              className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${styles.medallion} ${styles.medallionRing}`}
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
+              style={render.medallion}
             >
-              <span className={`text-[12px] font-bold ${styles.nameColor}`}>{stufe.name}</span>
+              <span className="text-[12px] font-bold">{stufe.name}</span>
             </div>
             <div className="min-w-0">
-              <p className={`text-xl font-semibold leading-none ${styles.nameColor}`}>
+              <p
+                className="text-xl font-semibold leading-none"
+                style={{ color: render.nameColor }}
+              >
                 {stufe.name}
               </p>
               <p
-                className={`mt-1 text-xl font-light tabular-nums leading-none ${styles.priceColor}`}
+                className="mt-1 text-xl font-light tabular-nums leading-none"
+                style={{ color: render.priceColor }}
               >
                 {stufe.preis} €
                 <span className="text-[12px] text-muted font-normal"> / Monat</span>
@@ -83,7 +99,13 @@ function UrkundeHauptblock({
         </div>
       </div>
 
-      <div className={`rounded-lg border-[2px] px-5 py-4 ${styles.panel}`}>
+      <div
+        className="rounded-lg border-[2px] px-5 py-4"
+        style={{
+          backgroundColor: render.panel.backgroundColor,
+          borderColor: render.panel.borderColor,
+        }}
+      >
         <p className="text-[11px] uppercase tracking-[0.14em] text-muted font-medium text-left">
           Deine Patenschaft beinhaltet
         </p>
@@ -96,7 +118,8 @@ function UrkundeHauptblock({
               className={`flex items-start gap-2.5 text-forest/90 leading-snug ${manyLeistungen ? "text-[13px]" : "text-[14px]"}`}
             >
               <span
-                className={`mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full ${styles.perkDot}`}
+                className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full"
+                style={render.perkDot}
                 aria-hidden
               />
               {leistung}
@@ -133,36 +156,46 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
       grussbotschaft,
     } = data;
 
-    const styles = patenschaftUrkundeStufeStyles[stufeId];
+    const render = patenschaftUrkundeStufeRender[stufeId];
     const datumLang = formatAbsoluteDateDe(ausgestelltAm);
     const stufe = getPatenschaftStufe(stufeId);
 
     const article = (
       <article
         ref={ref}
-        className={`relative overflow-hidden rounded-sm border-[6px] border-double ${styles.border} bg-[linear-gradient(168deg,#fdf8f0_0%,#f5ede0_48%,#efe4d4_100%)] shadow-[0_8px_32px_-8px_rgba(42,51,38,0.18)] transition-colors duration-300 ${className}`}
+        className={`relative overflow-hidden rounded-sm border-[6px] border-double bg-[linear-gradient(168deg,#fdf8f0_0%,#f5ede0_48%,#efe4d4_100%)] shadow-[0_8px_32px_-8px_rgba(42,51,38,0.18)] transition-colors duration-300 ${className}`}
         style={{
           width: "210mm",
           height: "297mm",
           transform: mode === "preview" ? `scale(${URKUNDE_PREVIEW_SCALE})` : undefined,
           transformOrigin: "top left",
+          borderColor: render.articleBorder,
         }}
         aria-label={`Patenschaftsurkunde für ${pate}, Stufe ${stufe.name}, ${patenschaftUrkundeFormat.label}`}
       >
-        <div className={`h-2 w-full shrink-0 ${styles.band}`} aria-hidden />
+        <div className="h-2 w-full shrink-0" style={render.band} aria-hidden />
 
         <div
-          className={`absolute inset-2.5 top-3.5 bottom-2.5 border-[1.5px] pointer-events-none ${styles.innerBorder}`}
+          className="absolute inset-2.5 top-3.5 bottom-2.5 border-[1.5px] pointer-events-none"
+          style={{ borderColor: render.innerBorder }}
           aria-hidden
         />
 
-        <CornerOrnament className={`top-3.5 left-3.5 border-t-[3px] border-l-[3px] ${styles.corner}`} />
-        <CornerOrnament className={`top-3.5 right-3.5 border-t-[3px] border-r-[3px] ${styles.corner}`} />
         <CornerOrnament
-          className={`bottom-3.5 left-3.5 border-b-[3px] border-l-[3px] ${styles.corner}`}
+          className="top-3.5 left-3.5 border-t-[3px] border-l-[3px]"
+          style={{ borderColor: render.cornerBorder }}
         />
         <CornerOrnament
-          className={`bottom-3.5 right-3.5 border-b-[3px] border-r-[3px] ${styles.corner}`}
+          className="top-3.5 right-3.5 border-t-[3px] border-r-[3px]"
+          style={{ borderColor: render.cornerBorder }}
+        />
+        <CornerOrnament
+          className="bottom-3.5 left-3.5 border-b-[3px] border-l-[3px]"
+          style={{ borderColor: render.cornerBorder }}
+        />
+        <CornerOrnament
+          className="bottom-3.5 right-3.5 border-b-[3px] border-r-[3px]"
+          style={{ borderColor: render.cornerBorder }}
         />
 
         <div className="relative flex h-[calc(100%-0.5rem)] min-h-0 flex-col px-9 py-6 text-center">
