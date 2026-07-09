@@ -3,19 +3,28 @@ import { jsPDF } from "jspdf";
 
 type PdfRenderOptions = {
   backgroundColor?: string;
+  /** Niedrigere Auflösung für E-Mail-Anhänge (kleinere Dateien). */
+  forMail?: boolean;
 };
 
-async function renderCanvas(element: HTMLElement, backgroundColor: string) {
+async function renderCanvas(element: HTMLElement, backgroundColor: string, scale = 2) {
   return html2canvas(element, {
-    scale: 2,
+    scale,
     useCORS: true,
     backgroundColor,
     logging: false,
   });
 }
 
-function canvasToPdf(canvas: HTMLCanvasElement, singlePage = false): jsPDF {
-  const imgData = canvas.toDataURL("image/png");
+function canvasToPdf(
+  canvas: HTMLCanvasElement,
+  singlePage = false,
+  options: { forMail?: boolean } = {}
+): jsPDF {
+  const format = options.forMail ? "image/jpeg" : "image/png";
+  const quality = options.forMail ? 0.82 : undefined;
+  const imgData = canvas.toDataURL(format, quality);
+  const imageType = options.forMail ? "JPEG" : "PNG";
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
   const pageWidth = 210;
@@ -24,19 +33,26 @@ function canvasToPdf(canvas: HTMLCanvasElement, singlePage = false): jsPDF {
   const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
   if (singlePage || imgHeight <= pageHeight) {
-    pdf.addImage(imgData, "PNG", 0, 0, singlePage ? pageWidth : imgWidth, singlePage ? pageHeight : imgHeight);
+    pdf.addImage(
+      imgData,
+      imageType,
+      0,
+      0,
+      singlePage ? pageWidth : imgWidth,
+      singlePage ? pageHeight : imgHeight
+    );
     return pdf;
   }
 
   let heightLeft = imgHeight;
   let position = 0;
-  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+  pdf.addImage(imgData, imageType, 0, position, imgWidth, imgHeight);
   heightLeft -= pageHeight;
 
   while (heightLeft > 0) {
     position = heightLeft - imgHeight;
     pdf.addPage();
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    pdf.addImage(imgData, imageType, 0, position, imgWidth, imgHeight);
     heightLeft -= pageHeight;
   }
 
@@ -47,14 +63,19 @@ export async function renderElementToPdfBlob(
   element: HTMLElement,
   options: PdfRenderOptions = {}
 ): Promise<Blob> {
-  const canvas = await renderCanvas(element, options.backgroundColor ?? "#ffffff");
-  const pdf = canvasToPdf(canvas, false);
+  const scale = options.forMail ? 1.35 : 2;
+  const canvas = await renderCanvas(element, options.backgroundColor ?? "#ffffff", scale);
+  const pdf = canvasToPdf(canvas, false, { forMail: options.forMail });
   return pdf.output("blob");
 }
 
-export async function renderUrkundeToPdfBlob(element: HTMLElement): Promise<Blob> {
-  const canvas = await renderCanvas(element, "#fdf8f0");
-  const pdf = canvasToPdf(canvas, true);
+export async function renderUrkundeToPdfBlob(
+  element: HTMLElement,
+  options: Pick<PdfRenderOptions, "forMail"> = {}
+): Promise<Blob> {
+  const scale = options.forMail ? 1.35 : 2;
+  const canvas = await renderCanvas(element, "#fdf8f0", scale);
+  const pdf = canvasToPdf(canvas, true, { forMail: options.forMail });
   return pdf.output("blob");
 }
 

@@ -11,11 +11,19 @@ import {
 } from "@/data/patenEmailVorlagen";
 import { patenschaftsStufen } from "@/data/site";
 import type { PatenschaftPate } from "@/types/patenschaftPortal";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export type PatenMailAttachment = {
   filename: string;
   contentBase64: string;
+};
+
+/** Sicher unter Vercel-Request-Limit (~4,5 MB) inkl. JSON-Overhead. */
+const MAX_MAIL_ATTACHMENTS_BYTES = 3.2 * 1024 * 1024;
+
+type SendFeedback = {
+  type: "success" | "error" | "info";
+  message: string;
 };
 
 type PatenDokumentVersandProps = {
@@ -50,6 +58,47 @@ export function PatenDokumentVersand({
   const [body, setBody] = useState("");
   const [selectedDocs, setSelectedDocs] = useState<PatenDokumentId[]>(["urkunde"]);
   const [sending, setSending] = useState(false);
+  const [feedback, setFeedback] = useState<SendFeedback | null>(null);
+  const feedbackRef = useRef<HTMLDivElement>(null);
+
+  function showFeedback(next: SendFeedback | null) {
+    setFeedback(next);
+    if (next) {
+      requestAnimationFrame(() => {
+        feedbackRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+    }
+  }
+
+  function attachmentBytes(attachments: PatenMailAttachment[]): number {
+    return attachments.reduce((sum, file) => {
+      const padding = file.contentBase64.endsWith("==") ? 2 : file.contentBase64.endsWith("=") ? 1 : 0;
+      return sum + Math.floor((file.contentBase64.length * 3) / 4) - padding;
+    }, 0);
+  }
+
+  async function parseSendMailResponse(res: Response): Promise<{ error?: string; sentTo?: string }> {
+    const raw = await res.text();
+    if (!raw.trim()) {
+      if (res.status === 413) {
+        return {
+          error:
+            "Die PDF-Anhänge sind zu groß. Bitte weniger Dokumente auswählen oder einzeln per E-Mail senden.",
+        };
+      }
+      return { error: `Serverfehler (${res.status}). Bitte erneut versuchen.` };
+    }
+    try {
+      return JSON.parse(raw) as { error?: string; sentTo?: string };
+    } catch {
+      return {
+        error:
+          res.status === 413
+            ? "Die PDF-Anhänge sind zu groß. Bitte weniger Dokumente auswählen oder einzeln per E-Mail senden."
+            : `Unerwartete Server-Antwort (${res.status}). Bitte erneut versuchen.`,
+      };
+    }
+  }
 
   const platzhalter = useMemo(() => {
     return buildPatenEmailPlatzhalter({
@@ -79,26 +128,48 @@ export function PatenDokumentVersand({
 
   async function handleSend() {
     if (!mailConfigured) {
-      onError?.("E-Mail-Versand ist noch nicht eingerichtet (SMTP in Vercel fehlt).");
+      const message = "E-Mail-Versand ist noch nicht eingerichtet (SMTP in Vercel fehlt).";
+      showFeedback({ type: "error", message });
+      onError?.(message);
       return;
     }
 
     if (!to.trim()) {
-      onError?.("Bitte eine E-Mail-Adresse des Paten angeben.");
+      const message = "Bitte eine E-Mail-Adresse des Paten angeben.";
+      showFeedback({ type: "error", message });
+      onError?.(message);
       return;
     }
 
     if (selectedDocs.length === 0 && getPatenEmailVorlage(vorlageId).dokumente.length > 0) {
-      onError?.("Bitte mindestens ein Dokument als Anhang auswählen.");
+      const message = "Bitte mindestens ein Dokument als Anhang auswählen.";
+      showFeedback({ type: "error", message });
+      onError?.(message);
       return;
     }
 
     setSending(true);
     onError?.(null);
+    showFeedback(
+      selectedDocs.length > 0
+        ? { type: "info", message: "PDFs werden erstellt … Das kann einige Sekunden dauern." }
+        : { type: "info", message: "E-Mail wird gesendet …" }
+    );
 
     try {
       const attachments =
         selectedDocs.length > 0 ? await generateAttachments(selectedDocs) : [];
+
+      const totalBytes = attachmentBytes(attachments);
+      if (totalBytes > MAX_MAIL_ATTACHMENTS_BYTES) {
+        const message = `Die PDF-Anhänge sind zusammen zu groß (${Math.round(totalBytes / 1024 / 1024)} MB). Bitte weniger Dokumente auswählen oder einzeln senden.`;
+        showFeedback({ type: "error", message });
+        onError?.(message);
+        return;
+      }
+
+      showFeedback({ type: "info", message: "E-Mail wird versendet …" });
+
       const res = await fetch(`/api/admin/paten/${encodeURIComponent(pateId)}/send-mail`, {
         method: "POST",
         credentials: "same-origin",
@@ -111,19 +182,27 @@ export function PatenDokumentVersand({
         }),
       });
 
-      const json = (await res.json()) as { error?: string; sentTo?: string };
+      const json = await parseSendMailResponse(res);
       if (!res.ok) {
-        onError?.(json.error ?? "E-Mail konnte nicht gesendet werden.");
+        const message = json.error ?? "E-Mail konnte nicht gesendet werden.";
+        showFeedback({ type: "error", message });
+        onError?.(message);
         return;
       }
 
-      onSent?.(
+      const successMessage =
         attachments.length > 0
-          ? `E-Mail mit ${attachments.length} Anhang/Anhängen wurde an ${json.sentTo ?? to} gesendet.`
-          : `E-Mail wurde an ${json.sentTo ?? to} gesendet.`
-      );
-    } catch {
-      onError?.("E-Mail konnte nicht gesendet werden.");
+          ? `E-Mail mit ${attachments.length} Anhang/Anhängen wurde erfolgreich an ${json.sentTo ?? to} gesendet.`
+          : `E-Mail wurde erfolgreich an ${json.sentTo ?? to} gesendet.`;
+      showFeedback({ type: "success", message: successMessage });
+      onSent?.(successMessage);
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "E-Mail konnte nicht gesendet werden.";
+      showFeedback({ type: "error", message });
+      onError?.(message);
     } finally {
       setSending(false);
     }
@@ -243,6 +322,23 @@ export function PatenDokumentVersand({
             ? "E-Mail mit PDFs senden"
             : "E-Mail senden"}
       </button>
+
+      {feedback ? (
+        <div
+          ref={feedbackRef}
+          role="status"
+          aria-live="polite"
+          className={`rounded-xl border px-4 py-3 text-sm ${
+            feedback.type === "success"
+              ? "border-green-200 bg-green-50 text-green-900"
+              : feedback.type === "error"
+                ? "border-red-200 bg-red-50 text-red-800"
+                : "border-amber-200 bg-amber-50 text-amber-900"
+          }`}
+        >
+          {feedback.message}
+        </div>
+      ) : null}
     </section>
   );
 }
