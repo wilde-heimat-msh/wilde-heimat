@@ -259,10 +259,11 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
     const article = (
       <article
         ref={ref}
-        className={`relative overflow-hidden rounded-sm border-[6px] border-double bg-[linear-gradient(168deg,#fdf8f0_0%,#f5ede0_48%,#efe4d4_100%)] transition-colors duration-300 ${className}`}
+        className={`relative rounded-sm border-[6px] border-double bg-[linear-gradient(168deg,#fdf8f0_0%,#f5ede0_48%,#efe4d4_100%)] transition-colors duration-300 ${isExport ? "overflow-visible" : "overflow-hidden"} ${className}`}
         style={{
           width: "210mm",
-          height: "297mm",
+          height: isExport ? "auto" : "297mm",
+          minHeight: isExport ? "297mm" : undefined,
           boxSizing: "border-box",
           transform: isScaledPreview ? `scale(${URKUNDE_PREVIEW_SCALE})` : undefined,
           transformOrigin: "top left",
@@ -295,7 +296,7 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
           style={{ borderColor: render.cornerBorder }}
         />
 
-        <div className="relative flex h-[calc(100%-0.5rem)] min-h-0 flex-col px-9 py-6 text-center">
+        <div className={`relative flex min-h-0 flex-col text-center ${isExport ? "px-8 py-5" : "px-9 py-6"}`}>
           <header className="shrink-0">
             <Logo
               surface="light"
@@ -322,7 +323,7 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
             </p>
           </header>
 
-          <main className="flex min-h-0 flex-1 flex-col py-4">
+          <main className={`flex min-h-0 flex-col ${isExport ? "py-2" : "py-4"}`}>
             <div className="shrink-0 space-y-0.5">
               <p className="text-[14px] text-muted">Hiermit bestätigen wir, dass</p>
               <p className="text-[1.75rem] font-medium text-forest leading-tight">{pate}</p>
@@ -348,8 +349,8 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
             </div>
           </main>
 
-          <footer className="shrink-0 border-t-[1.5px] border-amber-900/15 pt-4 pb-0.5">
-            <div className="grid grid-cols-2 gap-x-6 text-left text-[13px] mb-4">
+          <footer className={`shrink-0 border-t-[1.5px] border-amber-900/15 ${isExport ? "pt-3 pb-1" : "pt-4 pb-0.5"}`}>
+            <div className={`grid grid-cols-2 gap-x-6 text-left text-[13px] ${isExport ? "mb-3" : "mb-4"}`}>
               <div>
                 <p className="uppercase tracking-wider text-muted text-[10px] font-medium">
                   Ausgestellt in

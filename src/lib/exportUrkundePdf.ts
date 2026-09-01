@@ -85,34 +85,105 @@ async function waitForElementAssets(element: HTMLElement): Promise<void> {
   );
 }
 
+function prepareUrkundeCloneForCapture(cloned: HTMLElement) {
+  cloned.style.overflow = "visible";
+  cloned.style.height = "auto";
+  cloned.style.maxHeight = "none";
+  cloned.classList.remove("overflow-hidden");
+
+  cloned.querySelectorAll<HTMLElement>("*").forEach((el) => {
+    el.classList.remove("overflow-hidden");
+    if (getComputedStyle(el).overflow === "hidden") {
+      el.style.overflow = "visible";
+    }
+  });
+}
+
 async function renderCanvas(
   element: HTMLElement,
   backgroundColor: string,
-  scale = PDF_EXPORT_SCALE
+  scale = PDF_EXPORT_SCALE,
+  options: { fullHeight?: boolean } = {}
 ) {
   const restoreVisibility = revealPrintSourceForCapture(element);
 
   try {
-    return await html2canvas(element, {
+    const canvasOptions: Parameters<typeof html2canvas>[1] = {
       scale,
       useCORS: true,
       backgroundColor,
       logging: false,
       scrollX: 0,
       scrollY: 0,
-      width: element.offsetWidth || URKUNDE_A4_WIDTH_PX,
-      height: element.offsetHeight || URKUNDE_A4_HEIGHT_PX,
       onclone: (_doc, cloned) => {
         stripShadows(cloned);
         unhideCloneForCapture(cloned);
+        if (options.fullHeight) {
+          prepareUrkundeCloneForCapture(cloned);
+        }
       },
-    });
+    };
+
+    if (!options.fullHeight) {
+      canvasOptions.width = element.offsetWidth || URKUNDE_A4_WIDTH_PX;
+      canvasOptions.height = element.offsetHeight || URKUNDE_A4_HEIGHT_PX;
+    }
+
+    return await html2canvas(element, canvasOptions);
   } finally {
     restoreVisibility();
   }
 }
 
+function parseHexBackground(hex: string): [number, number, number] {
+  const normalized = hex.replace("#", "");
+  if (normalized.length !== 6) return [255, 255, 255];
+  return [
+    Number.parseInt(normalized.slice(0, 2), 16),
+    Number.parseInt(normalized.slice(2, 4), 16),
+    Number.parseInt(normalized.slice(4, 6), 16),
+  ];
+}
+
+function canvasToFitSingleA4Page(
+  canvas: HTMLCanvasElement,
+  backgroundColor = "#ffffff"
+): jsPDF {
+  const imgData = canvas.toDataURL("image/png");
+  const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+  const pageWidth = A4_WIDTH_MM;
+  const pageHeight = A4_HEIGHT_MM;
+  const imgAspect = canvas.width / canvas.height;
+  const pageAspect = pageWidth / pageHeight;
+
+  let drawWidth: number;
+  let drawHeight: number;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  if (imgAspect > pageAspect) {
+    drawWidth = pageWidth;
+    drawHeight = pageWidth / imgAspect;
+    offsetY = (pageHeight - drawHeight) / 2;
+  } else {
+    drawHeight = pageHeight;
+    drawWidth = pageHeight * imgAspect;
+    offsetX = (pageWidth - drawWidth) / 2;
+  }
+
+  const [r, g, b] = parseHexBackground(backgroundColor);
+  pdf.setFillColor(r, g, b);
+  pdf.rect(0, 0, pageWidth, pageHeight, "F");
+  pdf.addImage(imgData, "PNG", offsetX, offsetY, drawWidth, drawHeight);
+  return pdf;
+}
+
 function canvasToPdf(canvas: HTMLCanvasElement, singlePage = false): jsPDF {
+  if (singlePage) {
+    return canvasToFitSingleA4Page(canvas);
+  }
+
   const imgData = canvas.toDataURL("image/png");
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
@@ -121,15 +192,8 @@ function canvasToPdf(canvas: HTMLCanvasElement, singlePage = false): jsPDF {
   const imgWidth = pageWidth;
   const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  if (singlePage || imgHeight <= pageHeight) {
-    pdf.addImage(
-      imgData,
-      "PNG",
-      0,
-      0,
-      singlePage ? pageWidth : imgWidth,
-      singlePage ? pageHeight : imgHeight
-    );
+  if (imgHeight <= pageHeight) {
+    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
     return pdf;
   }
 
@@ -159,8 +223,10 @@ export async function renderElementToPdfBlob(
 
 export async function renderUrkundeToPdfBlob(element: HTMLElement): Promise<Blob> {
   await waitForElementAssets(element);
-  const canvas = await renderCanvas(element, "#fdf8f0", URKUNDE_PDF_EXPORT_SCALE);
-  const pdf = canvasToPdf(canvas, true);
+  const canvas = await renderCanvas(element, "#fdf8f0", URKUNDE_PDF_EXPORT_SCALE, {
+    fullHeight: true,
+  });
+  const pdf = canvasToFitSingleA4Page(canvas, "#fdf8f0");
   return pdf.output("blob");
 }
 
