@@ -490,12 +490,14 @@ input[type="time"]::-webkit-date-and-time-value {
 /* Admin: Urkunden drucken – Vektorausgabe über den Browser */
 .admin-urkunden-print-source {
   position: fixed;
-  left: -10000px;
+  left: 0;
   top: 0;
   width: 210mm;
   height: 297mm;
+  visibility: hidden;
   pointer-events: none;
   overflow: hidden;
+  z-index: -1;
 }
 
 @media print {

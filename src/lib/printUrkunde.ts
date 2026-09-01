@@ -1,26 +1,45 @@
-/** Wartet auf Schriftarten und Bilder in der versteckten Druckquelle. */
+const PRINT_PREP_TIMEOUT_MS = 3000;
+
+function waitForImage(img: HTMLImageElement, timeoutMs: number): Promise<void> {
+  if (img.complete) return Promise.resolve();
+
+  return Promise.race([
+    new Promise<void>((resolve) => {
+      img.addEventListener("load", () => resolve(), { once: true });
+      img.addEventListener("error", () => resolve(), { once: true });
+    }),
+    new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
+  ]);
+}
+
+/** Wartet auf Schriftarten und Bilder in der versteckten Druckquelle (mit Timeout). */
 export async function waitForUrkundePrintAssets(): Promise<void> {
   if (typeof document === "undefined") return;
 
-  await document.fonts.ready;
+  const prepare = (async () => {
+    await document.fonts.ready;
 
-  const printRoot = document.querySelector(".admin-urkunden-print-source");
-  if (!printRoot) return;
+    const printRoot = document.querySelector(".admin-urkunden-print-source");
+    if (!printRoot) return;
 
-  const images = printRoot.querySelectorAll("img");
-  await Promise.all(
-    Array.from(images).map(
-      (img) =>
-        new Promise<void>((resolve) => {
-          if (img.complete) {
-            resolve();
-            return;
-          }
-          img.addEventListener("load", () => resolve(), { once: true });
-          img.addEventListener("error", () => resolve(), { once: true });
-        })
-    )
-  );
+    const images = printRoot.querySelectorAll("img");
+    await Promise.all(
+      Array.from(images).map(async (img) => {
+        img.loading = "eager";
+        await waitForImage(img, 1500);
+        try {
+          await img.decode();
+        } catch {
+          /* Bild trotzdem drucken */
+        }
+      })
+    );
+  })();
+
+  await Promise.race([
+    prepare,
+    new Promise<void>((resolve) => setTimeout(resolve, PRINT_PREP_TIMEOUT_MS)),
+  ]);
 }
 
 /**

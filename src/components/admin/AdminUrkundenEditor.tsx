@@ -270,7 +270,7 @@ export function AdminUrkundenEditor() {
               disabled={printing}
               className="min-h-11 px-4 py-3 text-sm font-medium bg-foreground text-background hover:bg-accent rounded-xl transition-all duration-200 disabled:opacity-60"
             >
-              {printing ? "Druck wird vorbereitet …" : "Drucken / Als PDF speichern"}
+              {printing ? "Wird vorbereitet …" : "Urkunde speichern / drucken"}
             </button>
             <button
               type="button"

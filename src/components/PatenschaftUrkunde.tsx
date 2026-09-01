@@ -150,6 +150,7 @@ function UrkundeHauptblock({
               alt={`${waschbaerName} – Patentier`}
               className="h-full w-full object-cover object-center"
               crossOrigin="anonymous"
+              loading={printMode ? "eager" : "lazy"}
             />
           </div>
           <figcaption className="mt-2 text-[12px] uppercase tracking-[0.12em] text-muted font-medium">
@@ -303,7 +304,13 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
 
         <div className="relative flex h-[calc(100%-0.5rem)] min-h-0 flex-col px-9 py-6 text-center">
           <header className="shrink-0">
-            <Logo surface="light" size={64} className="mx-auto h-16 w-16" alt="" />
+            <Logo
+              surface="light"
+              size={64}
+              className="mx-auto h-16 w-16"
+              alt=""
+              priority={isPrintMode}
+            />
             <p className="mt-1.5 text-[14px] uppercase tracking-[0.22em] text-forest/80 font-medium">
               Wilde Heimat
             </p>

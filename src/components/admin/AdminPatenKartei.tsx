@@ -92,9 +92,6 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
     try {
       if (id === "urkunde") {
         await printUrkundeDocument();
-        setStatus(
-          "Druckdialog geöffnet. Für scharfe Qualität: Ziel „Als PDF speichern“ oder Drucker, Skalierung 100 %."
-        );
       } else {
         const element = docRefs.current[id];
         if (!element) throw new Error("Dokument nicht bereit");
@@ -106,11 +103,11 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
       }
       setStatus(
         id === "urkunde"
-          ? "Druckdialog geöffnet."
+          ? "Druckdialog sollte sich öffnen. Ziel: „Als PDF speichern“ oder Drucker · 100 % · keine Ränder."
           : "PDF wurde gespeichert."
       );
     } catch {
-      setStatus("PDF-Export fehlgeschlagen.");
+      setStatus("Fehlgeschlagen. Bitte Seite neu laden und erneut versuchen.");
     } finally {
       setExportingId(null);
     }
@@ -158,7 +155,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
         await new Promise((resolve) => setTimeout(resolve, 400));
       }
       setStatus(
-        "Alle Begleitdokumente als PDF gespeichert. Die Urkunde bitte separat über „Drucken / PDF“."
+        "Alle Begleitdokumente als PDF gespeichert. Die Urkunde bitte separat über „Urkunde speichern / drucken“."
       );
     } finally {
       setExportingId(null);
@@ -353,15 +350,15 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
                       <button
                         type="button"
                         onClick={() => exportDocument(doc.id)}
-                        disabled={exportingId !== null}
+                        disabled={exportingId === doc.id}
                         className="min-h-8 px-3 text-xs rounded-lg bg-foreground text-background hover:bg-accent disabled:opacity-60"
                       >
                         {exportingId === doc.id
                           ? doc.id === "urkunde"
-                            ? "Öffne Druck …"
+                            ? "Wird vorbereitet …"
                             : "Erstelle PDF …"
                           : doc.id === "urkunde"
-                            ? "Drucken / PDF"
+                            ? "Urkunde speichern / drucken"
                             : "PDF speichern"}
                       </button>
                     </div>
