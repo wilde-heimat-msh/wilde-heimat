@@ -28,39 +28,27 @@ function stripShadows(root: HTMLElement) {
   });
 }
 
-/** Export-Quelle ist per CSS unsichtbar – html2canvas braucht sie kurz sichtbar. */
 function revealPrintSourceForCapture(element: HTMLElement): () => void {
   const root = element.closest<HTMLElement>(HIDDEN_EXPORT_SOURCE_SELECTOR);
   if (!root) {
     return () => {};
   }
 
-  const prevVisibility = root.style.visibility;
-  root.style.visibility = "visible";
+  const prevLeft = root.style.left;
+  root.style.left = "0";
   void root.offsetHeight;
 
   return () => {
-    if (prevVisibility) {
-      root.style.visibility = prevVisibility;
+    if (prevLeft) {
+      root.style.left = prevLeft;
     } else {
-      root.style.removeProperty("visibility");
+      root.style.removeProperty("left");
     }
   };
 }
 
 function unhideCloneForCapture(cloned: HTMLElement) {
   cloned.style.visibility = "visible";
-  let parent = cloned.parentElement;
-  while (parent) {
-    if (
-      parent.classList.contains("admin-urkunden-print-source") ||
-      parent.classList.contains("admin-paten-dokument-export-source")
-    ) {
-      parent.style.visibility = "visible";
-      break;
-    }
-    parent = parent.parentElement;
-  }
 }
 
 async function waitForElementAssets(element: HTMLElement): Promise<void> {
@@ -89,9 +77,9 @@ async function renderCanvas(
   element: HTMLElement,
   backgroundColor: string,
   scale = PDF_EXPORT_SCALE,
-  options: { preserveShadows?: boolean } = {}
+  options: { stripShadows?: boolean } = {}
 ) {
-  const restoreVisibility = revealPrintSourceForCapture(element);
+  const restoreCapture = revealPrintSourceForCapture(element);
 
   try {
     return await html2canvas(element, {
@@ -104,30 +92,18 @@ async function renderCanvas(
       width: element.offsetWidth || URKUNDE_A4_WIDTH_PX,
       height: element.offsetHeight || URKUNDE_A4_HEIGHT_PX,
       onclone: (_doc, cloned) => {
-        if (!options.preserveShadows) {
+        unhideCloneForCapture(cloned);
+        if (options.stripShadows !== false) {
           stripShadows(cloned);
         }
-        unhideCloneForCapture(cloned);
       },
     });
   } finally {
-    restoreVisibility();
+    restoreCapture();
   }
-}
-
-/** Urkunde 1:1 auf A4 – exakt wie Vorschau, ohne Skalierung/Letterboxing. */
-function canvasToPdfExactA4(canvas: HTMLCanvasElement): jsPDF {
-  const imgData = canvas.toDataURL("image/png");
-  const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  pdf.addImage(imgData, "PNG", 0, 0, A4_WIDTH_MM, A4_HEIGHT_MM);
-  return pdf;
 }
 
 function canvasToPdf(canvas: HTMLCanvasElement, singlePage = false): jsPDF {
-  if (singlePage) {
-    return canvasToPdfExactA4(canvas);
-  }
-
   const imgData = canvas.toDataURL("image/png");
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
@@ -136,8 +112,15 @@ function canvasToPdf(canvas: HTMLCanvasElement, singlePage = false): jsPDF {
   const imgWidth = pageWidth;
   const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  if (imgHeight <= pageHeight) {
-    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+  if (singlePage || imgHeight <= pageHeight) {
+    pdf.addImage(
+      imgData,
+      "PNG",
+      0,
+      0,
+      singlePage ? pageWidth : imgWidth,
+      singlePage ? pageHeight : imgHeight
+    );
     return pdf;
   }
 
@@ -167,10 +150,10 @@ export async function renderElementToPdfBlob(
 
 export async function renderUrkundeToPdfBlob(element: HTMLElement): Promise<Blob> {
   await waitForElementAssets(element);
-  const canvas = await renderCanvas(element, "#ffffff", URKUNDE_PDF_EXPORT_SCALE, {
-    preserveShadows: true,
+  const canvas = await renderCanvas(element, "#fdf8f0", URKUNDE_PDF_EXPORT_SCALE, {
+    stripShadows: false,
   });
-  const pdf = canvasToPdfExactA4(canvas);
+  const pdf = canvasToPdf(canvas, true);
   return pdf.output("blob");
 }
 

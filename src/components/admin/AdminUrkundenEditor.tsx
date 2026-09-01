@@ -42,7 +42,7 @@ export function AdminUrkundenEditor() {
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [loadingPate, setLoadingPate] = useState(Boolean(pateId));
-  const printRef = useRef<HTMLDivElement>(null);
+  const printRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (pateId) {
@@ -114,7 +114,7 @@ export function AdminUrkundenEditor() {
 
     try {
       await printUrkundeDocument();
-      setStatus("Druckdialog geöffnet – 1 Seite, identisch zur gespeicherten PDF.");
+      setStatus("Druckdialog geöffnet.");
     } catch {
       setStatus("Drucken fehlgeschlagen.");
     } finally {
@@ -302,7 +302,7 @@ export function AdminUrkundenEditor() {
               Drucken
             </button>
             <p className="text-[11px] text-muted leading-snug">
-              Vorschau, PDF, E-Mail und Druck sind identisch (1 Seite A4).
+              PDF und E-Mail-Anhang sind identisch. Drucken öffnet den Browser-Druckdialog.
             </p>
             <button
               type="button"

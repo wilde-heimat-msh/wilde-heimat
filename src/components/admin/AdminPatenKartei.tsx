@@ -59,7 +59,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
   const [printingUrkunde, setPrintingUrkunde] = useState(false);
   const [previewDocId, setPreviewDocId] = useState<PatenDokumentId | null>(null);
 
-  const urkundePrintRef = useRef<HTMLDivElement>(null);
+  const urkundePrintRef = useRef<HTMLElement>(null);
   const docRefs = useRef<Partial<Record<PatenDokumentId, HTMLElement | null>>>({});
 
   const loadKartei = useCallback(async () => {
@@ -128,7 +128,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
 
     try {
       await printUrkundeDocument();
-      setStatus("Druckdialog geöffnet – 1 Seite, identisch zur gespeicherten PDF.");
+      setStatus("Druckdialog geöffnet.");
     } catch {
       setStatus("Drucken fehlgeschlagen.");
     } finally {
