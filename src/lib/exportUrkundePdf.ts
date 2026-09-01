@@ -25,9 +25,12 @@ function stripShadows(root: HTMLElement) {
   });
 }
 
-/** Druckquelle ist per CSS unsichtbar – html2canvas braucht sie kurz sichtbar. */
+const HIDDEN_EXPORT_SOURCE_SELECTOR =
+  ".admin-urkunden-print-source, .admin-paten-dokument-export-source";
+
+/** Export-Quelle ist per CSS unsichtbar – html2canvas braucht sie kurz sichtbar. */
 function revealPrintSourceForCapture(element: HTMLElement): () => void {
-  const root = element.closest<HTMLElement>(".admin-urkunden-print-source");
+  const root = element.closest<HTMLElement>(HIDDEN_EXPORT_SOURCE_SELECTOR);
   if (!root) {
     return () => {};
   }
@@ -49,7 +52,10 @@ function unhideCloneForCapture(cloned: HTMLElement) {
   cloned.style.visibility = "visible";
   let parent = cloned.parentElement;
   while (parent) {
-    if (parent.classList.contains("admin-urkunden-print-source")) {
+    if (
+      parent.classList.contains("admin-urkunden-print-source") ||
+      parent.classList.contains("admin-paten-dokument-export-source")
+    ) {
       parent.style.visibility = "visible";
       break;
     }

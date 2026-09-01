@@ -114,7 +114,7 @@ export function AdminUrkundenEditor() {
 
     try {
       await printUrkundeDocument();
-      setStatus("Druckdialog geöffnet – gleiches Layout wie Vorschau und PDF.");
+      setStatus("Druckdialog geöffnet – nur 1 Seite. Kopf-/Fußzeilen aus, Hintergrund drucken an.");
     } catch {
       setStatus("Drucken fehlgeschlagen.");
     } finally {

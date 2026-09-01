@@ -128,7 +128,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
 
     try {
       await printUrkundeDocument();
-      setStatus("Druckdialog geöffnet – gleiches Layout wie Vorschau und PDF.");
+      setStatus("Druckdialog geöffnet – nur 1 Seite. Kopf-/Fußzeilen aus, Hintergrund drucken an.");
     } catch {
       setStatus("Drucken fehlgeschlagen.");
     } finally {
@@ -467,10 +467,16 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
         </>
       ) : null}
 
-      {/* Versteckte Druckquellen für PDF-Export */}
+      {/* Nur Urkunde für Browser-Druck */}
       {data && docCtx ? (
         <div className="admin-urkunden-print-source" aria-hidden>
           <PatenschaftUrkunde ref={urkundePrintRef} data={data.urkunde} mode="a4" />
+        </div>
+      ) : null}
+
+      {/* Andere Dokumente nur für PDF-Export (nicht mitdrucken) */}
+      {data && docCtx ? (
+        <div className="admin-paten-dokument-export-source" aria-hidden>
           {patenDokumente
             .filter((doc) => doc.id !== "urkunde")
             .map((doc) => (
