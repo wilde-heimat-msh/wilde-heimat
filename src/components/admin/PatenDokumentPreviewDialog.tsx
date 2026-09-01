@@ -107,7 +107,7 @@ export function PatenDokumentPreviewDialog({
               disabled={exporting || printing}
               className="min-h-11 px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted-light/60 disabled:opacity-60"
             >
-              {printing ? "Druck wird vorbereitet …" : "Drucken"}
+              {printing ? "Wird vorbereitet …" : "Drucken"}
             </button>
           ) : null}
           <button

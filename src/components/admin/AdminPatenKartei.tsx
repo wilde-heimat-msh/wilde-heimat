@@ -128,7 +128,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
 
     try {
       await printUrkundeDocument();
-      setStatus("Druckdialog geöffnet – nur 1 Seite. Kopf-/Fußzeilen aus, Hintergrund drucken an.");
+      setStatus("Druckdialog geöffnet – 1 Seite, identisch zur gespeicherten PDF.");
     } catch {
       setStatus("Drucken fehlgeschlagen.");
     } finally {
@@ -385,7 +385,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
                           disabled={exportingId !== null || printingUrkunde}
                           className="min-h-8 px-3 text-xs rounded-lg border border-border hover:bg-muted-light/60 disabled:opacity-60"
                         >
-                          {printingUrkunde ? "Druck wird vorbereitet …" : "Drucken"}
+                          {printingUrkunde ? "Wird vorbereitet …" : "Drucken"}
                         </button>
                       ) : null}
                     </div>
@@ -443,7 +443,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
                   disabled={exportingId !== null || printingUrkunde}
                   className="min-h-8 px-3 text-xs rounded-lg border border-border bg-background hover:bg-muted-light/60 disabled:opacity-60"
                 >
-                  {printingUrkunde ? "Druck wird vorbereitet …" : "Drucken"}
+                  {printingUrkunde ? "Wird vorbereitet …" : "Drucken"}
                 </button>
               </div>
             </div>

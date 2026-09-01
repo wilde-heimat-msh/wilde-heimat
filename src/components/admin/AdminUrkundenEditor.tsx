@@ -114,7 +114,7 @@ export function AdminUrkundenEditor() {
 
     try {
       await printUrkundeDocument();
-      setStatus("Druckdialog geöffnet – nur 1 Seite. Kopf-/Fußzeilen aus, Hintergrund drucken an.");
+      setStatus("Druckdialog geöffnet – 1 Seite, identisch zur gespeicherten PDF.");
     } catch {
       setStatus("Drucken fehlgeschlagen.");
     } finally {
@@ -302,7 +302,7 @@ export function AdminUrkundenEditor() {
               Drucken
             </button>
             <p className="text-[11px] text-muted leading-snug">
-              PDF und E-Mail-Anhang sind identisch. Drucken nutzt dasselbe Layout (Vektortext).
+              PDF, E-Mail-Anhang und Drucken sind identisch (jeweils 1 A4-Seite).
             </p>
             <button
               type="button"
