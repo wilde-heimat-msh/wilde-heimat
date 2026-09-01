@@ -302,7 +302,7 @@ export function AdminUrkundenEditor() {
               Drucken
             </button>
             <p className="text-[11px] text-muted leading-snug">
-              PDF, E-Mail-Anhang und Drucken sind identisch (jeweils 1 A4-Seite).
+              Vorschau, PDF, E-Mail und Druck sind identisch (1 Seite A4).
             </p>
             <button
               type="button"
