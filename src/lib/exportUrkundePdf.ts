@@ -18,6 +18,7 @@ function stripShadows(root: HTMLElement) {
   root.style.boxShadow = "none";
   root.style.textShadow = "none";
   root.style.filter = "none";
+  root.style.borderStyle = "solid";
   root.querySelectorAll<HTMLElement>("*").forEach((el) => {
     el.style.boxShadow = "none";
     el.style.textShadow = "none";
