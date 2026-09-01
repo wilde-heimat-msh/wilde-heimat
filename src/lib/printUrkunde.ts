@@ -40,11 +40,11 @@ async function waitForUrkundePrintAssets(root: ParentNode): Promise<void> {
 }
 
 function getUrkundePrintElement(): HTMLElement {
-  const article = document.querySelector(".admin-urkunden-print-source article");
-  if (!article || !(article instanceof HTMLElement)) {
+  const frame = document.querySelector(".admin-urkunden-print-source .urkunde-a4-presentation");
+  if (!frame || !(frame instanceof HTMLElement)) {
     throw new Error("Urkunde nicht bereit");
   }
-  return article;
+  return frame;
 }
 
 /**

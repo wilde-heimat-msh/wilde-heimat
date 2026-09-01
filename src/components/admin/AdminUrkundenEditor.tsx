@@ -42,7 +42,7 @@ export function AdminUrkundenEditor() {
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [loadingPate, setLoadingPate] = useState(Boolean(pateId));
-  const printRef = useRef<HTMLElement>(null);
+  const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (pateId) {

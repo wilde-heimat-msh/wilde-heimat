@@ -59,7 +59,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
   const [printingUrkunde, setPrintingUrkunde] = useState(false);
   const [previewDocId, setPreviewDocId] = useState<PatenDokumentId | null>(null);
 
-  const urkundePrintRef = useRef<HTMLElement>(null);
+  const urkundePrintRef = useRef<HTMLDivElement>(null);
   const docRefs = useRef<Partial<Record<PatenDokumentId, HTMLElement | null>>>({});
 
   const loadKartei = useCallback(async () => {

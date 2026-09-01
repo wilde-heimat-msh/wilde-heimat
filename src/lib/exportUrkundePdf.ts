@@ -167,7 +167,7 @@ export async function renderElementToPdfBlob(
 
 export async function renderUrkundeToPdfBlob(element: HTMLElement): Promise<Blob> {
   await waitForElementAssets(element);
-  const canvas = await renderCanvas(element, "#fdf8f0", URKUNDE_PDF_EXPORT_SCALE, {
+  const canvas = await renderCanvas(element, "#ffffff", URKUNDE_PDF_EXPORT_SCALE, {
     preserveShadows: true,
   });
   const pdf = canvasToPdfExactA4(canvas);

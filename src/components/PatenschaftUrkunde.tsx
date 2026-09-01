@@ -32,9 +32,9 @@ function UrkundeStufeMedallion({
   return (
     <svg
       viewBox="0 0 56 56"
-      width={48}
-      height={48}
-      className="h-12 w-12 shrink-0"
+      width={56}
+      height={56}
+      className="h-14 w-14 shrink-0"
       role="img"
       aria-label={`Stufe ${label}`}
     >
@@ -118,7 +118,7 @@ function CornerOrnament({
   className: string;
   style?: React.CSSProperties;
 }) {
-  return <span className={`absolute h-5 w-5 ${className}`} style={style} aria-hidden />;
+  return <span className={`absolute h-6 w-6 ${className}`} style={style} aria-hidden />;
 }
 
 function UrkundeHauptblock({
@@ -137,8 +137,8 @@ function UrkundeHauptblock({
   const manyLeistungen = stufe.leistungen.length >= 4;
 
   return (
-    <div className="w-full space-y-2.5">
-      <div className="grid grid-cols-[8.25rem_1fr] gap-3 items-start">
+    <div className="w-full space-y-4">
+      <div className="grid grid-cols-[9.5rem_1fr] gap-4 items-start">
         <figure className="text-center">
           <div
             className="relative aspect-[3/4] w-full overflow-hidden rounded-lg border-[3px] bg-neutral-200"
@@ -153,22 +153,22 @@ function UrkundeHauptblock({
               loading={eagerImages ? "eager" : "lazy"}
             />
           </div>
-          <figcaption className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted font-medium">
+          <figcaption className="mt-1.5 text-[11px] uppercase tracking-[0.12em] text-muted font-medium">
             Dein Patentier
           </figcaption>
         </figure>
 
         <div
-          className="rounded-lg border-[2px] px-3 py-2.5 text-left"
+          className="rounded-lg border-[2px] px-3.5 py-3 text-left"
           style={{
             backgroundColor: render.panel.backgroundColor,
             borderColor: render.panel.borderColor,
           }}
         >
-          <p className="text-[11px] uppercase tracking-[0.14em] text-muted font-medium">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">
             Patenschaftsstufe
           </p>
-          <div className="mt-1.5 flex items-center gap-2.5">
+          <div className="mt-2 flex items-center gap-3">
             <UrkundeStufeMedallion stufeId={stufeId} label={stufe.name} />
             <div className="min-w-0">
               <p
@@ -178,7 +178,7 @@ function UrkundeHauptblock({
                 {stufe.name}
               </p>
               <p
-                className="mt-0.5 text-lg font-light tabular-nums leading-none"
+                className="mt-1 text-lg font-light tabular-nums leading-none"
                 style={{ color: render.priceColor }}
               >
                 {stufe.preis} €
@@ -186,13 +186,13 @@ function UrkundeHauptblock({
               </p>
             </div>
           </div>
-          <p className="mt-2 text-[12px] italic text-muted leading-snug">{stufe.tagline}</p>
-          <p className="mt-1.5 text-[11px] text-forest/75 leading-snug">{stufe.beschreibung}</p>
+          <p className="mt-2.5 text-[12px] italic text-muted leading-snug">{stufe.tagline}</p>
+          <p className="mt-2 text-[11px] text-forest/75 leading-snug">{stufe.beschreibung}</p>
         </div>
       </div>
 
       <div
-        className="rounded-lg border-[2px] px-4 py-2.5"
+        className="rounded-lg border-[2px] px-4 py-3"
         style={{
           backgroundColor: render.panel.backgroundColor,
           borderColor: render.panel.borderColor,
@@ -201,7 +201,7 @@ function UrkundeHauptblock({
         <p className="text-[10px] uppercase tracking-[0.14em] text-muted font-medium text-left">
           Deine Patenschaft beinhaltet
         </p>
-        <ul className={`mt-2 text-left ${manyLeistungen ? "space-y-1" : "space-y-1.5"}`}>
+        <ul className={`mt-2.5 text-left ${manyLeistungen ? "space-y-1.5" : "space-y-2"}`}>
           {stufe.leistungen.map((leistung) => (
             <li
               key={leistung}
@@ -228,7 +228,7 @@ type PatenschaftUrkundeProps = {
   className?: string;
 };
 
-export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProps>(
+export const PatenschaftUrkunde = forwardRef<HTMLDivElement, PatenschaftUrkundeProps>(
   function PatenschaftUrkunde(
     { data, mode = "preview", showBeispielHinweis = false, className = "" },
     ref
@@ -250,20 +250,14 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
     const datumLang = formatAbsoluteDateDe(ausgestelltAm);
     const stufe = getPatenschaftStufe(stufeId);
 
-    /** Ein Layout – Vorschau nur verkleinert, PDF/Druck identisch. */
     const isScaledPreview = mode === "preview";
     const eagerImages = mode === "a4";
 
     const article = (
       <article
-        ref={ref}
-        className={`patenschaft-urkunde relative overflow-hidden rounded-sm border-[6px] border-double bg-[linear-gradient(168deg,#fdf8f0_0%,#f5ede0_48%,#efe4d4_100%)] shadow-[0_14px_44px_-14px_rgba(42,51,38,0.28)] ${className}`}
+        className={`patenschaft-urkunde relative h-full w-full overflow-hidden rounded-sm border-[6px] border-double bg-[linear-gradient(168deg,#fdf8f0_0%,#f5ede0_48%,#efe4d4_100%)] shadow-[0_16px_48px_-12px_rgba(42,51,38,0.32)] ${className}`}
         style={{
-          width: "210mm",
-          height: "297mm",
           boxSizing: "border-box",
-          transform: isScaledPreview ? `scale(${URKUNDE_PREVIEW_SCALE})` : undefined,
-          transformOrigin: "top left",
           borderColor: render.articleBorder,
         }}
         aria-label={`Patenschaftsurkunde für ${pate}, Stufe ${stufe.name}, ${patenschaftUrkundeFormat.label}`}
@@ -297,25 +291,25 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
           <header className="shrink-0">
             <Logo
               surface="light"
-              size={56}
-              className="mx-auto h-14 w-14"
+              size={60}
+              className="mx-auto h-[3.75rem] w-[3.75rem]"
               alt=""
               priority={eagerImages}
             />
-            <p className="mt-1 text-[13px] uppercase tracking-[0.2em] text-forest/80 font-medium">
+            <p className="mt-1.5 text-[13px] uppercase tracking-[0.22em] text-forest/80 font-medium">
               Wilde Heimat
             </p>
-            <p className="text-[10px] uppercase tracking-[0.1em] text-muted">
+            <p className="text-[10px] uppercase tracking-[0.12em] text-muted">
               Private Initiative · {ort}
             </p>
 
-            <div className="my-2 flex items-center gap-3" aria-hidden>
+            <div className="my-2.5 flex items-center gap-3" aria-hidden>
               <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-900/25 to-transparent" />
               <span className="text-amber-800/40 text-[10px]">✦</span>
               <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-900/25 to-transparent" />
             </div>
 
-            <p className="text-[13px] uppercase tracking-[0.16em] text-forest/70 font-semibold">
+            <p className="text-[13px] uppercase tracking-[0.18em] text-forest/70 font-semibold">
               Patenschaftsurkunde
             </p>
           </header>
@@ -323,9 +317,9 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
           <main className="flex min-h-0 flex-1 flex-col py-2">
             <div className="shrink-0 space-y-0.5">
               <p className="text-[13px] text-muted">Hiermit bestätigen wir, dass</p>
-              <p className="text-[1.5rem] font-medium text-forest leading-tight">{pate}</p>
+              <p className="text-[1.6rem] font-medium text-forest leading-tight">{pate}</p>
               <p className="text-[12px] text-muted">Pate/Patin des Waschbären</p>
-              <p className="text-[1.65rem] font-light text-forest leading-tight tracking-tight">
+              <p className="text-[1.85rem] font-light text-forest leading-tight tracking-tight">
                 {waschbaer}
               </p>
 
@@ -347,7 +341,7 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
           </main>
 
           <footer className="shrink-0 border-t-[1.5px] border-amber-900/15 pt-3 pb-0.5">
-            <div className="grid grid-cols-2 gap-x-5 text-left text-[12px] mb-2.5">
+            <div className="grid grid-cols-2 gap-x-5 text-left text-[12px] mb-3">
               <div>
                 <p className="uppercase tracking-wider text-muted text-[9px] font-medium">
                   Ausgestellt in
@@ -371,7 +365,7 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
               </div>
             </div>
 
-            <div className="flex justify-center border-t border-amber-900/10 pt-2.5">
+            <div className="flex justify-center border-t border-amber-900/10 pt-3">
               <VereinUnterschriftBlock
                 align="center"
                 compact
@@ -391,17 +385,32 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
       </article>
     );
 
+    const presentation = (
+      <div ref={isScaledPreview ? undefined : ref} className="urkunde-a4-presentation">
+        {article}
+      </div>
+    );
+
     if (isScaledPreview) {
       return (
         <div
           className="urkunde-preview relative mx-auto overflow-visible"
           style={{ width: URKUNDE_PREVIEW_WIDTH_PX, height: URKUNDE_PREVIEW_HEIGHT_PX }}
         >
-          {article}
+          <div
+            style={{
+              width: "210mm",
+              height: "297mm",
+              transform: `scale(${URKUNDE_PREVIEW_SCALE})`,
+              transformOrigin: "top left",
+            }}
+          >
+            {presentation}
+          </div>
         </div>
       );
     }
 
-    return article;
+    return presentation;
   }
 );
