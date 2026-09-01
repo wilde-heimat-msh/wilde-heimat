@@ -20,11 +20,11 @@ import type { PatenschaftUrkundeDaten } from "@/data/patenschaften";
 import { patenschaftsStufen } from "@/data/site";
 import {
   exportHtmlToPdf,
+  exportUrkundePdf,
   renderElementToPdfBlob,
   renderUrkundeToPdfBlob,
   urkundePdfFilename,
 } from "@/lib/exportUrkundePdf";
-import { printUrkundeDocument } from "@/lib/printUrkunde";
 import { formatDateTimeDe, formatFormDateDe } from "@/lib/relativeTime";
 import type { FormSubmissionRecord } from "@/lib/supabase/formSubmissions";
 import type { PatenschaftPate } from "@/types/patenschaftPortal";
@@ -91,7 +91,12 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
 
     try {
       if (id === "urkunde") {
-        await printUrkundeDocument();
+        const element = urkundePrintRef.current;
+        if (!element) throw new Error("Urkunde nicht bereit");
+        await exportUrkundePdf(
+          element,
+          urkundePdfFilename(data.pate.name, data.urkunde.urkundenNr)
+        );
       } else {
         const element = docRefs.current[id];
         if (!element) throw new Error("Dokument nicht bereit");
@@ -101,13 +106,9 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
           patenDokumentFilename(meta.filenamePrefix, data.pate.name, data.pate.urkundenNr)
         );
       }
-      setStatus(
-        id === "urkunde"
-          ? "Druckdialog sollte sich öffnen. Ziel: „Als PDF speichern“ oder Drucker · 100 % · keine Ränder."
-          : "PDF wurde gespeichert."
-      );
+      setStatus("PDF wurde gespeichert.");
     } catch {
-      setStatus("Fehlgeschlagen. Bitte Seite neu laden und erneut versuchen.");
+      setStatus("PDF-Export fehlgeschlagen.");
     } finally {
       setExportingId(null);
     }
@@ -150,13 +151,10 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
 
     try {
       for (const doc of patenDokumente) {
-        if (doc.id === "urkunde") continue;
         await exportDocument(doc.id);
         await new Promise((resolve) => setTimeout(resolve, 400));
       }
-      setStatus(
-        "Alle Begleitdokumente als PDF gespeichert. Die Urkunde bitte separat über „Urkunde speichern / drucken“."
-      );
+      setStatus("Alle Dokumente wurden als PDF gespeichert.");
     } finally {
       setExportingId(null);
     }
@@ -350,16 +348,10 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
                       <button
                         type="button"
                         onClick={() => exportDocument(doc.id)}
-                        disabled={exportingId === doc.id}
+                        disabled={exportingId !== null}
                         className="min-h-8 px-3 text-xs rounded-lg bg-foreground text-background hover:bg-accent disabled:opacity-60"
                       >
-                        {exportingId === doc.id
-                          ? doc.id === "urkunde"
-                            ? "Wird vorbereitet …"
-                            : "Erstelle PDF …"
-                          : doc.id === "urkunde"
-                            ? "Urkunde speichern / drucken"
-                            : "PDF speichern"}
+                        {exportingId === doc.id ? "Erstelle PDF …" : "PDF speichern"}
                       </button>
                     </div>
                   </li>

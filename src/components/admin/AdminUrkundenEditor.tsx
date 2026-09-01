@@ -14,7 +14,7 @@ import {
 import { patenschaftUrkundeFormat } from "@/data/privacy";
 import { patenschaftsStufen } from "@/data/site";
 import { useWaschbaeren } from "@/hooks/useWaschbaeren";
-import { printUrkundeDocument } from "@/lib/printUrkunde";
+import { exportUrkundePdf, urkundePdfFilename } from "@/lib/exportUrkundePdf";
 
 const STORAGE_KEY = "wh-admin-urkunde-draft";
 
@@ -38,7 +38,7 @@ export function AdminUrkundenEditor() {
   const pateId = searchParams.get("pateId");
   const { waschbaeren } = useWaschbaeren();
   const [data, setData] = useState<PatenschaftUrkundeDaten>(() => createDefaultUrkundeDaten());
-  const [printing, setPrinting] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [loadingPate, setLoadingPate] = useState(Boolean(pateId));
   const printRef = useRef<HTMLElement>(null);
@@ -80,24 +80,29 @@ export function AdminUrkundenEditor() {
     });
   }
 
-  async function handlePrint() {
+  function handlePrint() {
+    window.print();
+  }
+
+  async function handlePdfExport() {
+    const element = printRef.current;
+    if (!element) return;
+
     if (!data.pate.trim()) {
       setStatus("Bitte zuerst den Namen des Paten/der Patin eintragen.");
       return;
     }
 
-    setPrinting(true);
+    setExporting(true);
     setStatus(null);
 
     try {
-      await printUrkundeDocument();
-      setStatus(
-        "Druckdialog geöffnet. Für Fotopapier: Ziel „Als PDF speichern“ oder Drucker wählen, Skalierung 100 %, keine Ränder."
-      );
+      await exportUrkundePdf(element, urkundePdfFilename(data.pate, data.urkundenNr));
+      setStatus("PDF wurde gespeichert.");
     } catch {
-      setStatus("Drucken fehlgeschlagen.");
+      setStatus("PDF-Export fehlgeschlagen. Bitte Drucken → Als PDF speichern nutzen.");
     } finally {
-      setPrinting(false);
+      setExporting(false);
     }
   }
 
@@ -114,8 +119,8 @@ export function AdminUrkundenEditor() {
         <div>
           <h1 className="text-2xl font-medium text-forest">Patenschaftsurkunden</h1>
           <p className="mt-1 text-sm text-muted max-w-2xl">
-            Urkunde personalisieren und Vorschau prüfen ({patenschaftUrkundeFormat.label}).
-            Zum Drucken oder als PDF speichern den Druckdialog nutzen – so bleiben Schrift und Logo scharf.
+            Urkunde personalisieren, Vorschau prüfen und als PDF speichern oder drucken (
+            {patenschaftUrkundeFormat.label}).
             {loadingPate ? " Lade Paten-Daten …" : null}
           </p>
         </div>
@@ -266,11 +271,18 @@ export function AdminUrkundenEditor() {
           <div className="flex flex-col gap-2 pt-2">
             <button
               type="button"
-              onClick={handlePrint}
-              disabled={printing}
+              onClick={handlePdfExport}
+              disabled={exporting}
               className="min-h-11 px-4 py-3 text-sm font-medium bg-foreground text-background hover:bg-accent rounded-xl transition-all duration-200 disabled:opacity-60"
             >
-              {printing ? "Wird vorbereitet …" : "Urkunde speichern / drucken"}
+              {exporting ? "PDF wird erstellt …" : "Als PDF speichern"}
+            </button>
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="min-h-11 px-4 py-3 text-sm font-medium rounded-xl border border-border hover:bg-muted-light/60 transition-colors"
+            >
+              Drucken
             </button>
             <button
               type="button"
