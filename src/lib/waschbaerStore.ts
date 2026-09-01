@@ -149,6 +149,22 @@ export async function listWaschbaerenPublic(): Promise<WaschbaerPublic[]> {
   );
 }
 
+/** Profilfoto und echte-Fotos-Flag für Urkunden – auch für nicht veröffentlichte Tiere. */
+export async function getWaschbaerPublicBySlug(slug: string): Promise<WaschbaerPublic | null> {
+  const fromList = (await listWaschbaerenPublic()).find((w) => w.slug === slug);
+  if (fromList) return fromList;
+
+  const record = await getWaschbaerWithGallery(slug, true);
+  if (!record) return null;
+
+  const gallery = galleryToPublic(record.gallery);
+  return {
+    ...record,
+    profilFoto: resolveProfilfoto(slug, gallery),
+    hasEchteFotos: hasEchteFotos(slug, gallery),
+  };
+}
+
 export async function listWaschbaerenWithGallery(
   includeUnpublished = false
 ): Promise<WaschbaerWithGallery[]> {

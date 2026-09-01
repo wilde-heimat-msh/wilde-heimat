@@ -420,10 +420,14 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
         </>
       ) : null}
 
-      {/* Versteckte Druckquellen für PDF-Export */}
-      {data && docCtx ? (
+      {/* Versteckte Export-Quellen für PDF (Urkunde getrennt von anderen Dokumenten) */}
+      {data ? (
         <div className="admin-urkunden-print-source" aria-hidden>
           <PatenschaftUrkunde ref={urkundePrintRef} data={data.urkunde} mode="a4" />
+        </div>
+      ) : null}
+      {data && docCtx ? (
+        <div className="admin-paten-dokument-export-source" aria-hidden>
           {patenDokumente
             .filter((doc) => doc.id !== "urkunde")
             .map((doc) => (

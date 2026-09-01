@@ -487,8 +487,9 @@ input[type="time"]::-webkit-date-and-time-value {
   }
 }
 
-/* Admin: Urkunden drucken / PDF – zentriert (left: 0), nicht off-screen */
-.admin-urkunden-print-source {
+/* Admin: Urkunden / Paten-Dokumente – PDF-Export, zentriert (left: 0) */
+.admin-urkunden-print-source,
+.admin-paten-dokument-export-source {
   position: fixed;
   left: 0;
   top: 0;

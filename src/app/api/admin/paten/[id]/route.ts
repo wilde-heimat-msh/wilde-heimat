@@ -6,7 +6,7 @@ import { isFormMailConfigured } from "@/lib/formMail";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { apiErrorResponse } from "@/lib/apiError";
 import { getFormSubmissionById } from "@/lib/supabase/formSubmissions";
-import { getWaschbaerWithGallery, listWaschbaerenPublic } from "@/lib/waschbaerStore";
+import { getWaschbaerPublicBySlug, getWaschbaerWithGallery, listWaschbaerenPublic } from "@/lib/waschbaerStore";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -22,9 +22,7 @@ export async function GET(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Pate nicht gefunden." }, { status: 404 });
     }
 
-    const waschbaerPublic = (await listWaschbaerenPublic()).find(
-      (w) => w.slug === pate.waschbaerSlug
-    );
+    const waschbaerPublic = await getWaschbaerPublicBySlug(pate.waschbaerSlug);
     const waschbaerRecord = await getWaschbaerWithGallery(pate.waschbaerSlug, true);
     const submission = pate.formSubmissionId
       ? await getFormSubmissionById(pate.formSubmissionId)

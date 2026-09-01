@@ -12,9 +12,12 @@ type PdfRenderOptions = {
   backgroundColor?: string;
 };
 
+const ADMIN_PRINT_SOURCE_SELECTOR =
+  ".admin-urkunden-print-source, .admin-paten-dokument-export-source";
+
 /** Versteckte Quelle: kurz sichtbar, damit html2canvas symmetrisch erfasst. */
 function revealPrintSourceForCapture(element: HTMLElement): () => void {
-  const root = element.closest<HTMLElement>(".admin-urkunden-print-source");
+  const root = element.closest<HTMLElement>(ADMIN_PRINT_SOURCE_SELECTOR);
   if (!root) {
     return () => {};
   }
