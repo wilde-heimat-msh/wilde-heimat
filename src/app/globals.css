@@ -488,8 +488,7 @@ input[type="time"]::-webkit-date-and-time-value {
 }
 
 /* Admin: Urkunden drucken / PDF */
-.admin-urkunden-print-source,
-.admin-paten-dokument-export-source {
+.admin-urkunden-print-source {
   position: fixed;
   left: -9999px;
   top: 0;
@@ -508,10 +507,6 @@ input[type="time"]::-webkit-date-and-time-value {
 
   body * {
     visibility: hidden !important;
-  }
-
-  .admin-paten-dokument-export-source {
-    display: none !important;
   }
 
   .admin-urkunden-print-source,

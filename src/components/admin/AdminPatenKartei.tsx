@@ -25,7 +25,6 @@ import {
   renderUrkundeToPdfBlob,
   urkundePdfFilename,
 } from "@/lib/exportUrkundePdf";
-import { printUrkundeDocument } from "@/lib/printUrkunde";
 import { formatDateTimeDe, formatFormDateDe } from "@/lib/relativeTime";
 import type { FormSubmissionRecord } from "@/lib/supabase/formSubmissions";
 import type { PatenschaftPate } from "@/types/patenschaftPortal";
@@ -56,7 +55,6 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [exportingId, setExportingId] = useState<PatenDokumentId | "all" | null>(null);
-  const [printingUrkunde, setPrintingUrkunde] = useState(false);
   const [previewDocId, setPreviewDocId] = useState<PatenDokumentId | null>(null);
 
   const urkundePrintRef = useRef<HTMLElement>(null);
@@ -108,31 +106,11 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
           patenDokumentFilename(meta.filenamePrefix, data.pate.name, data.pate.urkundenNr)
         );
       }
-      setStatus(
-        id === "urkunde"
-          ? "PDF gespeichert – identisch zur Vorschau und E-Mail-Anlage."
-          : "PDF wurde gespeichert."
-      );
+      setStatus("PDF wurde gespeichert.");
     } catch {
       setStatus("PDF-Export fehlgeschlagen.");
     } finally {
       setExportingId(null);
-    }
-  }
-
-  async function printUrkunde() {
-    if (!data) return;
-
-    setPrintingUrkunde(true);
-    setStatus(null);
-
-    try {
-      await printUrkundeDocument();
-      setStatus("Druckdialog geöffnet.");
-    } catch {
-      setStatus("Drucken fehlgeschlagen.");
-    } finally {
-      setPrintingUrkunde(false);
     }
   }
 
@@ -173,11 +151,10 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
 
     try {
       for (const doc of patenDokumente) {
-        if (doc.id === "urkunde") continue;
         await exportDocument(doc.id);
         await new Promise((resolve) => setTimeout(resolve, 400));
       }
-      setStatus("Begleitdokumente gespeichert. Urkunde bitte über „PDF speichern“ (gleich wie E-Mail).");
+      setStatus("Alle Dokumente wurden als PDF gespeichert.");
     } finally {
       setExportingId(null);
     }
@@ -371,23 +348,11 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
                       <button
                         type="button"
                         onClick={() => exportDocument(doc.id)}
-                        disabled={exportingId !== null || printingUrkunde}
+                        disabled={exportingId !== null}
                         className="min-h-8 px-3 text-xs rounded-lg bg-foreground text-background hover:bg-accent disabled:opacity-60"
                       >
-                        {exportingId === doc.id
-                          ? "PDF wird erstellt …"
-                          : "PDF speichern"}
+                        {exportingId === doc.id ? "Erstelle PDF …" : "PDF speichern"}
                       </button>
-                      {doc.id === "urkunde" ? (
-                        <button
-                          type="button"
-                          onClick={printUrkunde}
-                          disabled={exportingId !== null || printingUrkunde}
-                          className="min-h-8 px-3 text-xs rounded-lg border border-border hover:bg-muted-light/60 disabled:opacity-60"
-                        >
-                          {printingUrkunde ? "Wird vorbereitet …" : "Drucken"}
-                        </button>
-                      ) : null}
                     </div>
                   </li>
                 ))}
@@ -429,23 +394,13 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted">
                 Schnellvorschau Urkunde
               </h2>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPreviewDocId("urkunde")}
-                  className="min-h-8 px-3 text-xs rounded-lg border border-border bg-background hover:bg-muted-light/60"
-                >
-                  Vollbild-Vorschau
-                </button>
-                <button
-                  type="button"
-                  onClick={printUrkunde}
-                  disabled={exportingId !== null || printingUrkunde}
-                  className="min-h-8 px-3 text-xs rounded-lg border border-border bg-background hover:bg-muted-light/60 disabled:opacity-60"
-                >
-                  {printingUrkunde ? "Wird vorbereitet …" : "Drucken"}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewDocId("urkunde")}
+                className="min-h-8 px-3 text-xs rounded-lg border border-border bg-background hover:bg-muted-light/60"
+              >
+                Vollbild-Vorschau
+              </button>
             </div>
             <div className="overflow-x-auto">
               <PatenschaftUrkunde data={data.urkunde} mode="preview" />
@@ -460,23 +415,15 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
               exporting={exportingId === previewDocId}
               onClose={() => setPreviewDocId(null)}
               onDownload={() => exportDocument(previewDocId)}
-              onPrint={previewDocId === "urkunde" ? printUrkunde : undefined}
-              printing={printingUrkunde}
             />
           ) : null}
         </>
       ) : null}
 
-      {/* Nur Urkunde für Browser-Druck */}
+      {/* Versteckte Druckquellen für PDF-Export */}
       {data && docCtx ? (
         <div className="admin-urkunden-print-source" aria-hidden>
           <PatenschaftUrkunde ref={urkundePrintRef} data={data.urkunde} mode="a4" />
-        </div>
-      ) : null}
-
-      {/* Andere Dokumente nur für PDF-Export (nicht mitdrucken) */}
-      {data && docCtx ? (
-        <div className="admin-paten-dokument-export-source" aria-hidden>
           {patenDokumente
             .filter((doc) => doc.id !== "urkunde")
             .map((doc) => (

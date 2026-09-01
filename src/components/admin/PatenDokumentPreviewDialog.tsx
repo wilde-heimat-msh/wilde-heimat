@@ -14,10 +14,8 @@ type PatenDokumentPreviewDialogProps = {
   ctx: PatenDokumentContext;
   urkunde: PatenschaftUrkundeDaten;
   exporting: boolean;
-  printing?: boolean;
   onClose: () => void;
   onDownload: () => void;
-  onPrint?: () => void;
 };
 
 export function PatenDokumentPreviewDialog({
@@ -25,10 +23,8 @@ export function PatenDokumentPreviewDialog({
   ctx,
   urkunde,
   exporting,
-  printing = false,
   onClose,
   onDownload,
-  onPrint,
 }: PatenDokumentPreviewDialogProps) {
   const meta = getPatenDokumentMeta(dokumentId);
 
@@ -100,25 +96,13 @@ export function PatenDokumentPreviewDialog({
           >
             Schließen
           </button>
-          {onPrint ? (
-            <button
-              type="button"
-              onClick={onPrint}
-              disabled={exporting || printing}
-              className="min-h-11 px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted-light/60 disabled:opacity-60"
-            >
-              {printing ? "Wird vorbereitet …" : "Drucken"}
-            </button>
-          ) : null}
           <button
             type="button"
             onClick={onDownload}
-            disabled={exporting || printing}
+            disabled={exporting}
             className="min-h-11 px-4 py-2 text-sm font-medium rounded-xl bg-foreground text-background hover:bg-accent disabled:opacity-60"
           >
-            {exporting
-              ? "PDF wird erstellt …"
-              : "PDF speichern"}
+            {exporting ? "PDF wird erstellt …" : "PDF speichern"}
           </button>
         </footer>
       </div>

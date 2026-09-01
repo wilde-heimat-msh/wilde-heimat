@@ -1,114 +1,28 @@
 import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
-import {
-  URKUNDE_A4_HEIGHT_PX,
-  URKUNDE_A4_WIDTH_PX,
-  URKUNDE_PDF_EXPORT_SCALE,
-} from "@/lib/urkundeScale";
 
+/** Hohe Auflösung für Druck und Archiv (A4, ~150 DPI effektiv). */
 const PDF_EXPORT_SCALE = 2;
-const A4_WIDTH_MM = 210;
-const A4_HEIGHT_MM = 297;
 
 type PdfRenderOptions = {
   backgroundColor?: string;
 };
 
-const HIDDEN_EXPORT_SOURCE_SELECTOR =
-  ".admin-urkunden-print-source, .admin-paten-dokument-export-source";
-
-function stripShadows(root: HTMLElement) {
-  root.style.boxShadow = "none";
-  root.style.textShadow = "none";
-  root.style.filter = "none";
-  root.querySelectorAll<HTMLElement>("*").forEach((el) => {
-    el.style.boxShadow = "none";
-    el.style.textShadow = "none";
-    el.style.filter = "none";
+async function renderCanvas(element: HTMLElement, backgroundColor: string) {
+  return html2canvas(element, {
+    scale: PDF_EXPORT_SCALE,
+    useCORS: true,
+    backgroundColor,
+    logging: false,
   });
-}
-
-function revealPrintSourceForCapture(element: HTMLElement): () => void {
-  const root = element.closest<HTMLElement>(HIDDEN_EXPORT_SOURCE_SELECTOR);
-  if (!root) {
-    return () => {};
-  }
-
-  const prevLeft = root.style.left;
-  root.style.left = "0";
-  void root.offsetHeight;
-
-  return () => {
-    if (prevLeft) {
-      root.style.left = prevLeft;
-    } else {
-      root.style.removeProperty("left");
-    }
-  };
-}
-
-function unhideCloneForCapture(cloned: HTMLElement) {
-  cloned.style.visibility = "visible";
-}
-
-async function waitForElementAssets(element: HTMLElement): Promise<void> {
-  await document.fonts.ready;
-
-  const images = element.querySelectorAll("img");
-  await Promise.all(
-    Array.from(images).map(async (img) => {
-      img.loading = "eager";
-      if (!img.complete) {
-        await new Promise<void>((resolve) => {
-          img.addEventListener("load", () => resolve(), { once: true });
-          img.addEventListener("error", () => resolve(), { once: true });
-        });
-      }
-      try {
-        await img.decode();
-      } catch {
-        /* trotzdem exportieren */
-      }
-    })
-  );
-}
-
-async function renderCanvas(
-  element: HTMLElement,
-  backgroundColor: string,
-  scale = PDF_EXPORT_SCALE,
-  options: { stripShadows?: boolean } = {}
-) {
-  const restoreCapture = revealPrintSourceForCapture(element);
-
-  try {
-    return await html2canvas(element, {
-      scale,
-      useCORS: true,
-      backgroundColor,
-      logging: false,
-      scrollX: 0,
-      scrollY: 0,
-      width: element.offsetWidth || URKUNDE_A4_WIDTH_PX,
-      height: element.offsetHeight || URKUNDE_A4_HEIGHT_PX,
-      onclone: (_doc, cloned) => {
-        unhideCloneForCapture(cloned);
-        if (options.stripShadows !== false) {
-          stripShadows(cloned);
-        }
-      },
-    });
-  } finally {
-    restoreCapture();
-  }
 }
 
 function canvasToPdf(canvas: HTMLCanvasElement, singlePage = false): jsPDF {
   const imgData = canvas.toDataURL("image/png");
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-  const pageWidth = A4_WIDTH_MM;
-  const pageHeight = A4_HEIGHT_MM;
+  const pageWidth = 210;
+  const pageHeight = 297;
   const imgWidth = pageWidth;
   const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
@@ -149,10 +63,7 @@ export async function renderElementToPdfBlob(
 }
 
 export async function renderUrkundeToPdfBlob(element: HTMLElement): Promise<Blob> {
-  await waitForElementAssets(element);
-  const canvas = await renderCanvas(element, "#fdf8f0", URKUNDE_PDF_EXPORT_SCALE, {
-    stripShadows: false,
-  });
+  const canvas = await renderCanvas(element, "#fdf8f0");
   const pdf = canvasToPdf(canvas, true);
   return pdf.output("blob");
 }

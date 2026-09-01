@@ -15,7 +15,6 @@ import { patenschaftUrkundeFormat } from "@/data/privacy";
 import { patenschaftsStufen } from "@/data/site";
 import { useWaschbaeren } from "@/hooks/useWaschbaeren";
 import { exportUrkundePdf, urkundePdfFilename } from "@/lib/exportUrkundePdf";
-import { printUrkundeDocument } from "@/lib/printUrkunde";
 
 const STORAGE_KEY = "wh-admin-urkunde-draft";
 
@@ -81,7 +80,11 @@ export function AdminUrkundenEditor() {
     });
   }
 
-  async function handlePdfDownload() {
+  function handlePrint() {
+    window.print();
+  }
+
+  async function handlePdfExport() {
     const element = printRef.current;
     if (!element) return;
 
@@ -95,28 +98,9 @@ export function AdminUrkundenEditor() {
 
     try {
       await exportUrkundePdf(element, urkundePdfFilename(data.pate, data.urkundenNr));
-      setStatus("PDF gespeichert – identisch zur E-Mail-Anlage und Vorschau.");
+      setStatus("PDF wurde gespeichert.");
     } catch {
-      setStatus("PDF-Export fehlgeschlagen.");
-    } finally {
-      setExporting(false);
-    }
-  }
-
-  async function handlePrint() {
-    if (!data.pate.trim()) {
-      setStatus("Bitte zuerst den Namen des Paten/der Patin eintragen.");
-      return;
-    }
-
-    setExporting(true);
-    setStatus(null);
-
-    try {
-      await printUrkundeDocument();
-      setStatus("Druckdialog geöffnet.");
-    } catch {
-      setStatus("Drucken fehlgeschlagen.");
+      setStatus("PDF-Export fehlgeschlagen. Bitte Drucken → Als PDF speichern nutzen.");
     } finally {
       setExporting(false);
     }
@@ -135,7 +119,7 @@ export function AdminUrkundenEditor() {
         <div>
           <h1 className="text-2xl font-medium text-forest">Patenschaftsurkunden</h1>
           <p className="mt-1 text-sm text-muted max-w-2xl">
-            Urkunde personalisieren. Vorschau, PDF und E-Mail-Anhang sehen gleich aus (
+            Urkunde personalisieren, Vorschau prüfen und als PDF speichern oder drucken (
             {patenschaftUrkundeFormat.label}).
             {loadingPate ? " Lade Paten-Daten …" : null}
           </p>
@@ -287,23 +271,19 @@ export function AdminUrkundenEditor() {
           <div className="flex flex-col gap-2 pt-2">
             <button
               type="button"
-              onClick={handlePdfDownload}
+              onClick={handlePdfExport}
               disabled={exporting}
               className="min-h-11 px-4 py-3 text-sm font-medium bg-foreground text-background hover:bg-accent rounded-xl transition-all duration-200 disabled:opacity-60"
             >
-              {exporting ? "PDF wird erstellt …" : "PDF speichern"}
+              {exporting ? "PDF wird erstellt …" : "Als PDF speichern"}
             </button>
             <button
               type="button"
               onClick={handlePrint}
-              disabled={exporting}
-              className="min-h-11 px-4 py-3 text-sm font-medium rounded-xl border border-border hover:bg-muted-light/60 transition-colors disabled:opacity-60"
+              className="min-h-11 px-4 py-3 text-sm font-medium rounded-xl border border-border hover:bg-muted-light/60 transition-colors"
             >
               Drucken
             </button>
-            <p className="text-[11px] text-muted leading-snug">
-              PDF und E-Mail-Anhang sind identisch. Drucken öffnet den Browser-Druckdialog.
-            </p>
             <button
               type="button"
               onClick={handleReset}

@@ -125,12 +125,10 @@ function UrkundeHauptblock({
   stufeId,
   waschbaerName,
   waschbaerFoto,
-  printMode = false,
 }: {
   stufeId: PatenschaftStufeId;
   waschbaerName: string;
   waschbaerFoto: string;
-  printMode?: boolean;
 }) {
   const stufe = getPatenschaftStufe(stufeId);
   const render = patenschaftUrkundeStufeRender[stufeId];
@@ -141,7 +139,7 @@ function UrkundeHauptblock({
       <div className="grid grid-cols-[10.5rem_1fr] gap-5 items-start">
         <figure className="text-center">
           <div
-            className={`relative aspect-[3/4] w-full overflow-hidden rounded-lg border-[3px] bg-neutral-200 ${printMode ? "" : "shadow-md"}`}
+            className="relative aspect-[3/4] w-full overflow-hidden rounded-lg border-[3px] shadow-md bg-neutral-200"
             style={{ borderColor: render.fotoRahmen.borderColor }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -251,12 +249,10 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
     const datumLang = formatAbsoluteDateDe(ausgestelltAm);
     const stufe = getPatenschaftStufe(stufeId);
 
-    const isPrintMode = mode === "a4";
-
     const article = (
       <article
         ref={ref}
-        className={`relative overflow-hidden rounded-sm border-[6px] border-double bg-[linear-gradient(168deg,#fdf8f0_0%,#f5ede0_48%,#efe4d4_100%)] transition-colors duration-300 ${isPrintMode ? "" : "shadow-[0_8px_32px_-8px_rgba(42,51,38,0.18)]"} ${className}`}
+        className={`relative overflow-hidden rounded-sm border-[6px] border-double bg-[linear-gradient(168deg,#fdf8f0_0%,#f5ede0_48%,#efe4d4_100%)] shadow-[0_8px_32px_-8px_rgba(42,51,38,0.18)] transition-colors duration-300 ${className}`}
         style={{
           width: "210mm",
           height: "297mm",
@@ -333,7 +329,6 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
                 stufeId={stufeId}
                 waschbaerName={waschbaer}
                 waschbaerFoto={waschbaerFoto}
-                printMode={isPrintMode}
               />
             </div>
           </main>
