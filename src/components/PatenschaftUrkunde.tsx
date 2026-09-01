@@ -12,6 +12,8 @@ import { patenschaftUrkundeFormat } from "@/data/privacy";
 import { formatAbsoluteDateDe } from "@/lib/relativeTime";
 import { VereinUnterschriftBlock } from "@/components/VereinUnterschriftBlock";
 import {
+  URKUNDE_A4_HEIGHT_PX,
+  URKUNDE_A4_WIDTH_PX,
   URKUNDE_PREVIEW_HEIGHT_PX,
   URKUNDE_PREVIEW_SCALE,
   URKUNDE_PREVIEW_WIDTH_PX,
@@ -125,10 +127,12 @@ function UrkundeHauptblock({
   stufeId,
   waschbaerName,
   waschbaerFoto,
+  printMode = false,
 }: {
   stufeId: PatenschaftStufeId;
   waschbaerName: string;
   waschbaerFoto: string;
+  printMode?: boolean;
 }) {
   const stufe = getPatenschaftStufe(stufeId);
   const render = patenschaftUrkundeStufeRender[stufeId];
@@ -139,7 +143,7 @@ function UrkundeHauptblock({
       <div className="grid grid-cols-[10.5rem_1fr] gap-5 items-start">
         <figure className="text-center">
           <div
-            className="relative aspect-[3/4] w-full overflow-hidden rounded-lg border-[3px] shadow-md bg-neutral-200"
+            className={`relative aspect-[3/4] w-full overflow-hidden rounded-lg border-[3px] bg-neutral-200 ${printMode ? "" : "shadow-md"}`}
             style={{ borderColor: render.fotoRahmen.borderColor }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -249,15 +253,34 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
     const datumLang = formatAbsoluteDateDe(ausgestelltAm);
     const stufe = getPatenschaftStufe(stufeId);
 
+    const articleSizeStyle: CSSProperties =
+      mode === "a4"
+        ? {
+            width: `${URKUNDE_A4_WIDTH_PX}px`,
+            height: `${URKUNDE_A4_HEIGHT_PX}px`,
+            boxSizing: "border-box",
+          }
+        : {
+            width: "210mm",
+            height: "297mm",
+            transform: `scale(${URKUNDE_PREVIEW_SCALE})`,
+            transformOrigin: "top left",
+          };
+
+    const isPrintMode = mode === "a4";
+    const articleBorderClass = isPrintMode
+      ? "border-[4px] border-solid bg-[#f5ede0]"
+      : "border-[6px] border-double bg-[linear-gradient(168deg,#fdf8f0_0%,#f5ede0_48%,#efe4d4_100%)]";
+    const articleShadowClass = isPrintMode
+      ? ""
+      : "shadow-[0_8px_32px_-8px_rgba(42,51,38,0.18)]";
+
     const article = (
       <article
         ref={ref}
-        className={`relative overflow-hidden rounded-sm border-[6px] border-double bg-[linear-gradient(168deg,#fdf8f0_0%,#f5ede0_48%,#efe4d4_100%)] shadow-[0_8px_32px_-8px_rgba(42,51,38,0.18)] transition-colors duration-300 ${className}`}
+        className={`relative overflow-hidden rounded-sm transition-colors duration-300 ${articleBorderClass} ${articleShadowClass} ${className}`}
         style={{
-          width: "210mm",
-          height: "297mm",
-          transform: mode === "preview" ? `scale(${URKUNDE_PREVIEW_SCALE})` : undefined,
-          transformOrigin: "top left",
+          ...articleSizeStyle,
           borderColor: render.articleBorder,
         }}
         aria-label={`Patenschaftsurkunde für ${pate}, Stufe ${stufe.name}, ${patenschaftUrkundeFormat.label}`}
@@ -329,6 +352,7 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
                 stufeId={stufeId}
                 waschbaerName={waschbaer}
                 waschbaerFoto={waschbaerFoto}
+                printMode={isPrintMode}
               />
             </div>
           </main>

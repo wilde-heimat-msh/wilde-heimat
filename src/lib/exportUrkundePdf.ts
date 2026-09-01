@@ -1,19 +1,53 @@
 import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
+import {
+  URKUNDE_A4_HEIGHT_PX,
+  URKUNDE_A4_WIDTH_PX,
+  URKUNDE_PDF_EXPORT_SCALE,
+} from "@/lib/urkundeScale";
 
-/** Hohe Auflösung für Druck und Archiv (A4, ~150 DPI effektiv). */
-const PDF_EXPORT_SCALE = 2;
+const A4_WIDTH_MM = 210;
+const A4_HEIGHT_MM = 297;
 
 type PdfRenderOptions = {
   backgroundColor?: string;
 };
 
-async function renderCanvas(element: HTMLElement, backgroundColor: string) {
+function stripPrintEffects(root: HTMLElement) {
+  root.style.boxShadow = "none";
+  root.style.textShadow = "none";
+  root.style.filter = "none";
+  root.querySelectorAll<HTMLElement>("*").forEach((el) => {
+    el.style.boxShadow = "none";
+    el.style.textShadow = "none";
+    el.style.filter = "none";
+  });
+}
+
+function prepareUrkundeClone(cloned: HTMLElement) {
+  cloned.style.boxSizing = "border-box";
+  cloned.style.margin = "0";
+  cloned.style.transform = "none";
+  cloned.style.width = `${Math.round(URKUNDE_A4_WIDTH_PX)}px`;
+  cloned.style.height = `${Math.round(URKUNDE_A4_HEIGHT_PX)}px`;
+  stripPrintEffects(cloned);
+}
+
+async function renderCanvas(
+  element: HTMLElement,
+  backgroundColor: string,
+  scale = URKUNDE_PDF_EXPORT_SCALE
+) {
   return html2canvas(element, {
-    scale: PDF_EXPORT_SCALE,
+    scale,
     useCORS: true,
     backgroundColor,
     logging: false,
+    width: Math.round(URKUNDE_A4_WIDTH_PX),
+    height: Math.round(URKUNDE_A4_HEIGHT_PX),
+    onclone: (_doc, cloned) => {
+      prepareUrkundeClone(cloned);
+    },
   });
 }
 
@@ -21,8 +55,8 @@ function canvasToPdf(canvas: HTMLCanvasElement, singlePage = false): jsPDF {
   const imgData = canvas.toDataURL("image/png");
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-  const pageWidth = 210;
-  const pageHeight = 297;
+  const pageWidth = A4_WIDTH_MM;
+  const pageHeight = A4_HEIGHT_MM;
   const imgWidth = pageWidth;
   const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
@@ -57,7 +91,7 @@ export async function renderElementToPdfBlob(
   element: HTMLElement,
   options: PdfRenderOptions = {}
 ): Promise<Blob> {
-  const canvas = await renderCanvas(element, options.backgroundColor ?? "#ffffff");
+  const canvas = await renderCanvas(element, options.backgroundColor ?? "#ffffff", 2);
   const pdf = canvasToPdf(canvas, false);
   return pdf.output("blob");
 }

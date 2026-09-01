@@ -120,7 +120,8 @@ export function AdminUrkundenEditor() {
           <h1 className="text-2xl font-medium text-forest">Patenschaftsurkunden</h1>
           <p className="mt-1 text-sm text-muted max-w-2xl">
             Urkunde personalisieren, Vorschau prüfen und als PDF speichern oder drucken (
-            {patenschaftUrkundeFormat.label}).
+            {patenschaftUrkundeFormat.label}). Für Fotopapier bitte immer „Als PDF speichern“ nutzen –
+            nicht den Browser-Druck.
             {loadingPate ? " Lade Paten-Daten …" : null}
           </p>
         </div>
@@ -275,7 +276,7 @@ export function AdminUrkundenEditor() {
               disabled={exporting}
               className="min-h-11 px-4 py-3 text-sm font-medium bg-foreground text-background hover:bg-accent rounded-xl transition-all duration-200 disabled:opacity-60"
             >
-              {exporting ? "PDF wird erstellt …" : "Als PDF speichern"}
+              {exporting ? "PDF wird erstellt …" : "Als PDF speichern (Druck)"}
             </button>
             <button
               type="button"
