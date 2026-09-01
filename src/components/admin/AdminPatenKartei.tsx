@@ -25,6 +25,7 @@ import {
   renderUrkundeToPdfBlob,
   urkundePdfFilename,
 } from "@/lib/exportUrkundePdf";
+import { printUrkundeDocument } from "@/lib/printUrkunde";
 import { formatDateTimeDe, formatFormDateDe } from "@/lib/relativeTime";
 import type { FormSubmissionRecord } from "@/lib/supabase/formSubmissions";
 import type { PatenschaftPate } from "@/types/patenschaftPortal";
@@ -55,6 +56,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [exportingId, setExportingId] = useState<PatenDokumentId | "all" | null>(null);
+  const [printingUrkunde, setPrintingUrkunde] = useState(false);
   const [previewDocId, setPreviewDocId] = useState<PatenDokumentId | null>(null);
 
   const urkundePrintRef = useRef<HTMLElement>(null);
@@ -115,6 +117,22 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
       setStatus("PDF-Export fehlgeschlagen.");
     } finally {
       setExportingId(null);
+    }
+  }
+
+  async function printUrkunde() {
+    if (!data) return;
+
+    setPrintingUrkunde(true);
+    setStatus(null);
+
+    try {
+      await printUrkundeDocument();
+      setStatus("Druckdialog geöffnet – gleiches Layout wie Vorschau und PDF.");
+    } catch {
+      setStatus("Drucken fehlgeschlagen.");
+    } finally {
+      setPrintingUrkunde(false);
     }
   }
 
@@ -353,13 +371,23 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
                       <button
                         type="button"
                         onClick={() => exportDocument(doc.id)}
-                        disabled={exportingId !== null}
+                        disabled={exportingId !== null || printingUrkunde}
                         className="min-h-8 px-3 text-xs rounded-lg bg-foreground text-background hover:bg-accent disabled:opacity-60"
                       >
                         {exportingId === doc.id
                           ? "PDF wird erstellt …"
                           : "PDF speichern"}
                       </button>
+                      {doc.id === "urkunde" ? (
+                        <button
+                          type="button"
+                          onClick={printUrkunde}
+                          disabled={exportingId !== null || printingUrkunde}
+                          className="min-h-8 px-3 text-xs rounded-lg border border-border hover:bg-muted-light/60 disabled:opacity-60"
+                        >
+                          {printingUrkunde ? "Druck wird vorbereitet …" : "Drucken"}
+                        </button>
+                      ) : null}
                     </div>
                   </li>
                 ))}
@@ -401,13 +429,23 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted">
                 Schnellvorschau Urkunde
               </h2>
-              <button
-                type="button"
-                onClick={() => setPreviewDocId("urkunde")}
-                className="min-h-8 px-3 text-xs rounded-lg border border-border bg-background hover:bg-muted-light/60"
-              >
-                Vollbild-Vorschau
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPreviewDocId("urkunde")}
+                  className="min-h-8 px-3 text-xs rounded-lg border border-border bg-background hover:bg-muted-light/60"
+                >
+                  Vollbild-Vorschau
+                </button>
+                <button
+                  type="button"
+                  onClick={printUrkunde}
+                  disabled={exportingId !== null || printingUrkunde}
+                  className="min-h-8 px-3 text-xs rounded-lg border border-border bg-background hover:bg-muted-light/60 disabled:opacity-60"
+                >
+                  {printingUrkunde ? "Druck wird vorbereitet …" : "Drucken"}
+                </button>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <PatenschaftUrkunde data={data.urkunde} mode="preview" />
@@ -422,6 +460,8 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
               exporting={exportingId === previewDocId}
               onClose={() => setPreviewDocId(null)}
               onDownload={() => exportDocument(previewDocId)}
+              onPrint={previewDocId === "urkunde" ? printUrkunde : undefined}
+              printing={printingUrkunde}
             />
           ) : null}
         </>
