@@ -12,6 +12,9 @@ import { patenschaftUrkundeFormat } from "@/data/privacy";
 import { formatAbsoluteDateDe } from "@/lib/relativeTime";
 import { VereinUnterschriftBlock } from "@/components/VereinUnterschriftBlock";
 import {
+  URKUNDE_A4_HEIGHT_PX,
+  URKUNDE_A4_WIDTH_PX,
+  URKUNDE_PDF_EXPORT_SCALE,
   URKUNDE_PREVIEW_HEIGHT_PX,
   URKUNDE_PREVIEW_SCALE,
   URKUNDE_PREVIEW_WIDTH_PX,
@@ -150,6 +153,7 @@ function UrkundeHauptblock({
               alt={`${waschbaerName} – Patentier`}
               className="h-full w-full object-cover object-center"
               crossOrigin="anonymous"
+              loading={printMode ? "eager" : "lazy"}
             />
           </div>
           <figcaption className="mt-2 text-[12px] uppercase tracking-[0.12em] text-muted font-medium">
@@ -258,8 +262,9 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
         ref={ref}
         className={`relative overflow-hidden rounded-sm border-[6px] border-double bg-[linear-gradient(168deg,#fdf8f0_0%,#f5ede0_48%,#efe4d4_100%)] transition-colors duration-300 ${isPrintMode ? "" : "shadow-[0_8px_32px_-8px_rgba(42,51,38,0.18)]"} ${className}`}
         style={{
-          width: "210mm",
-          height: "297mm",
+          width: isPrintMode ? `${URKUNDE_A4_WIDTH_PX}px` : "210mm",
+          height: isPrintMode ? `${URKUNDE_A4_HEIGHT_PX}px` : "297mm",
+          boxSizing: "border-box",
           transform: mode === "preview" ? `scale(${URKUNDE_PREVIEW_SCALE})` : undefined,
           transformOrigin: "top left",
           borderColor: render.articleBorder,
@@ -293,7 +298,13 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
 
         <div className="relative flex h-[calc(100%-0.5rem)] min-h-0 flex-col px-9 py-6 text-center">
           <header className="shrink-0">
-            <Logo surface="light" size={64} className="mx-auto h-16 w-16" alt="" />
+            <Logo
+              surface="light"
+              size={64}
+              className="mx-auto h-16 w-16"
+              alt=""
+              priority={isPrintMode}
+            />
             <p className="mt-1.5 text-[14px] uppercase tracking-[0.22em] text-forest/80 font-medium">
               Wilde Heimat
             </p>
