@@ -103,10 +103,8 @@ export function PatenDokumentPreviewDialog({
             className="min-h-11 px-4 py-2 text-sm font-medium rounded-xl bg-foreground text-background hover:bg-accent disabled:opacity-60"
           >
             {exporting
-              ? "Wird vorbereitet …"
-              : dokumentId === "urkunde"
-                ? "Als PDF speichern / Drucken"
-                : "PDF speichern"}
+              ? "PDF wird erstellt …"
+              : "PDF speichern"}
           </button>
         </footer>
       </div>

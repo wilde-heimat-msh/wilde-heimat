@@ -20,11 +20,11 @@ import type { PatenschaftUrkundeDaten } from "@/data/patenschaften";
 import { patenschaftsStufen } from "@/data/site";
 import {
   exportHtmlToPdf,
+  exportUrkundePdf,
   renderElementToPdfBlob,
   renderUrkundeToPdfBlob,
   urkundePdfFilename,
 } from "@/lib/exportUrkundePdf";
-import { printUrkundeDocument } from "@/lib/printUrkunde";
 import { formatDateTimeDe, formatFormDateDe } from "@/lib/relativeTime";
 import type { FormSubmissionRecord } from "@/lib/supabase/formSubmissions";
 import type { PatenschaftPate } from "@/types/patenschaftPortal";
@@ -91,7 +91,12 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
 
     try {
       if (id === "urkunde") {
-        await printUrkundeDocument();
+        const element = urkundePrintRef.current;
+        if (!element) throw new Error("Urkunde nicht bereit");
+        await exportUrkundePdf(
+          element,
+          urkundePdfFilename(data.pate.name, data.urkunde.urkundenNr)
+        );
       } else {
         const element = docRefs.current[id];
         if (!element) throw new Error("Dokument nicht bereit");
@@ -103,7 +108,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
       }
       setStatus(
         id === "urkunde"
-          ? "Druckdialog geöffnet → „Als PDF speichern“ für scharfe Schrift und Logo."
+          ? "PDF gespeichert – identisch zur Vorschau und E-Mail-Anlage."
           : "PDF wurde gespeichert."
       );
     } catch {
@@ -154,7 +159,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
         await exportDocument(doc.id);
         await new Promise((resolve) => setTimeout(resolve, 400));
       }
-      setStatus("Begleitdokumente gespeichert. Urkunde bitte über „Als PDF speichern / Drucken“.");
+      setStatus("Begleitdokumente gespeichert. Urkunde bitte über „PDF speichern“ (gleich wie E-Mail).");
     } finally {
       setExportingId(null);
     }
@@ -352,10 +357,8 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
                         className="min-h-8 px-3 text-xs rounded-lg bg-foreground text-background hover:bg-accent disabled:opacity-60"
                       >
                         {exportingId === doc.id
-                          ? "Wird vorbereitet …"
-                          : doc.id === "urkunde"
-                            ? "Als PDF speichern / Drucken"
-                            : "PDF speichern"}
+                          ? "PDF wird erstellt …"
+                          : "PDF speichern"}
                       </button>
                     </div>
                   </li>

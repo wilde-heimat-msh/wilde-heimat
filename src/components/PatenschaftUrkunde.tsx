@@ -16,65 +16,18 @@ import {
   URKUNDE_PREVIEW_SCALE,
   URKUNDE_PREVIEW_WIDTH_PX,
 } from "@/lib/urkundeScale";
-import { forwardRef, useId, type CSSProperties } from "react";
-
-const MEDALLION_FLAT_FILL: Record<PatenschaftStufeId, string> = {
-  bronze: "#b45309",
-  silber: "#c4c0bb",
-  gold: "#eab308",
-};
-
-const BAND_FLAT_FILL: Record<PatenschaftStufeId, string> = {
-  bronze: "#92400e",
-  silber: "#78716c",
-  gold: "#ca8a04",
-};
+import { forwardRef, useId } from "react";
 
 function UrkundeStufeMedallion({
   stufeId,
   label,
-  flat = false,
 }: {
   stufeId: PatenschaftStufeId;
   label: string;
-  flat?: boolean;
 }) {
   const reactId = useId().replace(/:/g, "");
   const spec = patenschaftUrkundeMedallionSvg[stufeId];
   const gradientId = `urkunde-medallion-${stufeId}-${reactId}`;
-
-  if (flat) {
-    return (
-      <svg
-        viewBox="0 0 56 56"
-        width={56}
-        height={56}
-        className="h-14 w-14 shrink-0"
-        role="img"
-        aria-label={`Stufe ${label}`}
-      >
-        <circle
-          cx="28"
-          cy="28"
-          r="24"
-          fill={MEDALLION_FLAT_FILL[stufeId]}
-          stroke={spec.borderColor}
-          strokeWidth="1"
-        />
-        <text
-          x="28"
-          y="32"
-          textAnchor="middle"
-          fontSize="11"
-          fontWeight="700"
-          fill={spec.textColor}
-          fontFamily="var(--font-geist-sans), system-ui, sans-serif"
-        >
-          {label}
-        </text>
-      </svg>
-    );
-  }
 
   return (
     <svg
@@ -117,28 +70,9 @@ function UrkundeStufeMedallion({
   );
 }
 
-function UrkundeStufeBand({
-  stufeId,
-  flat = false,
-}: {
-  stufeId: PatenschaftStufeId;
-  flat?: boolean;
-}) {
+function UrkundeStufeBand({ stufeId }: { stufeId: PatenschaftStufeId }) {
   const reactId = useId().replace(/:/g, "");
   const gradientId = `urkunde-band-${stufeId}-${reactId}`;
-
-  if (flat) {
-    return (
-      <svg
-        viewBox="0 0 800 8"
-        preserveAspectRatio="none"
-        className="h-2 w-full shrink-0 block"
-        aria-hidden
-      >
-        <rect width="800" height="8" fill={BAND_FLAT_FILL[stufeId]} />
-      </svg>
-    );
-  }
 
   const bandStops: Record<PatenschaftStufeId, { offset: string; color: string }[]> = {
     bronze: [
@@ -182,7 +116,7 @@ function CornerOrnament({
   style,
 }: {
   className: string;
-  style?: CSSProperties;
+  style?: React.CSSProperties;
 }) {
   return <span className={`absolute h-6 w-6 ${className}`} style={style} aria-hidden />;
 }
@@ -191,34 +125,23 @@ function UrkundeHauptblock({
   stufeId,
   waschbaerName,
   waschbaerFoto,
-  printMode = false,
+  exportMode = false,
 }: {
   stufeId: PatenschaftStufeId;
   waschbaerName: string;
   waschbaerFoto: string;
-  printMode?: boolean;
+  exportMode?: boolean;
 }) {
   const stufe = getPatenschaftStufe(stufeId);
   const render = patenschaftUrkundeStufeRender[stufeId];
   const manyLeistungen = stufe.leistungen.length >= 4;
-
-  const panelStyle = printMode
-    ? { backgroundColor: "#f5ede0", borderColor: render.panel.borderColor }
-    : {
-        backgroundColor: render.panel.backgroundColor,
-        borderColor: render.panel.borderColor,
-      };
-  const panelBorderClass = printMode ? "rounded-lg border px-4 py-4" : "rounded-lg border-[2px] px-4 py-4";
-  const panelBorderClassWide = printMode ? "rounded-lg border px-5 py-4" : "rounded-lg border-[2px] px-5 py-4";
 
   return (
     <div className="w-full space-y-5">
       <div className="grid grid-cols-[10.5rem_1fr] gap-5 items-start">
         <figure className="text-center">
           <div
-            className={`relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-neutral-200 ${
-              printMode ? "border" : "border-[3px] shadow-md"
-            }`}
+            className="relative aspect-[3/4] w-full overflow-hidden rounded-lg border-[3px] bg-neutral-200"
             style={{ borderColor: render.fotoRahmen.borderColor }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -227,7 +150,7 @@ function UrkundeHauptblock({
               alt={`${waschbaerName} – Patentier`}
               className="h-full w-full object-cover object-center"
               crossOrigin="anonymous"
-              loading={printMode ? "eager" : "lazy"}
+              loading={exportMode ? "eager" : "lazy"}
             />
           </div>
           <figcaption className="mt-2 text-[12px] uppercase tracking-[0.12em] text-muted font-medium">
@@ -235,12 +158,18 @@ function UrkundeHauptblock({
           </figcaption>
         </figure>
 
-        <div className={`${panelBorderClass} text-left`} style={panelStyle}>
+        <div
+          className="rounded-lg border-[2px] px-4 py-4 text-left"
+          style={{
+            backgroundColor: render.panel.backgroundColor,
+            borderColor: render.panel.borderColor,
+          }}
+        >
           <p className="text-[12px] uppercase tracking-[0.16em] text-muted font-medium">
             Patenschaftsstufe
           </p>
           <div className="mt-2.5 flex items-center gap-3">
-            <UrkundeStufeMedallion stufeId={stufeId} label={stufe.name} flat={printMode} />
+            <UrkundeStufeMedallion stufeId={stufeId} label={stufe.name} />
             <div className="min-w-0">
               <p
                 className="text-xl font-semibold leading-none"
@@ -262,7 +191,13 @@ function UrkundeHauptblock({
         </div>
       </div>
 
-      <div className={panelBorderClassWide} style={panelStyle}>
+      <div
+        className="rounded-lg border-[2px] px-5 py-4"
+        style={{
+          backgroundColor: render.panel.backgroundColor,
+          borderColor: render.panel.borderColor,
+        }}
+      >
         <p className="text-[11px] uppercase tracking-[0.14em] text-muted font-medium text-left">
           Deine Patenschaft beinhaltet
         </p>
@@ -317,73 +252,58 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
     const datumLang = formatAbsoluteDateDe(ausgestelltAm);
     const stufe = getPatenschaftStufe(stufeId);
 
-    const isPrintMode = mode === "a4";
-    const articleClass = isPrintMode
-      ? "relative overflow-hidden border-[3px] border-solid bg-[#f5ede0]"
-      : "relative overflow-hidden rounded-sm border-[6px] border-double bg-[linear-gradient(168deg,#fdf8f0_0%,#f5ede0_48%,#efe4d4_100%)] shadow-[0_8px_32px_-8px_rgba(42,51,38,0.18)]";
+    /** Gleiches Layout überall; Vorschau nur verkleinert. */
+    const isScaledPreview = mode === "preview";
+    const isExport = mode === "a4";
 
     const article = (
       <article
         ref={ref}
-        className={`${articleClass} transition-colors duration-300 ${className}`}
+        className={`relative overflow-hidden rounded-sm border-[6px] border-double bg-[linear-gradient(168deg,#fdf8f0_0%,#f5ede0_48%,#efe4d4_100%)] transition-colors duration-300 ${className}`}
         style={{
           width: "210mm",
           height: "297mm",
           boxSizing: "border-box",
-          transform: mode === "preview" ? `scale(${URKUNDE_PREVIEW_SCALE})` : undefined,
+          transform: isScaledPreview ? `scale(${URKUNDE_PREVIEW_SCALE})` : undefined,
           transformOrigin: "top left",
           borderColor: render.articleBorder,
         }}
         aria-label={`Patenschaftsurkunde für ${pate}, Stufe ${stufe.name}, ${patenschaftUrkundeFormat.label}`}
       >
-        <UrkundeStufeBand stufeId={stufeId} flat={isPrintMode} />
+        <UrkundeStufeBand stufeId={stufeId} />
 
-        {!isPrintMode ? (
-          <>
-            <div
-              className="absolute inset-2.5 top-3.5 bottom-2.5 border-[1.5px] pointer-events-none"
-              style={{ borderColor: render.innerBorder }}
-              aria-hidden
-            />
+        <div
+          className="absolute inset-2.5 top-3.5 bottom-2.5 border-[1.5px] pointer-events-none"
+          style={{ borderColor: render.innerBorder }}
+          aria-hidden
+        />
 
-            <CornerOrnament
-              className="top-3.5 left-3.5 border-t-[3px] border-l-[3px]"
-              style={{ borderColor: render.cornerBorder }}
-            />
-            <CornerOrnament
-              className="top-3.5 right-3.5 border-t-[3px] border-r-[3px]"
-              style={{ borderColor: render.cornerBorder }}
-            />
-            <CornerOrnament
-              className="bottom-3.5 left-3.5 border-b-[3px] border-l-[3px]"
-              style={{ borderColor: render.cornerBorder }}
-            />
-            <CornerOrnament
-              className="bottom-3.5 right-3.5 border-b-[3px] border-r-[3px]"
-              style={{ borderColor: render.cornerBorder }}
-            />
-          </>
-        ) : null}
+        <CornerOrnament
+          className="top-3.5 left-3.5 border-t-[3px] border-l-[3px]"
+          style={{ borderColor: render.cornerBorder }}
+        />
+        <CornerOrnament
+          className="top-3.5 right-3.5 border-t-[3px] border-r-[3px]"
+          style={{ borderColor: render.cornerBorder }}
+        />
+        <CornerOrnament
+          className="bottom-3.5 left-3.5 border-b-[3px] border-l-[3px]"
+          style={{ borderColor: render.cornerBorder }}
+        />
+        <CornerOrnament
+          className="bottom-3.5 right-3.5 border-b-[3px] border-r-[3px]"
+          style={{ borderColor: render.cornerBorder }}
+        />
 
         <div className="relative flex h-[calc(100%-0.5rem)] min-h-0 flex-col px-9 py-6 text-center">
           <header className="shrink-0">
-            {isPrintMode ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src="/logo.svg"
-                alt=""
-                width={64}
-                height={64}
-                className="mx-auto h-16 w-16 object-contain"
-              />
-            ) : (
-              <Logo
-                surface="light"
-                size={64}
-                className="mx-auto h-16 w-16"
-                alt=""
-              />
-            )}
+            <Logo
+              surface="light"
+              size={64}
+              className="mx-auto h-16 w-16"
+              alt=""
+              priority={isExport}
+            />
             <p className="mt-1.5 text-[14px] uppercase tracking-[0.22em] text-forest/80 font-medium">
               Wilde Heimat
             </p>
@@ -391,15 +311,11 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
               Private Initiative · {ort}
             </p>
 
-            {isPrintMode ? (
-              <div className="my-3 border-t border-amber-900/25" aria-hidden />
-            ) : (
-              <div className="my-3 flex items-center gap-3" aria-hidden>
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-900/25 to-transparent" />
-                <span className="text-amber-800/40 text-[10px]">✦</span>
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-900/25 to-transparent" />
-              </div>
-            )}
+            <div className="my-3 flex items-center gap-3" aria-hidden>
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-900/25 to-transparent" />
+              <span className="text-amber-800/40 text-[10px]">✦</span>
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-900/25 to-transparent" />
+            </div>
 
             <p className="text-[14px] uppercase tracking-[0.18em] text-forest/70 font-semibold">
               Patenschaftsurkunde
@@ -427,18 +343,12 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
                 stufeId={stufeId}
                 waschbaerName={waschbaer}
                 waschbaerFoto={waschbaerFoto}
-                printMode={isPrintMode}
+                exportMode={isExport}
               />
             </div>
           </main>
 
-          <footer
-            className={
-              isPrintMode
-                ? "shrink-0 border-t border-amber-900/25 pt-4 pb-0.5"
-                : "shrink-0 border-t-[1.5px] border-amber-900/15 pt-4 pb-0.5"
-            }
-          >
+          <footer className="shrink-0 border-t-[1.5px] border-amber-900/15 pt-4 pb-0.5">
             <div className="grid grid-cols-2 gap-x-6 text-left text-[13px] mb-4">
               <div>
                 <p className="uppercase tracking-wider text-muted text-[10px] font-medium">
@@ -463,7 +373,7 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
               </div>
             </div>
 
-            <div className={isPrintMode ? "flex justify-center pt-4" : "flex justify-center border-t border-amber-900/10 pt-4"}>
+            <div className="flex justify-center border-t border-amber-900/10 pt-4">
               <VereinUnterschriftBlock
                 align="center"
                 showAusstellungszeile={false}
@@ -482,17 +392,13 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
       </article>
     );
 
-    if (mode === "preview") {
+    if (isScaledPreview) {
       return (
         <div
           className="relative mx-auto overflow-hidden"
           style={{ width: URKUNDE_PREVIEW_WIDTH_PX, height: URKUNDE_PREVIEW_HEIGHT_PX }}
         >
-          <div
-            className="absolute inset-0 translate-x-1 translate-y-1 rounded-sm bg-amber-900/8"
-            aria-hidden
-          />
-          <div className="relative">{article}</div>
+          {article}
         </div>
       );
     }

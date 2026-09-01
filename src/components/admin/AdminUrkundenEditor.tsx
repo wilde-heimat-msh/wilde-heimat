@@ -14,6 +14,7 @@ import {
 import { patenschaftUrkundeFormat } from "@/data/privacy";
 import { patenschaftsStufen } from "@/data/site";
 import { useWaschbaeren } from "@/hooks/useWaschbaeren";
+import { exportUrkundePdf, urkundePdfFilename } from "@/lib/exportUrkundePdf";
 import { printUrkundeDocument } from "@/lib/printUrkunde";
 
 const STORAGE_KEY = "wh-admin-urkunde-draft";
@@ -80,11 +81,29 @@ export function AdminUrkundenEditor() {
     });
   }
 
-  function handlePrint() {
-    void handlePdfExport();
+  async function handlePdfDownload() {
+    const element = printRef.current;
+    if (!element) return;
+
+    if (!data.pate.trim()) {
+      setStatus("Bitte zuerst den Namen des Paten/der Patin eintragen.");
+      return;
+    }
+
+    setExporting(true);
+    setStatus(null);
+
+    try {
+      await exportUrkundePdf(element, urkundePdfFilename(data.pate, data.urkundenNr));
+      setStatus("PDF gespeichert – identisch zur E-Mail-Anlage und Vorschau.");
+    } catch {
+      setStatus("PDF-Export fehlgeschlagen.");
+    } finally {
+      setExporting(false);
+    }
   }
 
-  async function handlePdfExport() {
+  async function handlePrint() {
     if (!data.pate.trim()) {
       setStatus("Bitte zuerst den Namen des Paten/der Patin eintragen.");
       return;
@@ -95,11 +114,9 @@ export function AdminUrkundenEditor() {
 
     try {
       await printUrkundeDocument();
-      setStatus(
-        "Druckdialog geöffnet → „Als PDF speichern“ wählen. Schrift und Logo bleiben scharf (kein Bild-PDF)."
-      );
+      setStatus("Druckdialog geöffnet – gleiches Layout wie Vorschau und PDF.");
     } catch {
-      setStatus("Fehlgeschlagen. Seite neu laden und erneut versuchen.");
+      setStatus("Drucken fehlgeschlagen.");
     } finally {
       setExporting(false);
     }
@@ -118,7 +135,7 @@ export function AdminUrkundenEditor() {
         <div>
           <h1 className="text-2xl font-medium text-forest">Patenschaftsurkunden</h1>
           <p className="mt-1 text-sm text-muted max-w-2xl">
-            Urkunde personalisieren, Vorschau prüfen und als PDF speichern oder drucken (
+            Urkunde personalisieren. Vorschau, PDF und E-Mail-Anhang sehen gleich aus (
             {patenschaftUrkundeFormat.label}).
             {loadingPate ? " Lade Paten-Daten …" : null}
           </p>
@@ -270,14 +287,22 @@ export function AdminUrkundenEditor() {
           <div className="flex flex-col gap-2 pt-2">
             <button
               type="button"
-              onClick={handlePdfExport}
+              onClick={handlePdfDownload}
               disabled={exporting}
               className="min-h-11 px-4 py-3 text-sm font-medium bg-foreground text-background hover:bg-accent rounded-xl transition-all duration-200 disabled:opacity-60"
             >
-              {exporting ? "Wird vorbereitet …" : "Als PDF speichern / Drucken"}
+              {exporting ? "PDF wird erstellt …" : "PDF speichern"}
+            </button>
+            <button
+              type="button"
+              onClick={handlePrint}
+              disabled={exporting}
+              className="min-h-11 px-4 py-3 text-sm font-medium rounded-xl border border-border hover:bg-muted-light/60 transition-colors disabled:opacity-60"
+            >
+              Drucken
             </button>
             <p className="text-[11px] text-muted leading-snug">
-              Im Dialog „Als PDF speichern“ wählen – so bleiben Schrift und Logo scharf.
+              PDF und E-Mail-Anhang sind identisch. Drucken nutzt dasselbe Layout (Vektortext).
             </p>
             <button
               type="button"
