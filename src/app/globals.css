@@ -487,12 +487,17 @@ input[type="time"]::-webkit-date-and-time-value {
   }
 }
 
-/* Admin: Urkunden drucken / PDF */
+/* Admin: Urkunden drucken / PDF – zentriert (left: 0), nicht off-screen */
 .admin-urkunden-print-source {
   position: fixed;
-  left: -9999px;
+  left: 0;
   top: 0;
+  width: 210mm;
+  height: 297mm;
+  visibility: hidden;
   pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
 }
 
 @media print {

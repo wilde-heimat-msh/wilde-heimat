@@ -256,8 +256,6 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
         style={{
           width: "210mm",
           height: "297mm",
-          transform: mode === "preview" ? `scale(${URKUNDE_PREVIEW_SCALE})` : undefined,
-          transformOrigin: "top left",
           borderColor: render.articleBorder,
         }}
         aria-label={`Patenschaftsurkunde für ${pate}, Stufe ${stufe.name}, ${patenschaftUrkundeFormat.label}`}
@@ -380,14 +378,24 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
     if (mode === "preview") {
       return (
         <div
-          className="relative mx-auto overflow-hidden"
+          className="relative mx-auto flex items-center justify-center overflow-hidden"
           style={{ width: URKUNDE_PREVIEW_WIDTH_PX, height: URKUNDE_PREVIEW_HEIGHT_PX }}
         >
           <div
-            className="absolute inset-0 translate-x-1 translate-y-1 rounded-sm bg-amber-900/8"
-            aria-hidden
-          />
-          <div className="relative">{article}</div>
+            className="relative"
+            style={{
+              width: "210mm",
+              height: "297mm",
+              transform: `scale(${URKUNDE_PREVIEW_SCALE})`,
+              transformOrigin: "center center",
+            }}
+          >
+            <div
+              className="absolute inset-0 translate-x-1 translate-y-1 rounded-sm bg-amber-900/8"
+              aria-hidden
+            />
+            <div className="relative">{article}</div>
+          </div>
         </div>
       );
     }

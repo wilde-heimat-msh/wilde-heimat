@@ -1,20 +1,83 @@
 import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
+import {
+  URKUNDE_A4_HEIGHT_PX,
+  URKUNDE_A4_WIDTH_PX,
+  URKUNDE_PDF_EXPORT_SCALE,
+} from "@/lib/urkundeScale";
 
-/** Hohe Auflösung für Druck und Archiv (A4, ~150 DPI effektiv). */
 const PDF_EXPORT_SCALE = 2;
 
 type PdfRenderOptions = {
   backgroundColor?: string;
 };
 
-async function renderCanvas(element: HTMLElement, backgroundColor: string) {
-  return html2canvas(element, {
-    scale: PDF_EXPORT_SCALE,
-    useCORS: true,
-    backgroundColor,
-    logging: false,
-  });
+/** Versteckte Quelle: kurz sichtbar, damit html2canvas symmetrisch erfasst. */
+function revealPrintSourceForCapture(element: HTMLElement): () => void {
+  const root = element.closest<HTMLElement>(".admin-urkunden-print-source");
+  if (!root) {
+    return () => {};
+  }
+
+  const prevVisibility = root.style.visibility;
+  root.style.visibility = "visible";
+  void root.offsetHeight;
+
+  return () => {
+    if (prevVisibility) {
+      root.style.visibility = prevVisibility;
+    } else {
+      root.style.removeProperty("visibility");
+    }
+  };
+}
+
+async function waitForElementAssets(element: HTMLElement): Promise<void> {
+  await document.fonts.ready;
+
+  const images = element.querySelectorAll("img");
+  await Promise.all(
+    Array.from(images).map(async (img) => {
+      img.loading = "eager";
+      if (!img.complete) {
+        await new Promise<void>((resolve) => {
+          img.addEventListener("load", () => resolve(), { once: true });
+          img.addEventListener("error", () => resolve(), { once: true });
+        });
+      }
+      try {
+        await img.decode();
+      } catch {
+        /* trotzdem exportieren */
+      }
+    })
+  );
+}
+
+async function renderCanvas(
+  element: HTMLElement,
+  backgroundColor: string,
+  scale = PDF_EXPORT_SCALE
+) {
+  const restoreVisibility = revealPrintSourceForCapture(element);
+
+  try {
+    return await html2canvas(element, {
+      scale,
+      useCORS: true,
+      backgroundColor,
+      logging: false,
+      scrollX: 0,
+      scrollY: 0,
+      width: element.offsetWidth || URKUNDE_A4_WIDTH_PX,
+      height: element.offsetHeight || URKUNDE_A4_HEIGHT_PX,
+      onclone: (_doc, cloned) => {
+        cloned.style.visibility = "visible";
+      },
+    });
+  } finally {
+    restoreVisibility();
+  }
 }
 
 function canvasToPdf(canvas: HTMLCanvasElement, singlePage = false): jsPDF {
@@ -63,7 +126,8 @@ export async function renderElementToPdfBlob(
 }
 
 export async function renderUrkundeToPdfBlob(element: HTMLElement): Promise<Blob> {
-  const canvas = await renderCanvas(element, "#fdf8f0");
+  await waitForElementAssets(element);
+  const canvas = await renderCanvas(element, "#fdf8f0", URKUNDE_PDF_EXPORT_SCALE);
   const pdf = canvasToPdf(canvas, true);
   return pdf.output("blob");
 }
