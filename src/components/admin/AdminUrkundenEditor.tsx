@@ -14,7 +14,7 @@ import {
 import { patenschaftUrkundeFormat } from "@/data/privacy";
 import { patenschaftsStufen } from "@/data/site";
 import { useWaschbaeren } from "@/hooks/useWaschbaeren";
-import { exportUrkundePdf, urkundePdfFilename } from "@/lib/exportUrkundePdf";
+import { printUrkundeDocument } from "@/lib/printUrkunde";
 
 const STORAGE_KEY = "wh-admin-urkunde-draft";
 
@@ -81,13 +81,10 @@ export function AdminUrkundenEditor() {
   }
 
   function handlePrint() {
-    window.print();
+    void handlePdfExport();
   }
 
   async function handlePdfExport() {
-    const element = printRef.current;
-    if (!element) return;
-
     if (!data.pate.trim()) {
       setStatus("Bitte zuerst den Namen des Paten/der Patin eintragen.");
       return;
@@ -97,10 +94,12 @@ export function AdminUrkundenEditor() {
     setStatus(null);
 
     try {
-      await exportUrkundePdf(element, urkundePdfFilename(data.pate, data.urkundenNr));
-      setStatus("PDF wurde gespeichert.");
+      await printUrkundeDocument();
+      setStatus(
+        "Druckdialog geöffnet → „Als PDF speichern“ wählen. Schrift und Logo bleiben scharf (kein Bild-PDF)."
+      );
     } catch {
-      setStatus("PDF-Export fehlgeschlagen. Bitte Drucken → Als PDF speichern nutzen.");
+      setStatus("Fehlgeschlagen. Seite neu laden und erneut versuchen.");
     } finally {
       setExporting(false);
     }
@@ -275,15 +274,11 @@ export function AdminUrkundenEditor() {
               disabled={exporting}
               className="min-h-11 px-4 py-3 text-sm font-medium bg-foreground text-background hover:bg-accent rounded-xl transition-all duration-200 disabled:opacity-60"
             >
-              {exporting ? "PDF wird erstellt …" : "Als PDF speichern"}
+              {exporting ? "Wird vorbereitet …" : "Als PDF speichern / Drucken"}
             </button>
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="min-h-11 px-4 py-3 text-sm font-medium rounded-xl border border-border hover:bg-muted-light/60 transition-colors"
-            >
-              Drucken
-            </button>
+            <p className="text-[11px] text-muted leading-snug">
+              Im Dialog „Als PDF speichern“ wählen – so bleiben Schrift und Logo scharf.
+            </p>
             <button
               type="button"
               onClick={handleReset}

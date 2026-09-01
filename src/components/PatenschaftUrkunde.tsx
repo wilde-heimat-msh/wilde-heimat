@@ -12,8 +12,6 @@ import { patenschaftUrkundeFormat } from "@/data/privacy";
 import { formatAbsoluteDateDe } from "@/lib/relativeTime";
 import { VereinUnterschriftBlock } from "@/components/VereinUnterschriftBlock";
 import {
-  URKUNDE_A4_HEIGHT_PX,
-  URKUNDE_A4_WIDTH_PX,
   URKUNDE_PREVIEW_HEIGHT_PX,
   URKUNDE_PREVIEW_SCALE,
   URKUNDE_PREVIEW_WIDTH_PX,
@@ -329,8 +327,8 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
         ref={ref}
         className={`${articleClass} transition-colors duration-300 ${className}`}
         style={{
-          width: isPrintMode ? `${URKUNDE_A4_WIDTH_PX}px` : "210mm",
-          height: isPrintMode ? `${URKUNDE_A4_HEIGHT_PX}px` : "297mm",
+          width: "210mm",
+          height: "297mm",
           boxSizing: "border-box",
           transform: mode === "preview" ? `scale(${URKUNDE_PREVIEW_SCALE})` : undefined,
           transformOrigin: "top left",
@@ -369,13 +367,23 @@ export const PatenschaftUrkunde = forwardRef<HTMLElement, PatenschaftUrkundeProp
 
         <div className="relative flex h-[calc(100%-0.5rem)] min-h-0 flex-col px-9 py-6 text-center">
           <header className="shrink-0">
-            <Logo
-              surface="light"
-              size={64}
-              className="mx-auto h-16 w-16"
-              alt=""
-              priority={isPrintMode}
-            />
+            {isPrintMode ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src="/logo.svg"
+                alt=""
+                width={64}
+                height={64}
+                className="mx-auto h-16 w-16 object-contain"
+              />
+            ) : (
+              <Logo
+                surface="light"
+                size={64}
+                className="mx-auto h-16 w-16"
+                alt=""
+              />
+            )}
             <p className="mt-1.5 text-[14px] uppercase tracking-[0.22em] text-forest/80 font-medium">
               Wilde Heimat
             </p>
