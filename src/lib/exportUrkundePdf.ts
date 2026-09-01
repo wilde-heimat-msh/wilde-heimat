@@ -25,6 +25,38 @@ function stripShadows(root: HTMLElement) {
   });
 }
 
+/** Druckquelle ist per CSS unsichtbar – html2canvas braucht sie kurz sichtbar. */
+function revealPrintSourceForCapture(element: HTMLElement): () => void {
+  const root = element.closest<HTMLElement>(".admin-urkunden-print-source");
+  if (!root) {
+    return () => {};
+  }
+
+  const prevVisibility = root.style.visibility;
+  root.style.visibility = "visible";
+  void root.offsetHeight;
+
+  return () => {
+    if (prevVisibility) {
+      root.style.visibility = prevVisibility;
+    } else {
+      root.style.removeProperty("visibility");
+    }
+  };
+}
+
+function unhideCloneForCapture(cloned: HTMLElement) {
+  cloned.style.visibility = "visible";
+  let parent = cloned.parentElement;
+  while (parent) {
+    if (parent.classList.contains("admin-urkunden-print-source")) {
+      parent.style.visibility = "visible";
+      break;
+    }
+    parent = parent.parentElement;
+  }
+}
+
 async function waitForElementAssets(element: HTMLElement): Promise<void> {
   await document.fonts.ready;
 
@@ -52,17 +84,26 @@ async function renderCanvas(
   backgroundColor: string,
   scale = PDF_EXPORT_SCALE
 ) {
-  return html2canvas(element, {
-    scale,
-    useCORS: true,
-    backgroundColor,
-    logging: false,
-    scrollX: 0,
-    scrollY: 0,
-    onclone: (_doc, cloned) => {
-      stripShadows(cloned);
-    },
-  });
+  const restoreVisibility = revealPrintSourceForCapture(element);
+
+  try {
+    return await html2canvas(element, {
+      scale,
+      useCORS: true,
+      backgroundColor,
+      logging: false,
+      scrollX: 0,
+      scrollY: 0,
+      width: element.offsetWidth || URKUNDE_A4_WIDTH_PX,
+      height: element.offsetHeight || URKUNDE_A4_HEIGHT_PX,
+      onclone: (_doc, cloned) => {
+        stripShadows(cloned);
+        unhideCloneForCapture(cloned);
+      },
+    });
+  } finally {
+    restoreVisibility();
+  }
 }
 
 function canvasToPdf(canvas: HTMLCanvasElement, singlePage = false): jsPDF {
