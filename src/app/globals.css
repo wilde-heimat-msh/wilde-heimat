@@ -544,14 +544,18 @@ body:has(.urkunde-print-root) > main {
     background: white !important;
   }
 
-  body * {
+  /* Nur Admin-Druckquellen ausblenden – nicht die dedizierte Vektor-Druckseite */
+  body:not(:has(.urkunde-print-root)) * {
     visibility: hidden !important;
   }
 
   .admin-urkunden-print-source,
-  .admin-urkunden-print-source *,
-  .urkunde-print-root,
-  .urkunde-print-root * {
+  .admin-urkunden-print-source * {
+    visibility: visible !important;
+  }
+
+  body:has(.urkunde-print-root),
+  body:has(.urkunde-print-root) * {
     visibility: visible !important;
   }
 
@@ -570,7 +574,7 @@ body:has(.urkunde-print-root) > main {
   }
 
   .urkunde-print-root {
-    position: fixed !important;
+    position: relative !important;
     left: 0 !important;
     top: 0 !important;
   }

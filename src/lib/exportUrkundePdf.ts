@@ -143,7 +143,25 @@ export async function renderUrkundeToPdfBlob(
       throw new Error(message);
     }
 
-    return res.blob();
+    const blob = await res.blob();
+    if (blob.size < 8000) {
+      let message = `PDF ist leer oder unvollständig (${blob.size} Bytes).`;
+      try {
+        const text = await blob.text();
+        const json = JSON.parse(text) as { error?: string };
+        if (json.error) message = json.error;
+      } catch {
+        /* keine JSON-Fehlermeldung */
+      }
+      throw new Error(message);
+    }
+
+    const header = await blob.slice(0, 4).text();
+    if (header !== "%PDF") {
+      throw new Error("Server lieferte keine gültige PDF-Datei.");
+    }
+
+    return blob;
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
       throw new Error(
