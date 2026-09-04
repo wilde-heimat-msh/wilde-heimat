@@ -187,18 +187,17 @@ async function renderUrkundeVectorFromApi(
 }
 
 /**
- * Urkunden-PDF: zuerst Vektor (Chromium), bei Timeout/Fehler hochauflösender Client-Fallback.
+ * Urkunden-PDF: zuerst schneller hochauflösender Client-Export.
+ * Ohne DOM-Fallback: Vektor über Chromium-API.
  */
 export async function renderUrkundeToPdfBlob(
   data: PatenschaftUrkundeDaten,
   fallbackElement?: HTMLElement | null
 ): Promise<Blob> {
-  try {
-    return await renderUrkundeVectorFromApi(data, VECTOR_PDF_TIMEOUT_MS);
-  } catch (error) {
-    if (!fallbackElement) throw error;
+  if (fallbackElement) {
     return renderUrkundeRasterFallback(fallbackElement);
   }
+  return renderUrkundeVectorFromApi(data, VECTOR_PDF_TIMEOUT_MS);
 }
 
 export async function blobToBase64(blob: Blob): Promise<string> {
