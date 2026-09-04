@@ -93,7 +93,8 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
       if (id === "urkunde") {
         await exportUrkundePdf(
           data.urkunde,
-          urkundePdfFilename(data.pate.name, data.urkunde.urkundenNr)
+          urkundePdfFilename(data.pate.name, data.urkunde.urkundenNr),
+          urkundePrintRef.current
         );
       } else {
         const element = docRefs.current[id];
@@ -105,8 +106,9 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
         );
       }
       setStatus("PDF wurde gespeichert.");
-    } catch {
-      setStatus("PDF-Export fehlgeschlagen.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : null;
+      setStatus(message ? `PDF-Export fehlgeschlagen: ${message}` : "PDF-Export fehlgeschlagen.");
     } finally {
       setExportingId(null);
     }
@@ -119,7 +121,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
 
     for (const id of documentIds) {
       if (id === "urkunde") {
-        const blob = await renderUrkundeToPdfBlob(data.urkunde);
+        const blob = await renderUrkundeToPdfBlob(data.urkunde, urkundePrintRef.current);
         attachments.push({
           filename: urkundePdfFilename(data.pate.name, data.urkunde.urkundenNr),
           blob,

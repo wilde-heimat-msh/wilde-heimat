@@ -94,10 +94,19 @@ export function AdminUrkundenEditor() {
     setStatus(null);
 
     try {
-      await exportUrkundePdf(data, urkundePdfFilename(data.pate, data.urkundenNr));
-      setStatus("Vektor-PDF wurde gespeichert (druckfertig).");
-    } catch {
-      setStatus("PDF-Export fehlgeschlagen. Bitte Drucken → Als PDF speichern nutzen.");
+      await exportUrkundePdf(
+        data,
+        urkundePdfFilename(data.pate, data.urkundenNr),
+        printRef.current
+      );
+      setStatus("PDF wurde gespeichert.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : null;
+      setStatus(
+        message
+          ? `PDF-Export fehlgeschlagen: ${message}`
+          : "PDF-Export fehlgeschlagen. Bitte Drucken → Als PDF speichern nutzen."
+      );
     } finally {
       setExporting(false);
     }
