@@ -4,15 +4,14 @@ import type { PatenschaftUrkundeDaten } from "@/data/patenschaften";
 import {
   URKUNDE_A4_HEIGHT_PX,
   URKUNDE_A4_WIDTH_PX,
-  URKUNDE_PDF_EXPORT_SCALE,
   urkundePdfFilename,
 } from "@/lib/urkundeScale";
 
 export { urkundePdfFilename };
 
 const PDF_EXPORT_SCALE = 2;
-/** Server-Vektor-PDF: nach dieser Zeit Client-Fallback. */
-const VECTOR_PDF_TIMEOUT_MS = 18_000;
+/** Vektor-PDF auf dem Server kann beim ersten Aufruf länger dauern. */
+const VECTOR_PDF_TIMEOUT_MS = 55_000;
 
 type PdfRenderOptions = {
   backgroundColor?: string;
@@ -39,28 +38,6 @@ function revealPrintSourceForCapture(element: HTMLElement): () => void {
       root.style.removeProperty("visibility");
     }
   };
-}
-
-async function waitForElementAssets(element: HTMLElement): Promise<void> {
-  await document.fonts.ready;
-
-  const images = element.querySelectorAll("img");
-  await Promise.all(
-    Array.from(images).map(async (img) => {
-      img.loading = "eager";
-      if (!img.complete) {
-        await new Promise<void>((resolve) => {
-          img.addEventListener("load", () => resolve(), { once: true });
-          img.addEventListener("error", () => resolve(), { once: true });
-        });
-      }
-      try {
-        await img.decode();
-      } catch {
-        /* trotzdem exportieren */
-      }
-    })
-  );
 }
 
 async function renderCanvas(
@@ -94,15 +71,8 @@ async function renderCanvas(
   }
 }
 
-function canvasToPdf(
-  canvas: HTMLCanvasElement,
-  singlePage = false,
-  format: "PNG" | "JPEG" = "PNG"
-): jsPDF {
-  const imgData =
-    format === "JPEG"
-      ? canvas.toDataURL("image/jpeg", 0.95)
-      : canvas.toDataURL("image/png");
+function canvasToPdf(canvas: HTMLCanvasElement, singlePage = false): jsPDF {
+  const imgData = canvas.toDataURL("image/png");
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
   const pageWidth = 210;
@@ -113,7 +83,7 @@ function canvasToPdf(
   if (singlePage || imgHeight <= pageHeight) {
     pdf.addImage(
       imgData,
-      format,
+      "PNG",
       0,
       0,
       singlePage ? pageWidth : imgWidth,
@@ -124,13 +94,13 @@ function canvasToPdf(
 
   let heightLeft = imgHeight;
   let position = 0;
-  pdf.addImage(imgData, format, 0, position, imgWidth, imgHeight);
+  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
   heightLeft -= pageHeight;
 
   while (heightLeft > 0) {
     position = heightLeft - imgHeight;
     pdf.addPage();
-    pdf.addImage(imgData, format, 0, position, imgWidth, imgHeight);
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
     heightLeft -= pageHeight;
   }
 
@@ -146,19 +116,12 @@ export async function renderElementToPdfBlob(
   return pdf.output("blob");
 }
 
-async function renderUrkundeRasterFallback(element: HTMLElement): Promise<Blob> {
-  await waitForElementAssets(element);
-  const canvas = await renderCanvas(element, "#fdf8f0", URKUNDE_PDF_EXPORT_SCALE);
-  const pdf = canvasToPdf(canvas, true, "JPEG");
-  return pdf.output("blob");
-}
-
-async function renderUrkundeVectorFromApi(
-  data: PatenschaftUrkundeDaten,
-  timeoutMs: number
+/** Nur Vektor-PDF über Chromium – Text/SVG bleiben beim Zoomen scharf. */
+export async function renderUrkundeToPdfBlob(
+  data: PatenschaftUrkundeDaten
 ): Promise<Blob> {
   const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+  const timer = window.setTimeout(() => controller.abort(), VECTOR_PDF_TIMEOUT_MS);
 
   try {
     const res = await fetch("/api/admin/urkunden/pdf", {
@@ -181,23 +144,16 @@ async function renderUrkundeVectorFromApi(
     }
 
     return res.blob();
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error(
+        "Vektor-PDF dauerte zu lange (Timeout). Bitte erneut versuchen."
+      );
+    }
+    throw error;
   } finally {
     window.clearTimeout(timer);
   }
-}
-
-/**
- * Urkunden-PDF: zuerst schneller hochauflösender Client-Export.
- * Ohne DOM-Fallback: Vektor über Chromium-API.
- */
-export async function renderUrkundeToPdfBlob(
-  data: PatenschaftUrkundeDaten,
-  fallbackElement?: HTMLElement | null
-): Promise<Blob> {
-  if (fallbackElement) {
-    return renderUrkundeRasterFallback(fallbackElement);
-  }
-  return renderUrkundeVectorFromApi(data, VECTOR_PDF_TIMEOUT_MS);
 }
 
 export async function blobToBase64(blob: Blob): Promise<string> {
@@ -228,10 +184,9 @@ export async function exportHtmlToPdf(element: HTMLElement, filename: string) {
 
 export async function exportUrkundePdf(
   data: PatenschaftUrkundeDaten,
-  filename: string,
-  fallbackElement?: HTMLElement | null
+  filename: string
 ) {
-  const blob = await renderUrkundeToPdfBlob(data, fallbackElement);
+  const blob = await renderUrkundeToPdfBlob(data);
   downloadPdfBlob(blob, filename);
 }
 

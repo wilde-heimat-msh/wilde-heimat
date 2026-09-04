@@ -4,5 +4,11 @@
       "path": "/api/cron/patenschaft-zahlungserinnerungen",
       "schedule": "0 6 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "src/app/api/admin/urkunden/pdf/route.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  }
 }

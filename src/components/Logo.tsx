@@ -24,6 +24,7 @@ export function Logo({
       alt={alt}
       width={size}
       height={size}
+      unoptimized
       className={`object-contain ${surface === "dark" ? "drop-shadow-md rounded-full" : ""} ${className}`}
       priority={priority}
     />

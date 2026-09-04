@@ -1,14 +1,14 @@
 import type { Browser } from "puppeteer-core";
+import { siteConfig } from "@/data/site";
 import type { PatenschaftUrkundeDaten } from "@/data/patenschaften";
 import { signUrkundePrintToken } from "@/lib/urkundePrintToken";
-
-const CHROMIUM_PACK_URL =
-  process.env.CHROMIUM_REMOTE_EXEC_PATH ??
-  "https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.x64.tar";
 
 function getAppBaseUrl(): string {
   if (process.env.URKUNDE_PDF_BASE_URL) {
     return process.env.URKUNDE_PDF_BASE_URL.replace(/\/$/, "");
+  }
+  if (process.env.VERCEL_ENV === "production") {
+    return siteConfig.url.replace(/\/$/, "");
   }
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/^https?:\/\//, "")}`;
@@ -35,14 +35,14 @@ async function launchBrowser(): Promise<Browser> {
   const isVercel = Boolean(process.env.VERCEL);
 
   if (isVercel) {
-    const chromium = (await import("@sparticuz/chromium-min")).default;
+    const chromium = (await import("@sparticuz/chromium")).default;
     const puppeteer = await import("puppeteer-core");
     chromium.setGraphicsMode = false;
 
     return puppeteer.launch({
-      args: chromium.args,
+      args: [...chromium.args, "--font-render-hinting=none"],
       defaultViewport: { width: 794, height: 1123, deviceScaleFactor: 1 },
-      executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
+      executablePath: await chromium.executablePath(),
       headless: true,
     });
   }
@@ -69,7 +69,6 @@ export async function renderUrkundeVectorPdf(
     await page.setExtraHTTPHeaders(printPageHeaders());
     await page.emulateMediaType("print");
 
-    // HTML serverseitig laden (zuverlässiger als page.goto auf Vercel)
     const htmlRes = await fetch(printUrl, {
       headers: {
         Accept: "text/html",
@@ -79,33 +78,45 @@ export async function renderUrkundeVectorPdf(
     });
 
     if (!htmlRes.ok) {
-      throw new Error(`Druckseite nicht erreichbar (HTTP ${htmlRes.status}).`);
+      throw new Error(
+        `Druckseite nicht erreichbar (HTTP ${htmlRes.status}) unter ${baseUrl}.`
+      );
     }
 
     const html = await htmlRes.text();
+    if (!html.includes("urkunde-print-root")) {
+      throw new Error("Druckseite ohne Urkunden-Inhalt empfangen.");
+    }
+
     const htmlWithBase = html.includes("<base")
       ? html
       : html.replace(/<head([^>]*)>/i, `<head$1><base href="${baseUrl}/">`);
 
     await page.setContent(htmlWithBase, {
-      waitUntil: "load",
+      waitUntil: "domcontentloaded",
       timeout: 45_000,
     });
 
     await page.waitForSelector(".urkunde-print-root article", { timeout: 20_000 });
+
     await page.evaluate(async () => {
       await document.fonts.ready;
       const images = Array.from(document.images);
       await Promise.all(
         images.map(async (img) => {
-          if (img.complete) return;
+          if (!img.getAttribute("src")) return;
+          if (img.complete && img.naturalWidth > 0) return;
           await new Promise<void>((resolve) => {
-            img.addEventListener("load", () => resolve(), { once: true });
-            img.addEventListener("error", () => resolve(), { once: true });
+            const done = () => resolve();
+            img.addEventListener("load", done, { once: true });
+            img.addEventListener("error", done, { once: true });
           });
         })
       );
     });
+
+    // Kurz warten, damit CSS/Layout greifen
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
     const pdf = await page.pdf({
       format: "A4",

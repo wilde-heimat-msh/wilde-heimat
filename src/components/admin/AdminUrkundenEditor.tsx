@@ -91,15 +91,11 @@ export function AdminUrkundenEditor() {
     }
 
     setExporting(true);
-    setStatus(null);
+    setStatus("Vektor-PDF wird erzeugt … (kann 20–40 Sekunden dauern)");
 
     try {
-      await exportUrkundePdf(
-        data,
-        urkundePdfFilename(data.pate, data.urkundenNr),
-        printRef.current
-      );
-      setStatus("PDF wurde gespeichert.");
+      await exportUrkundePdf(data, urkundePdfFilename(data.pate, data.urkundenNr));
+      setStatus("Vektor-PDF wurde gespeichert.");
     } catch (error) {
       const message = error instanceof Error ? error.message : null;
       setStatus(

@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["puppeteer", "puppeteer-core", "@sparticuz/chromium-min"],
+  serverExternalPackages: ["puppeteer", "puppeteer-core", "@sparticuz/chromium"],
+  outputFileTracingIncludes: {
+    "/api/admin/urkunden/pdf": [
+      "./node_modules/@sparticuz/chromium/**",
+    ],
+  },
   turbopack: {
     resolveAlias: {
       html2canvas: "html2canvas-pro",

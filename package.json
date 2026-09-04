@@ -11,7 +11,7 @@
     "preview:urkunde-pdf": "node scripts/preview-urkunde-vector.mjs"
   },
   "dependencies": {
-    "@sparticuz/chromium-min": "^149.0.0",
+    "@sparticuz/chromium": "^149.0.0",
     "@supabase/supabase-js": "^2.110.0",
     "framer-motion": "^12.40.0",
     "html2canvas-pro": "^2.2.3",

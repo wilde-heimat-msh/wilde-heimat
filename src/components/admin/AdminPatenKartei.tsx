@@ -91,10 +91,10 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
 
     try {
       if (id === "urkunde") {
+        setStatus("Vektor-PDF wird erzeugt … (kann 20–40 Sekunden dauern)");
         await exportUrkundePdf(
           data.urkunde,
-          urkundePdfFilename(data.pate.name, data.urkunde.urkundenNr),
-          urkundePrintRef.current
+          urkundePdfFilename(data.pate.name, data.urkunde.urkundenNr)
         );
       } else {
         const element = docRefs.current[id];
@@ -105,7 +105,9 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
           patenDokumentFilename(meta.filenamePrefix, data.pate.name, data.pate.urkundenNr)
         );
       }
-      setStatus("PDF wurde gespeichert.");
+      setStatus(
+        id === "urkunde" ? "Vektor-PDF wurde gespeichert." : "PDF wurde gespeichert."
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : null;
       setStatus(message ? `PDF-Export fehlgeschlagen: ${message}` : "PDF-Export fehlgeschlagen.");
@@ -121,7 +123,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
 
     for (const id of documentIds) {
       if (id === "urkunde") {
-        const blob = await renderUrkundeToPdfBlob(data.urkunde, urkundePrintRef.current);
+        const blob = await renderUrkundeToPdfBlob(data.urkunde);
         attachments.push({
           filename: urkundePdfFilename(data.pate.name, data.urkunde.urkundenNr),
           blob,
@@ -349,7 +351,11 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
                         disabled={exportingId !== null}
                         className="min-h-8 px-3 text-xs rounded-lg bg-foreground text-background hover:bg-accent disabled:opacity-60"
                       >
-                        {exportingId === doc.id ? "Erstelle PDF …" : "PDF speichern"}
+                        {exportingId === doc.id
+                          ? doc.id === "urkunde"
+                            ? "Vektor-PDF …"
+                            : "Erstelle PDF …"
+                          : "PDF speichern"}
                       </button>
                     </div>
                   </li>
