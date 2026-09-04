@@ -138,18 +138,14 @@ function UrkundeHauptblock({
     <div className="w-full space-y-5">
       <div className="grid grid-cols-[10.5rem_1fr] gap-5 items-start">
         <figure className="text-center">
-          <div
-            className="relative aspect-[3/4] w-full overflow-hidden rounded-lg border-[3px] shadow-md bg-neutral-200"
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={waschbaerFoto}
+            alt={`${waschbaerName} – Patentier`}
+            className="aspect-[3/4] w-full object-cover object-center rounded-lg border-2"
             style={{ borderColor: render.fotoRahmen.borderColor }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={waschbaerFoto}
-              alt={`${waschbaerName} – Patentier`}
-              className="h-full w-full object-cover object-center"
-              crossOrigin="anonymous"
-            />
-          </div>
+            crossOrigin="anonymous"
+          />
           <figcaption className="mt-2 text-[12px] uppercase tracking-[0.12em] text-muted font-medium">
             Dein Patentier
           </figcaption>

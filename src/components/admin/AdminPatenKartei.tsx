@@ -91,10 +91,8 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
 
     try {
       if (id === "urkunde") {
-        const element = urkundePrintRef.current;
-        if (!element) throw new Error("Urkunde nicht bereit");
         await exportUrkundePdf(
-          element,
+          data.urkunde,
           urkundePdfFilename(data.pate.name, data.urkunde.urkundenNr)
         );
       } else {
@@ -121,9 +119,7 @@ export function AdminPatenKartei({ pateId }: { pateId: string }) {
 
     for (const id of documentIds) {
       if (id === "urkunde") {
-        const element = urkundePrintRef.current;
-        if (!element) throw new Error("Urkunde nicht bereit");
-        const blob = await renderUrkundeToPdfBlob(element);
+        const blob = await renderUrkundeToPdfBlob(data.urkunde);
         attachments.push({
           filename: urkundePdfFilename(data.pate.name, data.urkunde.urkundenNr),
           blob,

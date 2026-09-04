@@ -1,10 +1,13 @@
 import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
+import type { PatenschaftUrkundeDaten } from "@/data/patenschaften";
 import {
   URKUNDE_A4_HEIGHT_PX,
   URKUNDE_A4_WIDTH_PX,
-  URKUNDE_PDF_EXPORT_SCALE,
+  urkundePdfFilename,
 } from "@/lib/urkundeScale";
+
+export { urkundePdfFilename };
 
 const PDF_EXPORT_SCALE = 2;
 
@@ -35,28 +38,6 @@ function revealPrintSourceForCapture(element: HTMLElement): () => void {
   };
 }
 
-async function waitForElementAssets(element: HTMLElement): Promise<void> {
-  await document.fonts.ready;
-
-  const images = element.querySelectorAll("img");
-  await Promise.all(
-    Array.from(images).map(async (img) => {
-      img.loading = "eager";
-      if (!img.complete) {
-        await new Promise<void>((resolve) => {
-          img.addEventListener("load", () => resolve(), { once: true });
-          img.addEventListener("error", () => resolve(), { once: true });
-        });
-      }
-      try {
-        await img.decode();
-      } catch {
-        /* trotzdem exportieren */
-      }
-    })
-  );
-}
-
 async function renderCanvas(
   element: HTMLElement,
   backgroundColor: string,
@@ -72,10 +53,14 @@ async function renderCanvas(
       logging: false,
       scrollX: 0,
       scrollY: 0,
+      x: 0,
+      y: 0,
       width: element.offsetWidth || URKUNDE_A4_WIDTH_PX,
       height: element.offsetHeight || URKUNDE_A4_HEIGHT_PX,
       onclone: (_doc, cloned) => {
         cloned.style.visibility = "visible";
+        cloned.style.margin = "0";
+        cloned.style.padding = "0";
       },
     });
   } finally {
@@ -128,11 +113,29 @@ export async function renderElementToPdfBlob(
   return pdf.output("blob");
 }
 
-export async function renderUrkundeToPdfBlob(element: HTMLElement): Promise<Blob> {
-  await waitForElementAssets(element);
-  const canvas = await renderCanvas(element, "#fdf8f0", URKUNDE_PDF_EXPORT_SCALE);
-  const pdf = canvasToPdf(canvas, true);
-  return pdf.output("blob");
+/** Vektor-PDF über Chromium (Server). Text und SVG bleiben beim Zoomen scharf. */
+export async function renderUrkundeToPdfBlob(
+  data: PatenschaftUrkundeDaten
+): Promise<Blob> {
+  const res = await fetch("/api/admin/urkunden/pdf", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data }),
+  });
+
+  if (!res.ok) {
+    let message = "Vektor-PDF konnte nicht erzeugt werden.";
+    try {
+      const json = (await res.json()) as { error?: string };
+      if (json.error) message = json.error;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(message);
+  }
+
+  return res.blob();
 }
 
 export async function blobToBase64(blob: Blob): Promise<string> {
@@ -161,8 +164,11 @@ export async function exportHtmlToPdf(element: HTMLElement, filename: string) {
   downloadPdfBlob(blob, filename);
 }
 
-export async function exportUrkundePdf(element: HTMLElement, filename: string) {
-  const blob = await renderUrkundeToPdfBlob(element);
+export async function exportUrkundePdf(
+  data: PatenschaftUrkundeDaten,
+  filename: string
+) {
+  const blob = await renderUrkundeToPdfBlob(data);
   downloadPdfBlob(blob, filename);
 }
 
@@ -173,10 +179,4 @@ function downloadPdfBlob(blob: Blob, filename: string) {
   link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
-}
-
-export function urkundePdfFilename(pate: string, urkundenNr: string): string {
-  const safeName = pate.trim().replace(/\s+/g, "-").replace(/[^\w\-äöüÄÖÜß]/g, "") || "Patenschaft";
-  const safeNr = urkundenNr.replace(/[^\w\-]/g, "");
-  return `Patenschaftsurkunde-${safeName}-${safeNr}.pdf`;
 }

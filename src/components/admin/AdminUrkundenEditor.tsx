@@ -85,9 +85,6 @@ export function AdminUrkundenEditor() {
   }
 
   async function handlePdfExport() {
-    const element = printRef.current;
-    if (!element) return;
-
     if (!data.pate.trim()) {
       setStatus("Bitte zuerst den Namen des Paten/der Patin eintragen.");
       return;
@@ -97,8 +94,8 @@ export function AdminUrkundenEditor() {
     setStatus(null);
 
     try {
-      await exportUrkundePdf(element, urkundePdfFilename(data.pate, data.urkundenNr));
-      setStatus("PDF wurde gespeichert.");
+      await exportUrkundePdf(data, urkundePdfFilename(data.pate, data.urkundenNr));
+      setStatus("Vektor-PDF wurde gespeichert (druckfertig).");
     } catch {
       setStatus("PDF-Export fehlgeschlagen. Bitte Drucken → Als PDF speichern nutzen.");
     } finally {
