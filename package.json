@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "preview:urkunde-pdf": "node scripts/preview-urkunde-vector.mjs"
+    "preview:urkunde-pdf": "node scripts/preview-urkunde-vector.mjs",
+    "preview:hoffmann-boba": "npx tsx scripts/preview-hoffmann-boba.ts"
   },
   "dependencies": {
     "@sparticuz/chromium": "^149.0.0",
@@ -36,6 +37,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5"
   }
 }

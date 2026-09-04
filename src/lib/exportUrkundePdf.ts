@@ -10,7 +10,6 @@ import {
 export { urkundePdfFilename };
 
 const PDF_EXPORT_SCALE = 2;
-/** Vektor-PDF auf dem Server kann beim ersten Aufruf länger dauern. */
 const VECTOR_PDF_TIMEOUT_MS = 55_000;
 
 type PdfRenderOptions = {
@@ -20,7 +19,6 @@ type PdfRenderOptions = {
 const ADMIN_PRINT_SOURCE_SELECTOR =
   ".admin-urkunden-print-source, .admin-paten-dokument-export-source";
 
-/** Versteckte Quelle: kurz sichtbar, damit html2canvas symmetrisch erfasst. */
 function revealPrintSourceForCapture(element: HTMLElement): () => void {
   const root = element.closest<HTMLElement>(ADMIN_PRINT_SOURCE_SELECTOR);
   if (!root) {
@@ -116,7 +114,7 @@ export async function renderElementToPdfBlob(
   return pdf.output("blob");
 }
 
-/** Nur Vektor-PDF über Chromium – Text/SVG bleiben beim Zoomen scharf. */
+/** Vektor-PDF als Blob (E-Mail-Anhänge). */
 export async function renderUrkundeToPdfBlob(
   data: PatenschaftUrkundeDaten
 ): Promise<Blob> {
@@ -144,33 +142,58 @@ export async function renderUrkundeToPdfBlob(
     }
 
     const blob = await res.blob();
-    if (blob.size < 8000) {
-      let message = `PDF ist leer oder unvollständig (${blob.size} Bytes).`;
-      try {
-        const text = await blob.text();
-        const json = JSON.parse(text) as { error?: string };
-        if (json.error) message = json.error;
-      } catch {
-        /* keine JSON-Fehlermeldung */
-      }
-      throw new Error(message);
-    }
-
-    const header = await blob.slice(0, 4).text();
-    if (header !== "%PDF") {
+    if (blob.size < 8000 || (await blob.slice(0, 4).text()) !== "%PDF") {
       throw new Error("Server lieferte keine gültige PDF-Datei.");
     }
-
     return blob;
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
-      throw new Error(
-        "Vektor-PDF dauerte zu lange (Timeout). Bitte erneut versuchen."
-      );
+      throw new Error("Vektor-PDF dauerte zu lange (Timeout). Bitte erneut versuchen.");
     }
     throw error;
   } finally {
     window.clearTimeout(timer);
+  }
+}
+
+/**
+ * Safari-sicherer Download:
+ * Fenster sofort beim Klick öffnen (User-Gesture), danach Blob laden.
+ */
+export async function exportUrkundePdf(
+  data: PatenschaftUrkundeDaten,
+  filename: string
+) {
+  // Muss synchron im Click-Handler passieren – sonst blockiert Safari den Download.
+  const previewTab = window.open("about:blank", "_blank");
+  if (previewTab) {
+    previewTab.document.write(
+      "<p style='font-family:system-ui;padding:24px;color:#2a3326'>Vektor-PDF wird erzeugt … bitte warten.</p>"
+    );
+  }
+
+  try {
+    const blob = await renderUrkundeToPdfBlob(data);
+    const url = URL.createObjectURL(blob);
+
+    if (previewTab && !previewTab.closed) {
+      previewTab.location.href = url;
+    }
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.rel = "noopener";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.setTimeout(() => URL.revokeObjectURL(url), 120_000);
+  } catch (error) {
+    if (previewTab && !previewTab.closed) {
+      previewTab.close();
+    }
+    throw error;
   }
 }
 
@@ -197,18 +220,6 @@ export async function blobToBase64(blob: Blob): Promise<string> {
 
 export async function exportHtmlToPdf(element: HTMLElement, filename: string) {
   const blob = await renderElementToPdfBlob(element);
-  downloadPdfBlob(blob, filename);
-}
-
-export async function exportUrkundePdf(
-  data: PatenschaftUrkundeDaten,
-  filename: string
-) {
-  const blob = await renderUrkundeToPdfBlob(data);
-  downloadPdfBlob(blob, filename);
-}
-
-function downloadPdfBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
